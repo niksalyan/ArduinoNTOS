@@ -12,9 +12,10 @@ namespace NTOSDev
             InitializeComponent();
 
             
-            functionRegistry.RegisterFunction("drawBox", (args) =>
+            functionRegistry.RegisterFunction("debug", (args) =>
             {
-                Debug.WriteLine($"drawBox called with arguments: {args[0]}");
+                Debug.WriteLine($"Debug: {args[0]}");
+                debugOutput.Text = $"Debug: {args[0]}";
                 return null;
             });
         }
@@ -50,7 +51,7 @@ namespace NTOSDev
             catch (Exception ex)
             {
                 listBox1.Items.Clear();
-                listBox1.Items.Add(ex.Message);
+                debugOutput.Text = "Error: " + ex.Message;
                 Debug.WriteLine("Error:\n" + ex.Message);
             }
         }

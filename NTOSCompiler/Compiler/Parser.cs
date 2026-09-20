@@ -16,24 +16,24 @@ public sealed class Parser
 
         while (!Check(TokenKind.Eof))
         {
-            CompileStatement(program);
+            bool requiresSemicolon = CompileStatement(program);
 
-            if (Match(TokenKind.Semicolon))
-                continue;
-
-            if (!Check(TokenKind.Eof))
-                throw Error("Expected ';'.");
+            if (requiresSemicolon)
+            {
+                if (!Match(TokenKind.Semicolon))
+                    throw Error("Expected ';'.");
+            }
         }
 
         return program;
     }
 
-    private void CompileStatement(BytecodeProgram program)
+    private bool CompileStatement(BytecodeProgram program)
     {
         if (Match(TokenKind.If))
         {
             CompileIf(program);
-            return;
+            return false;
         }
 
         // x = expression
@@ -50,7 +50,7 @@ public sealed class Parser
                     OpCode.StoreVariable,
                     name));
 
-            return;
+            return true;
         }
 
         // expression
@@ -58,6 +58,7 @@ public sealed class Parser
 
         program.Instructions.Add(
             new Instruction(OpCode.Pop));
+        return true;
     }
 
     private void CompileIf(BytecodeProgram program)

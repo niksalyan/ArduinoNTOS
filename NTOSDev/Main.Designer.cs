@@ -30,6 +30,7 @@
         {
             textBox1 = new TextBox();
             listBox1 = new ListBox();
+            debugOutput = new TextBox();
             SuspendLayout();
             // 
             // textBox1
@@ -39,7 +40,7 @@
             textBox1.Location = new Point(0, 0);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(447, 450);
+            textBox1.Size = new Size(447, 423);
             textBox1.TabIndex = 0;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
@@ -51,8 +52,16 @@
             listBox1.Location = new Point(447, 0);
             listBox1.Name = "listBox1";
             listBox1.SelectionMode = SelectionMode.MultiExtended;
-            listBox1.Size = new Size(353, 450);
+            listBox1.Size = new Size(353, 423);
             listBox1.TabIndex = 1;
+            // 
+            // debugOutput
+            // 
+            debugOutput.Dock = DockStyle.Bottom;
+            debugOutput.Location = new Point(0, 423);
+            debugOutput.Name = "debugOutput";
+            debugOutput.Size = new Size(800, 27);
+            debugOutput.TabIndex = 2;
             // 
             // Main
             // 
@@ -61,6 +70,7 @@
             ClientSize = new Size(800, 450);
             Controls.Add(textBox1);
             Controls.Add(listBox1);
+            Controls.Add(debugOutput);
             Name = "Main";
             Text = "NTOS Dev";
             ResumeLayout(false);
@@ -71,5 +81,6 @@
 
         private TextBox textBox1;
         private ListBox listBox1;
+        private TextBox debugOutput;
     }
 }
