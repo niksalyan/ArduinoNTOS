@@ -39,15 +39,16 @@ public sealed class Lexer
 
                 string text = _source[start.._position];
 
-                TokenKind boolKind = text switch
+                TokenKind wordKind = text switch
                 {
                     "true" => TokenKind.True,
                     "false" => TokenKind.False,
                     "if" => TokenKind.If,
+                    "else" => TokenKind.Else,
                     _ => TokenKind.Identifier
                 };
 
-                tokens.Add(new Token(boolKind, text, start));
+                tokens.Add(new Token(wordKind, text, start));
                 continue;
             }
 

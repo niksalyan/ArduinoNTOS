@@ -87,25 +87,76 @@ public sealed class Parser
         while (!Check(TokenKind.RBrace) &&
                !Check(TokenKind.Eof))
         {
-            CompileStatement(program);
+            bool requiresSemicolon =
+                CompileStatement(program);
 
-            if (Match(TokenKind.Semicolon))
-                continue;
-
-            if (!Check(TokenKind.RBrace))
-                throw Error("Expected ';'.");
+            if (requiresSemicolon)
+            {
+                if (!Match(TokenKind.Semicolon))
+                    throw Error("Expected ';'.");
+            }
         }
 
         Consume(
             TokenKind.RBrace,
             "Expected '}'.");
 
-        int endIndex = program.Instructions.Count;
+        // No else
+        if (!Match(TokenKind.Else))
+        {
+            int endIndex = program.Instructions.Count;
+
+            program.Instructions[jumpIfFalseIndex] =
+                new Instruction(
+                    OpCode.JumpIfFalse,
+                    endIndex);
+
+            return;
+        }
+
+        // We have an else.
+        int jumpIndex = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Jump,
+                -1));
+
+        // False condition should jump here.
+        int elseIndex = program.Instructions.Count;
 
         program.Instructions[jumpIfFalseIndex] =
             new Instruction(
                 OpCode.JumpIfFalse,
-                endIndex);
+                elseIndex);
+
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{' after 'else'.");
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                if (!Match(TokenKind.Semicolon))
+                    throw Error("Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}'.");
+
+        int end = program.Instructions.Count;
+
+        program.Instructions[jumpIndex] =
+            new Instruction(
+                OpCode.Jump,
+                end);
     }
 
     private void CompileExpression(BytecodeProgram program)
