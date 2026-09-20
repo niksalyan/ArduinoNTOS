@@ -15,7 +15,8 @@ public enum TokenKind
     Slash,
     Percent,
 
-    
+    If,
+    Else,
 
     True,
     False,
@@ -34,6 +35,9 @@ public enum TokenKind
 
     LParen,
     RParen,
+
+    LBrace,
+    RBrace,
     Comma,
     Semicolon,
 

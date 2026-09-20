@@ -30,6 +30,12 @@ public sealed class Parser
 
     private void CompileStatement(BytecodeProgram program)
     {
+        if (Match(TokenKind.If))
+        {
+            CompileIf(program);
+            return;
+        }
+
         // x = expression
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.Equals)
@@ -40,14 +46,65 @@ public sealed class Parser
             CompileExpression(program);
 
             program.Instructions.Add(
-                new Instruction(OpCode.StoreVariable, name));
+                new Instruction(
+                    OpCode.StoreVariable,
+                    name));
 
             return;
         }
 
         // expression
         CompileExpression(program);
-        program.Instructions.Add(new Instruction(OpCode.Pop));
+
+        program.Instructions.Add(
+            new Instruction(OpCode.Pop));
+    }
+
+    private void CompileIf(BytecodeProgram program)
+    {
+        Consume(
+            TokenKind.LParen,
+            "Expected '(' after 'if'.");
+
+        CompileExpression(program);
+
+        Consume(
+            TokenKind.RParen,
+            "Expected ')' after condition.");
+
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{'.");
+
+        int jumpIfFalseIndex = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.JumpIfFalse,
+                -1));
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            CompileStatement(program);
+
+            if (Match(TokenKind.Semicolon))
+                continue;
+
+            if (!Check(TokenKind.RBrace))
+                throw Error("Expected ';'.");
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}'.");
+
+        int endIndex = program.Instructions.Count;
+
+        program.Instructions[jumpIfFalseIndex] =
+            new Instruction(
+                OpCode.JumpIfFalse,
+                endIndex);
     }
 
     private void CompileExpression(BytecodeProgram program)
@@ -86,11 +143,11 @@ public sealed class Parser
         CompileAdditive(program);
 
         while (Check(TokenKind.EqualEqual) ||
-           Check(TokenKind.NotEqual) ||
-           Check(TokenKind.Less) ||
-           Check(TokenKind.Greater) ||
-           Check(TokenKind.LessEqual) ||
-           Check(TokenKind.GreaterEqual))
+               Check(TokenKind.NotEqual) ||
+               Check(TokenKind.Less) ||
+               Check(TokenKind.Greater) ||
+               Check(TokenKind.LessEqual) ||
+               Check(TokenKind.GreaterEqual))
         {
             TokenKind op = Advance().Kind;
 
@@ -108,7 +165,7 @@ public sealed class Parser
                         TokenKind.GreaterEqual => OpCode.GreaterEqual,
                         _ => throw new InvalidOperationException()
                     }));
-                    }
+        }
     }
 
     private void CompileAdditive(BytecodeProgram program)
@@ -143,13 +200,14 @@ public sealed class Parser
             CompileFactor(program);
 
             program.Instructions.Add(
-                new Instruction(op switch
-                {
-                    TokenKind.Star => OpCode.Multiply,
-                    TokenKind.Slash => OpCode.Divide,
-                    TokenKind.Percent => OpCode.Modulo,
-                    _ => throw new InvalidOperationException()
-                }));
+                new Instruction(
+                    op switch
+                    {
+                        TokenKind.Star => OpCode.Multiply,
+                        TokenKind.Slash => OpCode.Divide,
+                        TokenKind.Percent => OpCode.Modulo,
+                        _ => throw new InvalidOperationException()
+                    }));
         }
     }
 
@@ -166,7 +224,7 @@ public sealed class Parser
         }
 
         if (Check(TokenKind.Identifier) &&
-        Peek(1).Kind == TokenKind.LParen)
+            Peek(1).Kind == TokenKind.LParen)
         {
             CompileFunctionCall(program);
             return;
@@ -237,18 +295,25 @@ public sealed class Parser
         if (Match(TokenKind.LParen))
         {
             CompileExpression(program);
-            Consume(TokenKind.RParen, "Expected ')'.");
+
+            Consume(
+                TokenKind.RParen,
+                "Expected ')'.");
+
             return;
         }
 
-        throw Error($"Unexpected token '{Current().Text}'.");
+        throw Error(
+            $"Unexpected token '{Current().Text}'.");
     }
 
     private void CompileFunctionCall(BytecodeProgram program)
     {
         string functionName = Advance().Text;
 
-        Consume(TokenKind.LParen, "Expected '('.");
+        Consume(
+            TokenKind.LParen,
+            "Expected '('.");
 
         int argumentCount = 0;
 
@@ -262,12 +327,16 @@ public sealed class Parser
             while (Match(TokenKind.Comma));
         }
 
-        Consume(TokenKind.RParen, "Expected ')'.");
+        Consume(
+            TokenKind.RParen,
+            "Expected ')'.");
 
         program.Instructions.Add(
             new Instruction(
                 OpCode.CallFunction,
-                new FunctionCall(functionName, argumentCount)));
+                new FunctionCall(
+                    functionName,
+                    argumentCount)));
     }
 
     private bool Match(TokenKind kind)
@@ -279,7 +348,9 @@ public sealed class Parser
         return true;
     }
 
-    private Token Consume(TokenKind kind, string message)
+    private Token Consume(
+        TokenKind kind,
+        string message)
     {
         if (!Check(kind))
             throw Error(message);
@@ -299,14 +370,21 @@ public sealed class Parser
     }
 
     private Token Current()
-        => _tokens[Math.Min(_position, _tokens.Count - 1)];
+        => _tokens[
+            Math.Min(
+                _position,
+                _tokens.Count - 1)];
 
     private Token Previous()
         => _tokens[_position - 1];
 
     private Token Peek(int offset)
-        => _tokens[Math.Min(_position + offset, _tokens.Count - 1)];
+        => _tokens[
+            Math.Min(
+                _position + offset,
+                _tokens.Count - 1)];
 
     private Exception Error(string message)
-        => new Exception($"{message} Position: {Current().Position}.");
+        => new Exception(
+            $"{message} Position: {Current().Position}.");
 }

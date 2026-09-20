@@ -31,7 +31,8 @@ public sealed class Lexer
                 _position++;
 
                 while (_position < _source.Length &&
-                       (char.IsLetterOrDigit(_source[_position]) || _source[_position] == '_'))
+                       (char.IsLetterOrDigit(_source[_position]) ||
+                        _source[_position] == '_'))
                 {
                     _position++;
                 }
@@ -42,6 +43,7 @@ public sealed class Lexer
                 {
                     "true" => TokenKind.True,
                     "false" => TokenKind.False,
+                    "if" => TokenKind.If,
                     _ => TokenKind.Identifier
                 };
 
@@ -55,8 +57,11 @@ public sealed class Lexer
 
                 _position++;
 
-                while (_position < _source.Length && char.IsDigit(_source[_position]))
+                while (_position < _source.Length &&
+                       char.IsDigit(_source[_position]))
+                {
                     _position++;
+                }
 
                 if (_position < _source.Length &&
                     _source[_position] == '.' &&
@@ -66,8 +71,11 @@ public sealed class Lexer
                     isFloat = true;
                     _position++;
 
-                    while (_position < _source.Length && char.IsDigit(_source[_position]))
+                    while (_position < _source.Length &&
+                           char.IsDigit(_source[_position]))
+                    {
                         _position++;
+                    }
                 }
 
                 tokens.Add(new Token(
@@ -82,11 +90,15 @@ public sealed class Lexer
             {
                 _position++;
 
-                while (_position < _source.Length && _source[_position] != '"')
+                while (_position < _source.Length &&
+                       _source[_position] != '"')
+                {
                     _position++;
+                }
 
                 if (_position >= _source.Length)
-                    throw new Exception($"Unterminated string at position {start}.");
+                    throw new Exception(
+                        $"Unterminated string at position {start}.");
 
                 _position++;
 
@@ -102,7 +114,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '=')
+                if (_position < _source.Length &&
+                    _source[_position] == '=')
                 {
                     _position++;
 
@@ -126,7 +139,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '=')
+                if (_position < _source.Length &&
+                    _source[_position] == '=')
                 {
                     _position++;
 
@@ -150,7 +164,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '&')
+                if (_position < _source.Length &&
+                    _source[_position] == '&')
                 {
                     _position++;
 
@@ -170,7 +185,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '|')
+                if (_position < _source.Length &&
+                    _source[_position] == '|')
                 {
                     _position++;
 
@@ -190,7 +206,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '=')
+                if (_position < _source.Length &&
+                    _source[_position] == '=')
                 {
                     _position++;
 
@@ -214,7 +231,8 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length && _source[_position] == '=')
+                if (_position < _source.Length &&
+                    _source[_position] == '=')
                 {
                     _position++;
 
@@ -245,6 +263,7 @@ public sealed class Lexer
                 ')' => TokenKind.RParen,
                 ',' => TokenKind.Comma,
                 ';' => TokenKind.Semicolon,
+
                 _ => throw new Exception(
                     $"Unexpected character '{c}' at position {start}.")
             };
@@ -255,10 +274,12 @@ public sealed class Lexer
                 kind,
                 c.ToString(),
                 start));
-
         }
 
-        tokens.Add(new Token(TokenKind.Eof, string.Empty, _position));
+        tokens.Add(new Token(
+            TokenKind.Eof,
+            string.Empty,
+            _position));
 
         return tokens;
     }

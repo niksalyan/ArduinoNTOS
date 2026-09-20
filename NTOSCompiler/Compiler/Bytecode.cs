@@ -30,6 +30,9 @@ public enum OpCode
     And,
     Or,
     Not,
+
+    Jump,
+    JumpIfFalse
 }
 
 public readonly record struct Instruction(
