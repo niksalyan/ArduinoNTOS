@@ -52,9 +52,34 @@ public sealed class Parser
 
     private void CompileExpression(BytecodeProgram program)
     {
+        CompileEquality(program);
+    }
+
+    private void CompileEquality(BytecodeProgram program)
+    {
+        CompileAdditive(program);
+
+        while (Check(TokenKind.EqualEqual) ||
+               Check(TokenKind.NotEqual))
+        {
+            TokenKind op = Advance().Kind;
+
+            CompileAdditive(program);
+
+            program.Instructions.Add(
+                new Instruction(
+                    op == TokenKind.EqualEqual
+                        ? OpCode.Equal
+                        : OpCode.NotEqual));
+        }
+    }
+
+    private void CompileAdditive(BytecodeProgram program)
+    {
         CompileTerm(program);
 
-        while (Check(TokenKind.Plus) || Check(TokenKind.Minus))
+        while (Check(TokenKind.Plus) ||
+               Check(TokenKind.Minus))
         {
             TokenKind op = Advance().Kind;
 

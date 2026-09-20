@@ -98,6 +98,50 @@ public sealed class Lexer
                 continue;
             }
 
+            if (c == '=')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '=')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.EqualEqual,
+                        "==",
+                        start));
+                }
+                else
+                {
+                    tokens.Add(new Token(
+                        TokenKind.Equals,
+                        "=",
+                        start));
+                }
+
+                continue;
+            }
+
+            if (c == '!')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '=')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.NotEqual,
+                        "!=",
+                        start));
+
+                    continue;
+                }
+
+                throw new Exception(
+                    $"Unexpected character '!' at position {start}.");
+            }
+
             TokenKind kind = c switch
             {
                 '+' => TokenKind.Plus,
@@ -105,13 +149,20 @@ public sealed class Lexer
                 '*' => TokenKind.Star,
                 '/' => TokenKind.Slash,
                 '%' => TokenKind.Percent,
-                '=' => TokenKind.Equals,
                 '(' => TokenKind.LParen,
                 ')' => TokenKind.RParen,
                 ',' => TokenKind.Comma,
                 ';' => TokenKind.Semicolon,
-                _ => throw new Exception($"Unexpected character '{c}' at position {start}.")
+                _ => throw new Exception(
+                    $"Unexpected character '{c}' at position {start}.")
             };
+
+            _position++;
+
+            tokens.Add(new Token(
+                kind,
+                c.ToString(),
+                start));
 
             _position++;
             tokens.Add(new Token(kind, c.ToString(), start));

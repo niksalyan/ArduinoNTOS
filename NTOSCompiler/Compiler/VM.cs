@@ -66,7 +66,23 @@ public sealed class VirtualMachine
                 case OpCode.Modulo:
                     BinaryNumeric((a, b) => a % b);
                     break;
+                case OpCode.Equal:
+                    {
+                        object right = _stack.Pop();
+                        object left = _stack.Pop();
 
+                        _stack.Push(Equals(left, right));
+                        break;
+                    }
+
+                case OpCode.NotEqual:
+                    {
+                        object right = _stack.Pop();
+                        object left = _stack.Pop();
+
+                        _stack.Push(!Equals(left, right));
+                        break;
+                    }
                 case OpCode.Pop:
                     _stack.Pop();
                     break;

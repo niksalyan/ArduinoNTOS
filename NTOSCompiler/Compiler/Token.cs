@@ -15,10 +15,14 @@ public enum TokenKind
     Slash,
     Percent,
 
-    Equals,
+    
 
     True,
     False,
+    Equals,
+    EqualEqual,
+    NotEqual,
+
     LParen,
     RParen,
     Comma,

@@ -18,7 +18,9 @@ public enum OpCode
 
     CallFunction,
 
-    Pop
+    Pop,
+    Equal,
+    NotEqual,
 }
 
 public readonly record struct Instruction(
