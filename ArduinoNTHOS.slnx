@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="NTOSCompiler/NTOSCompiler.csproj" />
+  <Project Path="NTOSDev/NTOSDev.csproj" />
+</Solution>
