@@ -26,6 +26,10 @@ public enum OpCode
     Greater,
     LessEqual,
     GreaterEqual,
+
+    And,
+    Or,
+    Not,
 }
 
 public readonly record struct Instruction(

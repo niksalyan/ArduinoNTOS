@@ -52,7 +52,33 @@ public sealed class Parser
 
     private void CompileExpression(BytecodeProgram program)
     {
+        CompileOr(program);
+    }
+
+    private void CompileOr(BytecodeProgram program)
+    {
+        CompileAnd(program);
+
+        while (Match(TokenKind.OrOr))
+        {
+            CompileAnd(program);
+
+            program.Instructions.Add(
+                new Instruction(OpCode.Or));
+        }
+    }
+
+    private void CompileAnd(BytecodeProgram program)
+    {
         CompileEquality(program);
+
+        while (Match(TokenKind.AndAnd))
+        {
+            CompileEquality(program);
+
+            program.Instructions.Add(
+                new Instruction(OpCode.And));
+        }
     }
 
     private void CompileEquality(BytecodeProgram program)
@@ -129,6 +155,16 @@ public sealed class Parser
 
     private void CompileFactor(BytecodeProgram program)
     {
+        if (Match(TokenKind.Not))
+        {
+            CompileFactor(program);
+
+            program.Instructions.Add(
+                new Instruction(OpCode.Not));
+
+            return;
+        }
+
         if (Check(TokenKind.Identifier) &&
         Peek(1).Kind == TokenKind.LParen)
         {

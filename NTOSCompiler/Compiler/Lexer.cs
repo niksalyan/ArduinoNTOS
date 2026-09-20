@@ -134,12 +134,56 @@ public sealed class Lexer
                         TokenKind.NotEqual,
                         "!=",
                         start));
+                }
+                else
+                {
+                    tokens.Add(new Token(
+                        TokenKind.Not,
+                        "!",
+                        start));
+                }
+
+                continue;
+            }
+
+            if (c == '&')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '&')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.AndAnd,
+                        "&&",
+                        start));
 
                     continue;
                 }
 
                 throw new Exception(
-                    $"Unexpected character '!' at position {start}.");
+                    $"Unexpected character '&' at position {start}.");
+            }
+
+            if (c == '|')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '|')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.OrOr,
+                        "||",
+                        start));
+
+                    continue;
+                }
+
+                throw new Exception(
+                    $"Unexpected character '|' at position {start}.");
             }
 
             if (c == '<')

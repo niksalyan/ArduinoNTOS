@@ -101,6 +101,31 @@ public sealed class VirtualMachine
                 case OpCode.GreaterEqual:
                     Compare((a, b) => a >= b);
                     break;
+                case OpCode.And:
+                    {
+                        bool right = Convert.ToBoolean(_stack.Pop());
+                        bool left = Convert.ToBoolean(_stack.Pop());
+
+                        _stack.Push(left && right);
+                        break;
+                    }
+
+                case OpCode.Or:
+                    {
+                        bool right = Convert.ToBoolean(_stack.Pop());
+                        bool left = Convert.ToBoolean(_stack.Pop());
+
+                        _stack.Push(left || right);
+                        break;
+                    }
+
+                case OpCode.Not:
+                    {
+                        bool value = Convert.ToBoolean(_stack.Pop());
+
+                        _stack.Push(!value);
+                        break;
+                    }
                 case OpCode.CallFunction:
                     var call = (FunctionCall)instruction.Operand!;
 

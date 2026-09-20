@@ -28,6 +28,10 @@ public enum TokenKind
     LessEqual,
     GreaterEqual,
 
+    AndAnd,
+    OrOr,
+    Not,
+
     LParen,
     RParen,
     Comma,
