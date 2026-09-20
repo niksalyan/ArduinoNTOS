@@ -86,6 +86,21 @@ public sealed class VirtualMachine
                 case OpCode.Pop:
                     _stack.Pop();
                     break;
+                case OpCode.Less:
+                    Compare((a, b) => a < b);
+                    break;
+
+                case OpCode.Greater:
+                    Compare((a, b) => a > b);
+                    break;
+
+                case OpCode.LessEqual:
+                    Compare((a, b) => a <= b);
+                    break;
+
+                case OpCode.GreaterEqual:
+                    Compare((a, b) => a >= b);
+                    break;
                 case OpCode.CallFunction:
                     var call = (FunctionCall)instruction.Operand!;
 
@@ -108,6 +123,13 @@ public sealed class VirtualMachine
         return _stack.Count > 0 ? _stack.Peek() : null;
     }
 
+    private void Compare(Func<double, double, bool> operation)
+    {
+        double right = Convert.ToDouble(_stack.Pop());
+        double left = Convert.ToDouble(_stack.Pop());
+
+        _stack.Push(operation(left, right));
+    }
     public object? GetVariable(string name)
         => _variables.TryGetValue(name, out var value)
             ? value

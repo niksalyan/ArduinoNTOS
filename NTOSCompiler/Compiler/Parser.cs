@@ -60,7 +60,11 @@ public sealed class Parser
         CompileAdditive(program);
 
         while (Check(TokenKind.EqualEqual) ||
-               Check(TokenKind.NotEqual))
+           Check(TokenKind.NotEqual) ||
+           Check(TokenKind.Less) ||
+           Check(TokenKind.Greater) ||
+           Check(TokenKind.LessEqual) ||
+           Check(TokenKind.GreaterEqual))
         {
             TokenKind op = Advance().Kind;
 
@@ -68,10 +72,17 @@ public sealed class Parser
 
             program.Instructions.Add(
                 new Instruction(
-                    op == TokenKind.EqualEqual
-                        ? OpCode.Equal
-                        : OpCode.NotEqual));
-        }
+                    op switch
+                    {
+                        TokenKind.EqualEqual => OpCode.Equal,
+                        TokenKind.NotEqual => OpCode.NotEqual,
+                        TokenKind.Less => OpCode.Less,
+                        TokenKind.Greater => OpCode.Greater,
+                        TokenKind.LessEqual => OpCode.LessEqual,
+                        TokenKind.GreaterEqual => OpCode.GreaterEqual,
+                        _ => throw new InvalidOperationException()
+                    }));
+                    }
     }
 
     private void CompileAdditive(BytecodeProgram program)

@@ -23,6 +23,11 @@ public enum TokenKind
     EqualEqual,
     NotEqual,
 
+    Less,
+    Greater,
+    LessEqual,
+    GreaterEqual,
+
     LParen,
     RParen,
     Comma,

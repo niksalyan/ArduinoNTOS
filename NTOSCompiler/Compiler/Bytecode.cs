@@ -21,6 +21,11 @@ public enum OpCode
     Pop,
     Equal,
     NotEqual,
+
+    Less,
+    Greater,
+    LessEqual,
+    GreaterEqual,
 }
 
 public readonly record struct Instruction(

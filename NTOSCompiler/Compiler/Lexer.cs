@@ -142,6 +142,54 @@ public sealed class Lexer
                     $"Unexpected character '!' at position {start}.");
             }
 
+            if (c == '<')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '=')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.LessEqual,
+                        "<=",
+                        start));
+                }
+                else
+                {
+                    tokens.Add(new Token(
+                        TokenKind.Less,
+                        "<",
+                        start));
+                }
+
+                continue;
+            }
+
+            if (c == '>')
+            {
+                _position++;
+
+                if (_position < _source.Length && _source[_position] == '=')
+                {
+                    _position++;
+
+                    tokens.Add(new Token(
+                        TokenKind.GreaterEqual,
+                        ">=",
+                        start));
+                }
+                else
+                {
+                    tokens.Add(new Token(
+                        TokenKind.Greater,
+                        ">",
+                        start));
+                }
+
+                continue;
+            }
+
             TokenKind kind = c switch
             {
                 '+' => TokenKind.Plus,
