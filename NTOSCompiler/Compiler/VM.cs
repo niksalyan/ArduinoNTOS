@@ -12,13 +12,16 @@ public sealed class VirtualMachine
         _functions = functions;
     }
 
-
     public object? Execute(BytecodeProgram program)
     {
         _stack.Clear();
 
-        foreach (var instruction in program.Instructions)
+        int instructionPointer = 0;
+
+        while (instructionPointer < program.Instructions.Count)
         {
+            var instruction = program.Instructions[instructionPointer];
+
             switch (instruction.OpCode)
             {
                 case OpCode.PushInt:
@@ -26,26 +29,30 @@ public sealed class VirtualMachine
                 case OpCode.PushString:
                     _stack.Push(instruction.Operand);
                     break;
+
                 case OpCode.PushBool:
                     _stack.Push(instruction.Operand);
                     break;
+
                 case OpCode.LoadVariable:
-                {
-                    string name = (string)instruction.Operand!;
+                    {
+                        string name = (string)instruction.Operand!;
 
-                    if (!_variables.TryGetValue(name, out var value))
-                        throw new Exception($"Variable '{name}' is not defined.");
+                        if (!_variables.TryGetValue(name, out var value))
+                            throw new Exception(
+                                $"Variable '{name}' is not defined.");
 
-                    _stack.Push(value);
-                    break;
-                }
+                        _stack.Push(value);
+                        break;
+                    }
 
                 case OpCode.StoreVariable:
-                {
-                    string name = (string)instruction.Operand!;
-                    _variables[name] = _stack.Pop();
-                    break;
-                }
+                    {
+                        string name = (string)instruction.Operand!;
+
+                        _variables[name] = _stack.Pop();
+                        break;
+                    }
 
                 case OpCode.Add:
                     BinaryNumeric((a, b) => a + b);
@@ -66,10 +73,11 @@ public sealed class VirtualMachine
                 case OpCode.Modulo:
                     BinaryNumeric((a, b) => a % b);
                     break;
+
                 case OpCode.Equal:
                     {
-                        object right = _stack.Pop();
-                        object left = _stack.Pop();
+                        object right = _stack.Pop()!;
+                        object left = _stack.Pop()!;
 
                         _stack.Push(Equals(left, right));
                         break;
@@ -77,15 +85,13 @@ public sealed class VirtualMachine
 
                 case OpCode.NotEqual:
                     {
-                        object right = _stack.Pop();
-                        object left = _stack.Pop();
+                        object right = _stack.Pop()!;
+                        object left = _stack.Pop()!;
 
                         _stack.Push(!Equals(left, right));
                         break;
                     }
-                case OpCode.Pop:
-                    _stack.Pop();
-                    break;
+
                 case OpCode.Less:
                     Compare((a, b) => a < b);
                     break;
@@ -101,6 +107,7 @@ public sealed class VirtualMachine
                 case OpCode.GreaterEqual:
                     Compare((a, b) => a >= b);
                     break;
+
                 case OpCode.And:
                     {
                         bool right = Convert.ToBoolean(_stack.Pop());
@@ -126,45 +133,97 @@ public sealed class VirtualMachine
                         _stack.Push(!value);
                         break;
                     }
+
+                case OpCode.Jump:
+                    {
+                        instructionPointer =
+                            Convert.ToInt32(instruction.Operand);
+
+                        continue;
+                    }
+
+                case OpCode.JumpIfFalse:
+                    {
+                        bool condition =
+                            Convert.ToBoolean(_stack.Pop());
+
+                        if (!condition)
+                        {
+                            instructionPointer =
+                                Convert.ToInt32(instruction.Operand);
+
+                            continue;
+                        }
+
+                        break;
+                    }
+
                 case OpCode.CallFunction:
-                    var call = (FunctionCall)instruction.Operand!;
+                    {
+                        var call = (FunctionCall)instruction.Operand!;
 
-                    var args = new object?[call.ArgumentCount];
+                        var args =
+                            new object?[call.ArgumentCount];
 
-                    for (int i = call.ArgumentCount - 1; i >= 0; i--)
-                        args[i] = _stack.Pop();
+                        for (int i = call.ArgumentCount - 1; i >= 0; i--)
+                            args[i] = _stack.Pop();
 
-                    var function = _functions.GetFunction(call.Name);
+                        var function =
+                            _functions.GetFunction(call.Name);
 
-                    object? result = function(args);
+                        object? result = function(args);
 
-                    _stack.Push(result);
+                        _stack.Push(result);
+                        break;
+                    }
+
+                case OpCode.Pop:
+                    _stack.Pop();
                     break;
+
                 default:
-                    throw new Exception($"Unsupported opcode: {instruction.OpCode}");
+                    throw new Exception(
+                        $"Unsupported opcode: {instruction.OpCode}");
             }
+
+            instructionPointer++;
         }
 
-        return _stack.Count > 0 ? _stack.Peek() : null;
-    }
-
-    private void Compare(Func<double, double, bool> operation)
-    {
-        double right = Convert.ToDouble(_stack.Pop());
-        double left = Convert.ToDouble(_stack.Pop());
-
-        _stack.Push(operation(left, right));
-    }
-    public object? GetVariable(string name)
-        => _variables.TryGetValue(name, out var value)
-            ? value
+        return _stack.Count > 0
+            ? _stack.Peek()
             : null;
+    }
 
-    private void BinaryNumeric(Func<double, double, double> operation)
+    private void Compare(
+        Func<double, double, bool> operation)
     {
-        double right = Convert.ToDouble(_stack.Pop());
-        double left = Convert.ToDouble(_stack.Pop());
+        double right =
+            Convert.ToDouble(_stack.Pop());
 
-        _stack.Push(operation(left, right));
+        double left =
+            Convert.ToDouble(_stack.Pop());
+
+        _stack.Push(
+            operation(left, right));
+    }
+
+    public object? GetVariable(string name)
+        => _variables.TryGetValue(
+            name,
+            out var value)
+                ? value
+                : null;
+
+    private void BinaryNumeric(
+        Func<double, double, double> operation)
+    {
+        double right =
+            Convert.ToDouble(_stack.Pop());
+
+        double left =
+            Convert.ToDouble(_stack.Pop());
+
+        _stack.Push(
+            operation(left, right));
     }
 }
