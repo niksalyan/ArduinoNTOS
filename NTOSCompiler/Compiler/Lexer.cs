@@ -259,8 +259,13 @@ public sealed class Lexer
                 '*' => TokenKind.Star,
                 '/' => TokenKind.Slash,
                 '%' => TokenKind.Percent,
+
                 '(' => TokenKind.LParen,
                 ')' => TokenKind.RParen,
+
+                '{' => TokenKind.LBrace,
+                '}' => TokenKind.RBrace,
+
                 ',' => TokenKind.Comma,
                 ';' => TokenKind.Semicolon,
 

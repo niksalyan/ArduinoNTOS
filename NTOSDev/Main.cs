@@ -51,6 +51,7 @@ namespace NTOSDev
             {
                 listBox1.Items.Clear();
                 listBox1.Items.Add(ex.Message);
+                Debug.WriteLine("Error:\n" + ex.Message);
             }
         }
     }
