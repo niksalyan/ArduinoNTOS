@@ -132,6 +132,26 @@ public sealed class Parser
             return;
         }
 
+        if (Match(TokenKind.True))
+        {
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.PushBool,
+                    true));
+
+            return;
+        }
+
+        if (Match(TokenKind.False))
+        {
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.PushBool,
+                    false));
+
+            return;
+        }
+
         if (Match(TokenKind.Identifier))
         {
             program.Instructions.Add(

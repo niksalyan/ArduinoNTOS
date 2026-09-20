@@ -26,7 +26,9 @@ public sealed class VirtualMachine
                 case OpCode.PushString:
                     _stack.Push(instruction.Operand);
                     break;
-
+                case OpCode.PushBool:
+                    _stack.Push(instruction.Operand);
+                    break;
                 case OpCode.LoadVariable:
                 {
                     string name = (string)instruction.Operand!;

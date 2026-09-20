@@ -16,10 +16,15 @@ public enum TokenKind
     Percent,
 
     Equals,
+
+    True,
+    False,
     LParen,
     RParen,
     Comma,
-    Semicolon
+    Semicolon,
+
+
 }
 
 public readonly record struct Token(

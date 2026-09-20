@@ -36,11 +36,16 @@ public sealed class Lexer
                     _position++;
                 }
 
-                tokens.Add(new Token(
-                    TokenKind.Identifier,
-                    _source[start.._position],
-                    start));
+                string text = _source[start.._position];
 
+                TokenKind boolKind = text switch
+                {
+                    "true" => TokenKind.True,
+                    "false" => TokenKind.False,
+                    _ => TokenKind.Identifier
+                };
+
+                tokens.Add(new Token(boolKind, text, start));
                 continue;
             }
 

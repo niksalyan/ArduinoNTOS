@@ -6,6 +6,7 @@ public enum OpCode
     PushFloat,
     PushString,
 
+    PushBool,
     LoadVariable,
     StoreVariable,
 
