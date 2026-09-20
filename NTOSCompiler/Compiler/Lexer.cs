@@ -164,8 +164,6 @@ public sealed class Lexer
                 c.ToString(),
                 start));
 
-            _position++;
-            tokens.Add(new Token(kind, c.ToString(), start));
         }
 
         tokens.Add(new Token(TokenKind.Eof, string.Empty, _position));
