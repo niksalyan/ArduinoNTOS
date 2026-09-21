@@ -15,7 +15,7 @@ namespace NTOSDev
             functionRegistry.RegisterFunction("debug", (args) =>
             {
                 Debug.WriteLine($"Debug: {args[0]}");
-                debugOutput.Text = $"Debug: {args[0]}";
+                debugOutput.Text += args[0] + Environment.NewLine;
                 return null;
             });
         }
@@ -24,6 +24,7 @@ namespace NTOSDev
         {
             try
             {
+                debugOutput.Text = "";
                 var source = textBox1.Text;
                 var lexer = new Lexer(source);
                 var tokens = lexer.Tokenize();

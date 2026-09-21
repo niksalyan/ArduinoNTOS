@@ -45,6 +45,7 @@ public sealed class Lexer
                     "false" => TokenKind.False,
                     "if" => TokenKind.If,
                     "else" => TokenKind.Else,
+                    "while" => TokenKind.While,
                     _ => TokenKind.Identifier
                 };
 

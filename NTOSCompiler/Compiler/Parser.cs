@@ -36,6 +36,12 @@ public sealed class Parser
             return false;
         }
 
+        if (Match(TokenKind.While))
+        {
+            CompileWhile(program);
+            return false;
+        }
+
         // x = expression
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.Equals)
@@ -157,6 +163,61 @@ public sealed class Parser
             new Instruction(
                 OpCode.Jump,
                 end);
+    }
+
+    private void CompileWhile(BytecodeProgram program)
+    {
+        Consume(
+            TokenKind.LParen,
+            "Expected '(' after 'while'.");
+
+        int loopStart = program.Instructions.Count;
+
+        CompileExpression(program);
+
+        Consume(
+            TokenKind.RParen,
+            "Expected ')' after condition.");
+
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{'.");
+
+        int jumpIfFalseIndex = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.JumpIfFalse,
+                -1));
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                if (!Match(TokenKind.Semicolon))
+                    throw Error("Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}'.");
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Jump,
+                loopStart));
+
+        int endIndex = program.Instructions.Count;
+
+        program.Instructions[jumpIfFalseIndex] =
+            new Instruction(
+                OpCode.JumpIfFalse,
+                endIndex);
     }
 
     private void CompileExpression(BytecodeProgram program)

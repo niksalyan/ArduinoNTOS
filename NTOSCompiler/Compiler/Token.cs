@@ -18,6 +18,7 @@ public enum TokenKind
     If,
     Else,
 
+    While,
     True,
     False,
     Equals,
