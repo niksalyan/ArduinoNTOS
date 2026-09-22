@@ -31,12 +31,12 @@ namespace NTOSDev
 
 
                 var parser = new Parser(tokens, vmFunctions);
-                var bytecode = parser.Compile();
+                var program = parser.Compile();
 
                 listBox1.Items.Clear();
                 string bc = "";
 
-                foreach (var instruction in bytecode.Instructions)
+                foreach (var instruction in program.Instructions)
                 {
                     var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty);
                     listBox1.Items.Add(item);
@@ -45,7 +45,7 @@ namespace NTOSDev
                 }
 
                 var vm = new VirtualMachine(4096, vmFunctions);
-                vm.Execute(bytecode);
+                vm.Execute(program.ToByteCode());
 
                 Debug.WriteLine("Bytecode:\n" + bc);
             }

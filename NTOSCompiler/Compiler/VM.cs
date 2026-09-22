@@ -23,40 +23,74 @@ public sealed class VirtualMachine
         _stack.Clear();
 
         int instructionPointer = 0;
-
-        while (instructionPointer < program.Instructions.Count)
+        while (instructionPointer < bytecode.Length)
         {
-            var instruction = program.Instructions[instructionPointer];
-
-            switch (instruction.OpCode)
+            OpCode opcode =
+                (OpCode)bytecode[instructionPointer++];
+            switch(opcode)
             {
                 case OpCode.PushInt:
-                case OpCode.PushFloat:
-                case OpCode.PushString:
-                    _stack.Push(instruction.Operand);
-                    break;
-
-                case OpCode.PushBool:
-                    _stack.Push(instruction.Operand);
-                    break;
-
-                case OpCode.LoadVariable:
                     {
-                        string name = (string)instruction.Operand!;
-
-                        if (!_variables.TryGetValue(name, out var value))
-                            throw new Exception(
-                                $"Variable '{name}' is not defined.");
+                        int value =
+                            ReadInt32(
+                                bytecode,
+                                ref instructionPointer);
 
                         _stack.Push(value);
                         break;
                     }
 
+                case OpCode.PushFloat:
+                    {
+                        float value =
+                            ReadFloat(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _stack.Push(value);
+                        break;
+                    }
+
+                case OpCode.PushBool:
+                    {
+                        bool value =
+                            bytecode[instructionPointer++] != 0;
+
+                        _stack.Push(value);
+                        break;
+                    }
+                case OpCode.PushString:
+                    // _stack.Push(instruction.Operand);
+                    break;
+
+
+
+                case OpCode.LoadVariable:
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _stack.Push(
+                            GetInt(address));
+
+                        break;
+                    }
+
                 case OpCode.StoreVariable:
                     {
-                        string name = (string)instruction.Operand!;
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
 
-                        _variables[name] = _stack.Pop();
+                        int value =
+                            Convert.ToInt32(
+                                _stack.Pop());
+
+                        SetInt(address, value);
+
                         break;
                     }
 
@@ -189,9 +223,10 @@ public sealed class VirtualMachine
                     throw new Exception(
                         $"Unsupported opcode: {instruction.OpCode}");
             }
-
-            instructionPointer++;
         }
+
+
+            
 
         return _stack.Count > 0
             ? _stack.Peek()
@@ -199,7 +234,7 @@ public sealed class VirtualMachine
     }
 
     private void Compare(
-        Func<double, double, bool> operation)
+        Func<dynamic, dynamic, bool> operation)
     {
         double right =
             Convert.ToDouble(_stack.Pop());
@@ -211,6 +246,48 @@ public sealed class VirtualMachine
             operation(left, right));
     }
 
+    private static int ReadInt32(
+    byte[] bytecode,
+    ref int pc)
+    {
+        int value =
+            BitConverter.ToInt32(
+                bytecode,
+                pc);
+
+        pc += 4;
+
+        return value;
+    }
+
+    private static float ReadFloat(
+        byte[] bytecode,
+        ref int pc)
+    {
+        float value =
+            BitConverter.ToSingle(
+                bytecode,
+                pc);
+
+        pc += 4;
+
+        return value;
+    }
+
+    private static ushort ReadAddress(
+        byte[] bytecode,
+        ref int pc)
+    {
+        ushort value =
+            BitConverter.ToUInt16(
+                bytecode,
+                pc);
+
+        pc += 2;
+
+        return value;
+    }
+
     public object? GetVariable(string name)
         => _variables.TryGetValue(
             name,
@@ -219,7 +296,7 @@ public sealed class VirtualMachine
                 : null;
 
     private void BinaryNumeric(
-        Func<double, double, double> operation)
+        Func<dynamic, dynamic, dynamic> operation)
     {
         double right =
             Convert.ToDouble(_stack.Pop());

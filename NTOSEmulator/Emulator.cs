@@ -1,22 +1,23 @@
 using NTOSCompiler;
+using NTOSCompiler.Compiler;
 
 namespace NTOSEmulator
 {
     public partial class Emulator : Form
     {
-        private FunctionRegistry functionRegistry = new FunctionRegistry();
+        private VMFunctions vmFunctions = new VMFunctions();
         private VirtualMachine vm;
 
         private Bitmap screenBuffer = new Bitmap(480, 320);
         public Emulator()
         {
             InitializeComponent();
-            vm = new VirtualMachine(functionRegistry);
+            vm = new VirtualMachine(4096, vmFunctions);
         }
 
-        public void Execute(BytecodeProgram program)
+        public void Execute(byte[] bytecode)
         {
-            vm.Execute(program);
+            vm.Execute(bytecode);
         }
 
         protected override void OnPaint(PaintEventArgs e)
