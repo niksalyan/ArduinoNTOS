@@ -1,4 +1,5 @@
 using NTOSCompiler.Compiler;
+using System.Xml.Linq;
 
 namespace NTOSCompiler;
 
@@ -55,10 +56,12 @@ public sealed class Parser
 
             CompileExpression(program);
 
+            int address = program.GetAddress(name, 4);
+
             program.Instructions.Add(
                 new Instruction(
                     OpCode.StoreVariable,
-                    name));
+                    address));
 
             return true;
         }
@@ -401,10 +404,14 @@ public sealed class Parser
 
         if (Match(TokenKind.Identifier))
         {
+            string name = Previous().Text;
+
+            int address = program.GetAddress(name, 4);
+
             program.Instructions.Add(
                 new Instruction(
                     OpCode.LoadVariable,
-                    Previous().Text));
+                    address));
 
             return;
         }
@@ -448,12 +455,16 @@ public sealed class Parser
             TokenKind.RParen,
             "Expected ')'.");
 
+        if (_vmFunctions == null)
+            throw new InvalidOperationException(
+                "VMFunctions is required to compile function calls.");
+
         program.Instructions.Add(
             new Instruction(
                 OpCode.CallFunction,
                 new FunctionCall(
-                    functionName,
-                    argumentCount)));
+                    (ushort)_vmFunctions?.GetIndex(functionName),
+                    (byte)argumentCount)));
     }
 
     private bool Match(TokenKind kind)

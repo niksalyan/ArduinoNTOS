@@ -51,5 +51,5 @@ public readonly record struct Token(
     int Position);
 
 public readonly record struct FunctionCall(
-    string Name,
-    int ArgumentCount);
+    ushort Index,
+    byte ArgumentCount);

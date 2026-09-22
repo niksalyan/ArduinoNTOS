@@ -115,8 +115,15 @@ public sealed class BytecodeProgram
                         "String bytecode is not implemented yet.");
 
                 case OpCode.CallFunction:
-                    throw new NotSupportedException(
-                        "Function bytecode is not implemented yet.");
+                    {
+                        var call = (FunctionCall)instruction.Operand!;
+
+                        stream.WriteByte((byte)call.Index);
+                        stream.WriteByte((byte)(call.Index >> 8));
+                        stream.WriteByte(call.ArgumentCount);
+
+                        break;
+                    }
 
                 default:
                     throw new InvalidOperationException(

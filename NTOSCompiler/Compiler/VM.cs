@@ -11,6 +11,8 @@ public sealed class VirtualMachine
 
     private readonly byte[] _memory;
 
+    public uint MaxInstructions { get; set; } = 100_000;
+
 
     public VirtualMachine(int memorySize = 4096, VMFunctions vmFunctions = null)
     {
@@ -18,13 +20,20 @@ public sealed class VirtualMachine
         _memory = new byte[memorySize];
     }
 
-    public object? Execute(byte[] bytecode)
+    public void Execute(byte[] bytecode)
     {
         _stack.Clear();
 
         int instructionPointer = 0;
+        uint instructionCount = 0;
         while (instructionPointer < bytecode.Length)
         {
+            if (++instructionCount > MaxInstructions)
+            {
+                throw new Exception(
+                    "VM execution limit exceeded. Possible infinite loop.");
+            }
+
             OpCode opcode =
                 (OpCode)bytecode[instructionPointer++];
             switch (opcode)
@@ -201,24 +210,34 @@ public sealed class VirtualMachine
 
                 case OpCode.CallFunction:
                     {
-                        /*var call = (FunctionCall)instruction.Operand!;
+                        instructionCount = 0;
+                        ushort index =
+                            ReadUInt16(
+                                bytecode,
+                                ref instructionPointer);
+
+                        byte argumentCount =
+                            bytecode[instructionPointer++];
 
                         var args =
-                            new object?[call.ArgumentCount];
+                            new object?[argumentCount];
 
-                        for (int i = call.ArgumentCount - 1; i >= 0; i--)
+                        for (int i = argumentCount - 1; i >= 0; i--)
                             args[i] = _stack.Pop();
 
+                        object? result =
+                            _vmFunctions?.Invoke(index, args);
 
-                        object? result = _vmFunctions.Invoke(call.Name, args); //  Invoke by index here
+                        _stack.Push(result);
 
-                        _stack.Push(result);*/
                         break;
                     }
 
                 case OpCode.Pop:
                     _stack.Pop();
                     break;
+                case OpCode.End:
+                    return;
 
                 default:
                     throw new Exception(
@@ -226,12 +245,6 @@ public sealed class VirtualMachine
             }
         }
 
-
-
-
-        return _stack.Count > 0
-            ? _stack.Peek()
-            : null;
     }
 
     private int GetInt(ushort address)
@@ -270,6 +283,20 @@ public sealed class VirtualMachine
 
         _stack.Push(
             operation(left, right));
+    }
+
+    private static ushort ReadUInt16(
+    byte[] bytecode,
+    ref int instructionPointer)
+    {
+        ushort value =
+            BitConverter.ToUInt16(
+                bytecode,
+                instructionPointer);
+
+        instructionPointer += 2;
+
+        return value;
     }
 
     private static int ReadInt32(
