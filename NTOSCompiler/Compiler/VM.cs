@@ -1,66 +1,59 @@
-using NTOSCompiler.Compiler;
-using System.Buffers.Binary;
-
 namespace NTOSCompiler;
 
 public sealed class VirtualMachine
 {
-
+    private readonly Dictionary<string, object?> _variables = new();
     private readonly Stack<object?> _stack = new();
-    private readonly Stack<int> _returnStack = new();
 
-    private readonly byte[] _variableMemory;
+    private readonly FunctionRegistry _functions;
 
-
-    private VMFunctions _vmFunctions;
-
-    public VirtualMachine(int variableMemorySize = 4096, VMFunctions vmFunctions = null)
+    public VirtualMachine(FunctionRegistry functions)
     {
-        _vmFunctions = vmFunctions;
-        _variableMemory = new byte[variableMemorySize];
+        _functions = functions;
     }
 
-    public object? Execute(byte[] program)
+    public object? Execute(BytecodeProgram program)
     {
         _stack.Clear();
-        _returnStack.Clear();
 
-        int pc = 0;
+        int instructionPointer = 0;
 
-        while (pc < program.Length)
+        while (instructionPointer < program.Instructions.Count)
         {
-            var opcode = (OpCode)program[pc++];
+            var instruction = program.Instructions[instructionPointer];
 
-            switch (opcode)
+            switch (instruction.OpCode)
             {
                 case OpCode.PushInt:
-                    int valueInt = ReadInt32(program, ref pc);
-                    _stack.Push(valueInt);
-                    break;
                 case OpCode.PushFloat:
-                    float valueFloat = ReadFloat(program, ref pc);
-                    _stack.Push(valueFloat);
-                    break;
                 case OpCode.PushString:
-                    //_stack.Push(instruction.Operand);
+                    _stack.Push(instruction.Operand);
                     break;
 
                 case OpCode.PushBool:
-                    //_stack.Push(instruction.Operand);
+                    _stack.Push(instruction.Operand);
                     break;
 
-                case OpCode.LoadInt:
-                    _stack.Push(GetInt(ReadInt32(program, ref pc)));
-                    break;
-                case OpCode.StoreInt:
-                    SetInt(ReadInt32(program, ref pc), Convert.ToInt32(_stack.Pop()));
-                    break;
-                case OpCode.LoadFloat:
-                    _stack.Push(GetFloat(ReadInt32(program, ref pc)));
-                    break;
-                case OpCode.StoreFloat:
-                    SetFloat(ReadInt32(program, ref pc), Convert.ToSingle(_stack.Pop()));
-                    break;
+                case OpCode.LoadVariable:
+                    {
+                        string name = (string)instruction.Operand!;
+
+                        if (!_variables.TryGetValue(name, out var value))
+                            throw new Exception(
+                                $"Variable '{name}' is not defined.");
+
+                        _stack.Push(value);
+                        break;
+                    }
+
+                case OpCode.StoreVariable:
+                    {
+                        string name = (string)instruction.Operand!;
+
+                        _variables[name] = _stack.Pop();
+                        break;
+                    }
+
                 case OpCode.Add:
                     BinaryNumeric((a, b) => a + b);
                     break;
@@ -143,8 +136,8 @@ public sealed class VirtualMachine
 
                 case OpCode.Jump:
                     {
-                        /*instructionPointer =
-                            Convert.ToInt32(instruction.Operand);*/
+                        instructionPointer =
+                            Convert.ToInt32(instruction.Operand);
 
                         continue;
                     }
@@ -156,83 +149,44 @@ public sealed class VirtualMachine
 
                         if (!condition)
                         {
-                            /*instructionPointer =
-                                Convert.ToInt32(instruction.Operand);*/
+                            instructionPointer =
+                                Convert.ToInt32(instruction.Operand);
 
                             continue;
                         }
 
                         break;
                     }
-                case OpCode.CallUserFunction:
-
-                    int entryPoint = ReadInt32(program, ref pc);
-                    int argumentCount2 = ReadInt32(program, ref pc);
-
-                    _returnStack.Push(pc);
-
-                    for (int i = argumentCount2 - 1; i >= 0; i--)
-                    {
-                        int address = ReadInt32(program, ref pc);
-                        int value = Convert.ToInt32(_stack.Pop());
-
-                        SetInt(address, value);
-                    }
-
-                    pc = entryPoint;
-                    break;
 
                 case OpCode.CallFunction:
-                    int entryPoint2 = ReadInt32(program, ref pc);
-                    int argumentCount = ReadInt32(program, ref pc);
-
-                    var parameterAddresses = new int[argumentCount];
-
-                    for (int i = 0; i < argumentCount; i++)
                     {
-                        parameterAddresses[i] =
-                            ReadInt32(program, ref pc);
-                    }
+                        var call = (FunctionCall)instruction.Operand!;
 
-                    var args = new object?[argumentCount];
+                        var args =
+                            new object?[call.ArgumentCount];
 
-                    for (int i = argumentCount - 1; i >= 0; i--)
-                    {
-                        args[i] = _stack.Pop();
-                    }
+                        for (int i = call.ArgumentCount - 1; i >= 0; i--)
+                            args[i] = _stack.Pop();
 
-                    for (int i = 0; i < argumentCount; i++)
-                    {
-                        SetInt(
-                            parameterAddresses[i],
-                            Convert.ToInt32(args[i]));
-                    }
+                        var function =
+                            _functions.GetFunction(call.Name);
 
-                    _returnStack.Push(pc);
+                        object? result = function(args);
 
-                    pc = entryPoint2;
-
-                    break;
-                case OpCode.Return:
-                    {
-                        if (_returnStack.Count == 0)
-                            return _stack.Count > 0
-                                ? _stack.Peek()
-                                : null;
-
-                        pc = _returnStack.Pop();
+                        _stack.Push(result);
                         break;
                     }
+
                 case OpCode.Pop:
                     _stack.Pop();
                     break;
-                case OpCode.Exit:
-                    return null;
 
                 default:
                     throw new Exception(
-                        $"Unsupported opcode: {opcode}");
+                        $"Unsupported opcode: {instruction.OpCode}");
             }
+
+            instructionPointer++;
         }
 
         return _stack.Count > 0
@@ -240,62 +194,36 @@ public sealed class VirtualMachine
             : null;
     }
 
-    private void SetInt(int address, int value)
-    {
-        BitConverter.GetBytes(value)
-            .CopyTo(_variableMemory, address);
-    }
-
-    private int GetInt(int address)
-    {
-        return BitConverter.ToInt32(_variableMemory, address);
-    }
-
-    private void SetFloat(int address, float value)
-    {
-        BitConverter.GetBytes(value)
-            .CopyTo(_variableMemory, address);
-    }
-
-    private float GetFloat(int address)
-    {
-        return BitConverter.ToSingle(_variableMemory, address);
-    }
-
     private void Compare(
-    Func<dynamic, dynamic, bool> operation)
+        Func<double, double, bool> operation)
     {
-        dynamic right = _stack.Pop()!;
-        dynamic left = _stack.Pop()!;
+        double right =
+            Convert.ToDouble(_stack.Pop());
+
+        double left =
+            Convert.ToDouble(_stack.Pop());
 
         _stack.Push(
             operation(left, right));
     }
 
-    private static int ReadInt32(byte[] program, ref int pc)
-    {
-        int value = BinaryPrimitives.ReadInt32LittleEndian(
-            program.AsSpan(pc, 4));
-
-        pc += 4;
-
-        return value;
-    }
-
-    private static float ReadFloat(byte[] program, ref int pc)
-    {
-        int bits = ReadInt32(program, ref pc);
-
-        return BitConverter.Int32BitsToSingle(bits);
-    }
-
+    public object? GetVariable(string name)
+        => _variables.TryGetValue(
+            name,
+            out var value)
+                ? value
+                : null;
 
     private void BinaryNumeric(
-    Func<dynamic, dynamic, dynamic> operation)
+        Func<double, double, double> operation)
     {
-        dynamic right = _stack.Pop()!;
-        dynamic left = _stack.Pop()!;
+        double right =
+            Convert.ToDouble(_stack.Pop());
 
-        _stack.Push(operation(left, right));
+        double left =
+            Convert.ToDouble(_stack.Pop());
+
+        _stack.Push(
+            operation(left, right));
     }
 }

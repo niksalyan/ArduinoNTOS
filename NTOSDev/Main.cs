@@ -1,27 +1,22 @@
 
 using NTOSCompiler;
-using NTOSCompiler.Compiler;
 using System.Diagnostics;
 
 namespace NTOSDev
 {
     public partial class Main : Form
     {
-        VMFunctions vmFunctions = new VMFunctions();
+        FunctionRegistry functionRegistry = new FunctionRegistry();
         public Main()
         {
             InitializeComponent();
 
-
-            vmFunctions.AddFunction(0, "debug", VariableType.Void, (args) =>
+            
+            functionRegistry.RegisterFunction("debug", (args) =>
             {
+                Debug.WriteLine($"Debug: {args[0]}");
                 debugOutput.Text += args[0] + Environment.NewLine;
                 return null;
-            });
-
-            vmFunctions.AddFunction(1, "add", VariableType.Int, (args) =>
-            {
-                return (int)args[0] + (int)args[1];
             });
         }
 
@@ -34,18 +29,14 @@ namespace NTOSDev
                 var lexer = new Lexer(source);
                 var tokens = lexer.Tokenize();
 
-                foreach (var token in tokens)
-                {
-                    Debug.WriteLine($"{token.Kind}: {token.Text}");
-                }
 
-                var parser = new Parser(tokens, vmFunctions);
-                var program = parser.Compile();
+                var parser = new Parser(tokens);
+                var bytecode = parser.Compile();
 
                 listBox1.Items.Clear();
                 string bc = "";
 
-                foreach (var instruction in program.Instructions)
+                foreach (var instruction in bytecode.Instructions)
                 {
                     var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty);
                     listBox1.Items.Add(item);
@@ -53,8 +44,8 @@ namespace NTOSDev
                     bc += item + Environment.NewLine;
                 }
 
-                var vm = new VirtualMachine(4096, vmFunctions);
-                vm.Execute(program.ToByteCode());
+                var vm = new VirtualMachine(functionRegistry);
+                vm.Execute(bytecode);
 
                 Debug.WriteLine("Bytecode:\n" + bc);
             }

@@ -14,9 +14,9 @@ namespace NTOSEmulator
             vm = new VirtualMachine(functionRegistry);
         }
 
-        public void Execute(byte[] bytecode)
+        public void Execute(BytecodeProgram program)
         {
-            vm.Execute(bytecode);
+            vm.Execute(program);
         }
 
         protected override void OnPaint(PaintEventArgs e)

@@ -4,17 +4,10 @@ public enum TokenKind
 {
     Eof,
 
-    IntType,
-    FloatType,
-    BoolType,
-    StringType,
-
     Identifier,
-    Int,
+    Integer,
     Float,
     String,
-
-    Bool,
 
     Plus,
     Minus,
@@ -26,9 +19,6 @@ public enum TokenKind
     Else,
 
     While,
-
-    Function,
-    Return,
     True,
     False,
     Equals,
@@ -61,19 +51,5 @@ public readonly record struct Token(
     int Position);
 
 public readonly record struct FunctionCall(
-    int FunctionIndex,
+    string Name,
     int ArgumentCount);
-
-public sealed class UserFunctionCall
-{
-    public int EntryPoint { get; }
-    public int[] ParameterAddresses { get; }
-
-    public UserFunctionCall(
-        int entryPoint,
-        int[] parameterAddresses)
-    {
-        EntryPoint = entryPoint;
-        ParameterAddresses = parameterAddresses;
-    }
-}

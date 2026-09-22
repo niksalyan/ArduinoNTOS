@@ -1,6 +1,3 @@
-using System.Globalization;
-using NTOSCompiler.Compiler;
-
 namespace NTOSCompiler;
 
 public sealed class Parser
@@ -8,13 +5,9 @@ public sealed class Parser
     private readonly List<Token> _tokens;
     private int _position;
 
-    private VMFunctions _vmFunctions;
-    private string _currentFunction = null;
-
-    public Parser(List<Token> tokens, VMFunctions vmFunctions = null)
+    public Parser(List<Token> tokens)
     {
         _tokens = tokens;
-        _vmFunctions = vmFunctions;
     }
 
     public BytecodeProgram Compile()
@@ -37,15 +30,6 @@ public sealed class Parser
 
     private bool CompileStatement(BytecodeProgram program)
     {
-        if (Check(TokenKind.IntType) ||
-            Check(TokenKind.FloatType) ||
-            Check(TokenKind.BoolType) ||
-            Check(TokenKind.StringType))
-        {
-            CompileVariableDeclaration(program);
-            return true;
-        }
-
         if (Match(TokenKind.If))
         {
             CompileIf(program);
@@ -58,17 +42,6 @@ public sealed class Parser
             return false;
         }
 
-        if (Match(TokenKind.Function))
-        {
-            CompileFunctionDeclaration(program);
-            return false;
-        }
-
-        if (Match(TokenKind.Return))
-        {
-            return CompileReturnStatement(program);
-        }
-
         // x = expression
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.Equals)
@@ -76,25 +49,12 @@ public sealed class Parser
             string name = Advance().Text;
             Advance(); // '='
 
-            VariableDefinition variable =
-                program.GetVariable(
-                    name,
-                    _currentFunction,
-                    VariableType.Void);
-
-            VariableType expressionType =
-                CompileExpression(program);
-
-            if (expressionType != variable.Type)
-            {
-                throw Error(
-                    $"Cannot assign {expressionType} to {variable.Type} variable '{name}'.");
-            }
+            CompileExpression(program);
 
             program.Instructions.Add(
                 new Instruction(
-                    GetStoreOpcode(variable.Type),
-                    variable.Address));
+                    OpCode.StoreVariable,
+                    name));
 
             return true;
         }
@@ -104,91 +64,7 @@ public sealed class Parser
 
         program.Instructions.Add(
             new Instruction(OpCode.Pop));
-
         return true;
-    }
-
-    private bool CompileReturnStatement(BytecodeProgram program)
-    {
-        VariableType expressionType =
-            CompileExpression(program);
-
-        if (_currentFunction == null)
-            throw Error("'return' can only be used inside a function.");
-
-        FunctionDefinition function =
-            program.Functions.First(f => f.Name == _currentFunction);
-
-        if (expressionType != function.ReturnType)
-        {
-            throw Error(
-                $"Cannot return {expressionType} from {function.ReturnType} function.");
-        }
-
-        program.Instructions.Add(
-            new Instruction(OpCode.Return));
-
-        return true;
-    }
-
-    private void CompileVariableDeclaration(
-    BytecodeProgram program)
-    {
-        VariableType declaredType =
-            ParseVariableType();
-
-        string name =
-            Consume(
-                TokenKind.Identifier,
-                "Expected variable name.").Text;
-
-        Consume(
-            TokenKind.Equals,
-            "Expected '='.");
-
-        VariableType expressionType =
-            CompileExpression(program);
-
-        if (declaredType != expressionType)
-        {
-            throw Error(
-                $"Cannot assign {expressionType} to {declaredType} variable '{name}'.");
-        }
-
-        VariableDefinition variable =
-            program.GetVariable(
-                name,
-                _currentFunction,
-                declaredType);
-
-        program.Instructions.Add(
-            new Instruction(
-                GetStoreOpcode(variable.Type),
-                variable.Address));
-    }
-
-    private static OpCode GetLoadOpcode(VariableType type)
-    {
-        return type switch
-        {
-            VariableType.Int => OpCode.LoadInt,
-            VariableType.Float => OpCode.LoadFloat,
-
-            _ => throw new NotSupportedException(
-                $"Load is not supported for variable type {type}.")
-        };
-    }
-
-    private static OpCode GetStoreOpcode(VariableType type)
-    {
-        return type switch
-        {
-            VariableType.Int => OpCode.StoreInt,
-            VariableType.Float => OpCode.StoreFloat,
-
-            _ => throw new NotSupportedException(
-                $"Store is not supported for variable type {type}.")
-        };
     }
 
     private void CompileIf(BytecodeProgram program)
@@ -197,14 +73,7 @@ public sealed class Parser
             TokenKind.LParen,
             "Expected '(' after 'if'.");
 
-        VariableType conditionType =
-            CompileExpression(program);
-
-        if (conditionType != VariableType.Bool)
-        {
-            throw Error(
-                "Expected boolean expression in 'if' condition.");
-        }
+        CompileExpression(program);
 
         Consume(
             TokenKind.RParen,
@@ -214,8 +83,7 @@ public sealed class Parser
             TokenKind.LBrace,
             "Expected '{'.");
 
-        int jumpIfFalseIndex =
-            program.Instructions.Count;
+        int jumpIfFalseIndex = program.Instructions.Count;
 
         program.Instructions.Add(
             new Instruction(
@@ -242,8 +110,7 @@ public sealed class Parser
         // No else
         if (!Match(TokenKind.Else))
         {
-            int endIndex =
-                program.Instructions.Count;
+            int endIndex = program.Instructions.Count;
 
             program.Instructions[jumpIfFalseIndex] =
                 new Instruction(
@@ -254,8 +121,7 @@ public sealed class Parser
         }
 
         // We have an else.
-        int jumpIndex =
-            program.Instructions.Count;
+        int jumpIndex = program.Instructions.Count;
 
         program.Instructions.Add(
             new Instruction(
@@ -263,8 +129,7 @@ public sealed class Parser
                 -1));
 
         // False condition should jump here.
-        int elseIndex =
-            program.Instructions.Count;
+        int elseIndex = program.Instructions.Count;
 
         program.Instructions[jumpIfFalseIndex] =
             new Instruction(
@@ -292,8 +157,7 @@ public sealed class Parser
             TokenKind.RBrace,
             "Expected '}'.");
 
-        int end =
-            program.Instructions.Count;
+        int end = program.Instructions.Count;
 
         program.Instructions[jumpIndex] =
             new Instruction(
@@ -307,17 +171,9 @@ public sealed class Parser
             TokenKind.LParen,
             "Expected '(' after 'while'.");
 
-        int loopStart =
-            program.Instructions.Count;
+        int loopStart = program.Instructions.Count;
 
-        VariableType conditionType =
-            CompileExpression(program);
-
-        if (conditionType != VariableType.Bool)
-        {
-            throw Error(
-                "Expected boolean expression in 'while' condition.");
-        }
+        CompileExpression(program);
 
         Consume(
             TokenKind.RParen,
@@ -327,8 +183,7 @@ public sealed class Parser
             TokenKind.LBrace,
             "Expected '{'.");
 
-        int jumpIfFalseIndex =
-            program.Instructions.Count;
+        int jumpIfFalseIndex = program.Instructions.Count;
 
         program.Instructions.Add(
             new Instruction(
@@ -357,8 +212,7 @@ public sealed class Parser
                 OpCode.Jump,
                 loopStart));
 
-        int endIndex =
-            program.Instructions.Count;
+        int endIndex = program.Instructions.Count;
 
         program.Instructions[jumpIfFalseIndex] =
             new Instruction(
@@ -366,71 +220,40 @@ public sealed class Parser
                 endIndex);
     }
 
-    private VariableType CompileExpression(
-        BytecodeProgram program)
+    private void CompileExpression(BytecodeProgram program)
     {
-        return CompileOr(program);
+        CompileOr(program);
     }
 
-    private VariableType CompileOr(
-        BytecodeProgram program)
+    private void CompileOr(BytecodeProgram program)
     {
-        VariableType leftType =
-            CompileAnd(program);
+        CompileAnd(program);
 
         while (Match(TokenKind.OrOr))
         {
-            VariableType rightType =
-                CompileAnd(program);
-
-            if (leftType != VariableType.Bool ||
-                rightType != VariableType.Bool)
-            {
-                throw Error(
-                    "Logical OR requires boolean operands.");
-            }
+            CompileAnd(program);
 
             program.Instructions.Add(
                 new Instruction(OpCode.Or));
-
-            leftType = VariableType.Bool;
         }
-
-        return leftType;
     }
 
-    private VariableType CompileAnd(
-        BytecodeProgram program)
+    private void CompileAnd(BytecodeProgram program)
     {
-        VariableType leftType =
-            CompileEquality(program);
+        CompileEquality(program);
 
         while (Match(TokenKind.AndAnd))
         {
-            VariableType rightType =
-                CompileEquality(program);
-
-            if (leftType != VariableType.Bool ||
-                rightType != VariableType.Bool)
-            {
-                throw Error(
-                    "Logical AND requires boolean operands.");
-            }
+            CompileEquality(program);
 
             program.Instructions.Add(
                 new Instruction(OpCode.And));
-
-            leftType = VariableType.Bool;
         }
-
-        return leftType;
     }
 
-    private VariableType CompileEquality(
-        BytecodeProgram program)
+    private void CompileEquality(BytecodeProgram program)
     {
-        VariableType leftType =
-            CompileAdditive(program);
+        CompileAdditive(program);
 
         while (Check(TokenKind.EqualEqual) ||
                Check(TokenKind.NotEqual) ||
@@ -439,65 +262,35 @@ public sealed class Parser
                Check(TokenKind.LessEqual) ||
                Check(TokenKind.GreaterEqual))
         {
-            TokenKind op =
-                Advance().Kind;
+            TokenKind op = Advance().Kind;
 
-            VariableType rightType =
-                CompileAdditive(program);
-
-            ValidateComparisonTypes(
-                leftType,
-                rightType);
+            CompileAdditive(program);
 
             program.Instructions.Add(
                 new Instruction(
                     op switch
                     {
-                        TokenKind.EqualEqual =>
-                            OpCode.Equal,
-
-                        TokenKind.NotEqual =>
-                            OpCode.NotEqual,
-
-                        TokenKind.Less =>
-                            OpCode.Less,
-
-                        TokenKind.Greater =>
-                            OpCode.Greater,
-
-                        TokenKind.LessEqual =>
-                            OpCode.LessEqual,
-
-                        TokenKind.GreaterEqual =>
-                            OpCode.GreaterEqual,
-
+                        TokenKind.EqualEqual => OpCode.Equal,
+                        TokenKind.NotEqual => OpCode.NotEqual,
+                        TokenKind.Less => OpCode.Less,
+                        TokenKind.Greater => OpCode.Greater,
+                        TokenKind.LessEqual => OpCode.LessEqual,
+                        TokenKind.GreaterEqual => OpCode.GreaterEqual,
                         _ => throw new InvalidOperationException()
                     }));
-
-            leftType = VariableType.Bool;
         }
-
-        return leftType;
     }
 
-    private VariableType CompileAdditive(
-        BytecodeProgram program)
+    private void CompileAdditive(BytecodeProgram program)
     {
-        VariableType leftType =
-            CompileTerm(program);
+        CompileTerm(program);
 
         while (Check(TokenKind.Plus) ||
                Check(TokenKind.Minus))
         {
-            TokenKind op =
-                Advance().Kind;
+            TokenKind op = Advance().Kind;
 
-            VariableType rightType =
-                CompileTerm(program);
-
-            leftType = GetNumericResultType(
-                leftType,
-                rightType);
+            CompileTerm(program);
 
             program.Instructions.Add(
                 new Instruction(
@@ -505,86 +298,59 @@ public sealed class Parser
                         ? OpCode.Add
                         : OpCode.Subtract));
         }
-
-        return leftType;
     }
 
-    private VariableType CompileTerm(
-        BytecodeProgram program)
+    private void CompileTerm(BytecodeProgram program)
     {
-        VariableType leftType =
-            CompileFactor(program);
+        CompileFactor(program);
 
         while (Check(TokenKind.Star) ||
                Check(TokenKind.Slash) ||
                Check(TokenKind.Percent))
         {
-            TokenKind op =
-                Advance().Kind;
+            TokenKind op = Advance().Kind;
 
-            VariableType rightType =
-                CompileFactor(program);
-
-            leftType = GetNumericResultType(
-                leftType,
-                rightType);
+            CompileFactor(program);
 
             program.Instructions.Add(
                 new Instruction(
                     op switch
                     {
-                        TokenKind.Star =>
-                            OpCode.Multiply,
-
-                        TokenKind.Slash =>
-                            OpCode.Divide,
-
-                        TokenKind.Percent =>
-                            OpCode.Modulo,
-
+                        TokenKind.Star => OpCode.Multiply,
+                        TokenKind.Slash => OpCode.Divide,
+                        TokenKind.Percent => OpCode.Modulo,
                         _ => throw new InvalidOperationException()
                     }));
         }
-
-        return leftType;
     }
 
-    private VariableType CompileFactor(
-        BytecodeProgram program)
+    private void CompileFactor(BytecodeProgram program)
     {
         if (Match(TokenKind.Not))
         {
-            VariableType operandType =
-                CompileFactor(program);
-
-            if (operandType != VariableType.Bool)
-            {
-                throw Error(
-                    "Logical NOT requires a boolean operand.");
-            }
+            CompileFactor(program);
 
             program.Instructions.Add(
                 new Instruction(OpCode.Not));
 
-            return VariableType.Bool;
+            return;
         }
 
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.LParen)
         {
-            return CompileFunctionCall(program);
+            CompileFunctionCall(program);
+            return;
         }
 
-        if (Match(TokenKind.Int))
+        if (Match(TokenKind.Integer))
         {
             program.Instructions.Add(
                 new Instruction(
                     OpCode.PushInt,
-                    int.Parse(
-                        Previous().Text,
-                        CultureInfo.InvariantCulture)));
+                    long.Parse(Previous().Text)));
 
-            return VariableType.Int;
+            return;
         }
 
         if (Match(TokenKind.Float))
@@ -592,11 +358,11 @@ public sealed class Parser
             program.Instructions.Add(
                 new Instruction(
                     OpCode.PushFloat,
-                    float.Parse(
+                    double.Parse(
                         Previous().Text,
-                        CultureInfo.InvariantCulture)));
+                        System.Globalization.CultureInfo.InvariantCulture)));
 
-            return VariableType.Float;
+            return;
         }
 
         if (Match(TokenKind.String))
@@ -606,7 +372,7 @@ public sealed class Parser
                     OpCode.PushString,
                     Previous().Text));
 
-            return VariableType.String;
+            return;
         }
 
         if (Match(TokenKind.True))
@@ -616,7 +382,7 @@ public sealed class Parser
                     OpCode.PushBool,
                     true));
 
-            return VariableType.Bool;
+            return;
         }
 
         if (Match(TokenKind.False))
@@ -626,202 +392,37 @@ public sealed class Parser
                     OpCode.PushBool,
                     false));
 
-            return VariableType.Bool;
+            return;
         }
 
         if (Match(TokenKind.Identifier))
         {
-            string name =
-                Previous().Text;
-
-            VariableDefinition variable =
-                program.GetVariable(
-                    name,
-                    _currentFunction,
-                    VariableType.Void);
-
             program.Instructions.Add(
                 new Instruction(
-                    GetLoadOpcode(variable.Type),
-                    variable.Address));
+                    OpCode.LoadVariable,
+                    Previous().Text));
 
-            return variable.Type;
+            return;
         }
 
         if (Match(TokenKind.LParen))
         {
-            VariableType type =
-                CompileExpression(program);
+            CompileExpression(program);
 
             Consume(
                 TokenKind.RParen,
                 "Expected ')'.");
 
-            return type;
+            return;
         }
 
         throw Error(
             $"Unexpected token '{Current().Text}'.");
     }
 
-    private static VariableType GetNumericResultType(
-        VariableType left,
-        VariableType right)
+    private void CompileFunctionCall(BytecodeProgram program)
     {
-        bool leftIsNumeric =
-            left == VariableType.Int ||
-            left == VariableType.Float;
-
-        bool rightIsNumeric =
-            right == VariableType.Int ||
-            right == VariableType.Float;
-
-        if (!leftIsNumeric || !rightIsNumeric)
-        {
-            throw new InvalidOperationException(
-                $"Numeric operation cannot be performed between {left} and {right}.");
-        }
-
-        if (left == VariableType.Float ||
-            right == VariableType.Float)
-        {
-            return VariableType.Float;
-        }
-
-        return VariableType.Int;
-    }
-
-    private static void ValidateComparisonTypes(
-        VariableType left,
-        VariableType right)
-    {
-        bool leftIsNumeric =
-            left == VariableType.Int ||
-            left == VariableType.Float;
-
-        bool rightIsNumeric =
-            right == VariableType.Int ||
-            right == VariableType.Float;
-
-        if (leftIsNumeric && rightIsNumeric)
-            return;
-
-        if (left == VariableType.Bool &&
-            right == VariableType.Bool)
-        {
-            return;
-        }
-
-        if (left == VariableType.String &&
-            right == VariableType.String)
-        {
-            return;
-        }
-
-        throw new InvalidOperationException(
-            $"Cannot compare {left} and {right}.");
-    }
-
-    private VariableType CompileFunctionDeclaration(
-    BytecodeProgram program)
-    {
-        
-
-        string name =
-            Consume(
-                TokenKind.Identifier,
-                "Expected function name.").Text;
-
-        Consume(
-            TokenKind.LParen,
-            "Expected '('.");
-
-        var parameters = new List<ParameterDefinition>();
-
-        if (!Check(TokenKind.RParen))
-        {
-            do
-            {
-                VariableType parameterType = ParseVariableType();
-
-                string parameterName =
-                    Consume(
-                        TokenKind.Identifier,
-                        "Expected parameter name.").Text;
-
-                parameters.Add(
-                    new ParameterDefinition(
-                        parameterName,
-                        parameterType));
-            }
-            while (Match(TokenKind.Comma));
-        }
-
-        Consume(
-            TokenKind.RParen,
-            "Expected ')'.");
-
-        VariableType returnType =
-            ParseVariableType();
-
-        Consume(
-            TokenKind.LBrace,
-            "Expected '{'.");
-
-        var function =
-            new FunctionDefinition(
-                name,
-                returnType,
-                parameters.ToArray(),
-                program.Instructions.Count);
-
-        program.Functions.Add(function);
-
-        _currentFunction = function.Name;
-
-        foreach (var parameter in parameters)
-        {
-            program.GetVariable(
-                parameter.Name,
-                _currentFunction,
-                parameter.Type);
-        }
-
-        while (!Check(TokenKind.RBrace) &&
-               !Check(TokenKind.Eof))
-        {
-            bool requiresSemicolon =
-                CompileStatement(program);
-
-            if (requiresSemicolon)
-            {
-                if (!Match(TokenKind.Semicolon))
-                    throw Error("Expected ';'.");
-            }
-        }
-
-        Consume(
-            TokenKind.RBrace,
-            "Expected '}'.");
-
-
-
-        _currentFunction = null;
-
-        // Function declarations are statements and do not
-        // produce a value.
-        return VariableType.Void;
-    }
-
-    private VariableType CompileFunctionCall(
-    BytecodeProgram program)
-    {
-        string functionName =
-            Advance().Text;
-
-        FunctionDefinition? userFunction =
-            program.Functions.FirstOrDefault(
-                f => f.Name == functionName);
+        string functionName = Advance().Text;
 
         Consume(
             TokenKind.LParen,
@@ -843,77 +444,12 @@ public sealed class Parser
             TokenKind.RParen,
             "Expected ')'.");
 
-        if (userFunction != null)
-        {
-            if (argumentCount != userFunction.Parameters.Length)
-            {
-                throw Error(
-                    $"Function '{functionName}' expects " +
-                    $"{userFunction.Parameters.Length} arguments, " +
-                    $"but {argumentCount} were provided.");
-            }
-
-            var parameterAddresses =
-                new int[userFunction.Parameters.Length];
-
-            for (int i = 0;
-                 i < userFunction.Parameters.Length;
-                 i++)
-            {
-                var parameter =
-                    userFunction.Parameters[i];
-
-                var variable =
-                    program.GetVariable(
-                        parameter.Name,
-                        userFunction.Name,
-                        parameter.Type);
-
-                parameterAddresses[i] =
-                    variable.Address;
-            }
-
-            program.Instructions.Add(
-                new Instruction(
-                    OpCode.CallUserFunction,
-                    new UserFunctionCall(
-                        userFunction.EntryPoint,
-                        parameterAddresses)));
-
-            return userFunction.ReturnType;
-        }
-
-        int functionIndex =
-            _vmFunctions?.GetIndex(functionName) ?? -1;
-
         program.Instructions.Add(
             new Instruction(
                 OpCode.CallFunction,
                 new FunctionCall(
-                    functionIndex,
+                    functionName,
                     argumentCount)));
-
-        return _vmFunctions?.GetReturnType(functionIndex)
-            ?? VariableType.Void;
-    }
-
-
-
-    private VariableType ParseVariableType()
-    {
-        if (Match(TokenKind.IntType))
-            return VariableType.Int;
-
-        if (Match(TokenKind.FloatType))
-            return VariableType.Float;
-
-        if (Match(TokenKind.BoolType))
-            return VariableType.Int;
-
-        if (Match(TokenKind.StringType))
-            return VariableType.String;
-
-        throw Error("Expected variable type.");
     }
 
     private bool Match(TokenKind kind)
