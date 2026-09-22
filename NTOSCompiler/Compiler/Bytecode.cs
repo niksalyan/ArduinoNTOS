@@ -43,5 +43,33 @@ public readonly record struct Instruction(
 
 public sealed class BytecodeProgram
 {
+    public List<KeyValuePair<string, int>> _addresses = new();
+
     public List<Instruction> Instructions { get; } = new();
+
+    private int _nextAddress;
+
+    public int GetAddress(string name, int size)
+    {
+        if (size <= 0)
+            throw new ArgumentOutOfRangeException(
+                nameof(size));
+
+        foreach (var entry in _addresses)
+        {
+            if (entry.Key == name)
+                return entry.Value;
+        }
+
+        int address = _nextAddress;
+
+        _addresses.Add(
+            new KeyValuePair<string, int>(
+                name,
+                address));
+
+        _nextAddress += size;
+
+        return address;
+    }
 }
