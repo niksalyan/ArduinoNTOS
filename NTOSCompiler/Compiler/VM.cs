@@ -27,7 +27,7 @@ public sealed class VirtualMachine
         {
             OpCode opcode =
                 (OpCode)bytecode[instructionPointer++];
-            switch(opcode)
+            switch (opcode)
             {
                 case OpCode.PushInt:
                     {
@@ -177,7 +177,7 @@ public sealed class VirtualMachine
                 case OpCode.Jump:
                     {
                         instructionPointer =
-                            Convert.ToInt32(instruction.Operand);
+        ReadInt32(bytecode, ref instructionPointer);
 
                         continue;
                     }
@@ -187,11 +187,12 @@ public sealed class VirtualMachine
                         bool condition =
                             Convert.ToBoolean(_stack.Pop());
 
+                        int target =
+                            ReadInt32(bytecode, ref instructionPointer);
+
                         if (!condition)
                         {
-                            instructionPointer =
-                                Convert.ToInt32(instruction.Operand);
-
+                            instructionPointer = target;
                             continue;
                         }
 
@@ -200,7 +201,7 @@ public sealed class VirtualMachine
 
                 case OpCode.CallFunction:
                     {
-                        var call = (FunctionCall)instruction.Operand!;
+                        /*var call = (FunctionCall)instruction.Operand!;
 
                         var args =
                             new object?[call.ArgumentCount];
@@ -211,7 +212,7 @@ public sealed class VirtualMachine
 
                         object? result = _vmFunctions.Invoke(call.Name, args); //  Invoke by index here
 
-                        _stack.Push(result);
+                        _stack.Push(result);*/
                         break;
                     }
 
@@ -221,16 +222,41 @@ public sealed class VirtualMachine
 
                 default:
                     throw new Exception(
-                        $"Unsupported opcode: {instruction.OpCode}");
+                        $"Unsupported opcode: {opcode}");
             }
         }
 
 
-            
+
 
         return _stack.Count > 0
             ? _stack.Peek()
             : null;
+    }
+
+    private int GetInt(ushort address)
+    {
+        if (address + 4 > _memory.Length)
+            throw new Exception(
+                $"Memory access out of range: {address}");
+
+        return BitConverter.ToInt32(_memory, address);
+    }
+
+    private void SetInt(ushort address, int value)
+    {
+        if (address + 4 > _memory.Length)
+            throw new Exception(
+                $"Memory access out of range: {address}");
+
+        byte[] bytes = BitConverter.GetBytes(value);
+
+        Buffer.BlockCopy(
+            bytes,
+            0,
+            _memory,
+            address,
+            4);
     }
 
     private void Compare(
