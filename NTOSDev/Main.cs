@@ -1,20 +1,20 @@
 
 using NTOSCompiler;
+using NTOSCompiler.Compiler;
 using System.Diagnostics;
 
 namespace NTOSDev
 {
     public partial class Main : Form
     {
-        FunctionRegistry functionRegistry = new FunctionRegistry();
+        VMFunctions vmFunctions = new VMFunctions();
         public Main()
         {
             InitializeComponent();
 
-            
-            functionRegistry.RegisterFunction("debug", (args) =>
+
+            vmFunctions.AddFunction(0, "debug", (args) =>
             {
-                Debug.WriteLine($"Debug: {args[0]}");
                 debugOutput.Text += args[0] + Environment.NewLine;
                 return null;
             });
@@ -30,7 +30,7 @@ namespace NTOSDev
                 var tokens = lexer.Tokenize();
 
 
-                var parser = new Parser(tokens);
+                var parser = new Parser(tokens, vmFunctions);
                 var bytecode = parser.Compile();
 
                 listBox1.Items.Clear();
@@ -44,7 +44,7 @@ namespace NTOSDev
                     bc += item + Environment.NewLine;
                 }
 
-                var vm = new VirtualMachine(functionRegistry);
+                var vm = new VirtualMachine(4096, vmFunctions);
                 vm.Execute(bytecode);
 
                 Debug.WriteLine("Bytecode:\n" + bc);

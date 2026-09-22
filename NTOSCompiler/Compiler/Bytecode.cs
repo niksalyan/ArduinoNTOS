@@ -1,8 +1,9 @@
 namespace NTOSCompiler;
 
-public enum OpCode
+public enum OpCode : byte
 {
-    PushInt,
+    End = 0,
+    PushInt = 1,
     PushFloat,
     PushString,
 
@@ -10,13 +11,13 @@ public enum OpCode
     LoadVariable,
     StoreVariable,
 
-    Add,
+    Add = 32,
     Subtract,
     Multiply,
     Divide,
     Modulo,
 
-    CallFunction,
+    
 
     Pop,
     Equal,
@@ -31,8 +32,9 @@ public enum OpCode
     Or,
     Not,
 
-    Jump,
-    JumpIfFalse
+    Jump = 128,
+    JumpIfFalse,
+    CallFunction,
 }
 
 public readonly record struct Instruction(

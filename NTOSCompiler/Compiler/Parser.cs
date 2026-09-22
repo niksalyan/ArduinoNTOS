@@ -1,12 +1,16 @@
+using NTOSCompiler.Compiler;
+
 namespace NTOSCompiler;
 
 public sealed class Parser
 {
     private readonly List<Token> _tokens;
     private int _position;
+    private readonly VMFunctions _vmFunctions;
 
-    public Parser(List<Token> tokens)
+    public Parser(List<Token> tokens, VMFunctions vmFunctions)
     {
+        _vmFunctions = vmFunctions;
         _tokens = tokens;
     }
 

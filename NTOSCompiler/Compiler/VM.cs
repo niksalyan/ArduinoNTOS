@@ -1,3 +1,5 @@
+using NTOSCompiler.Compiler;
+
 namespace NTOSCompiler;
 
 public sealed class VirtualMachine
@@ -5,14 +7,18 @@ public sealed class VirtualMachine
     private readonly Dictionary<string, object?> _variables = new();
     private readonly Stack<object?> _stack = new();
 
-    private readonly FunctionRegistry _functions;
+    private readonly VMFunctions _vmFunctions;
 
-    public VirtualMachine(FunctionRegistry functions)
+    private readonly byte[] _memory;
+
+
+    public VirtualMachine(int memorySize = 4096, VMFunctions vmFunctions = null)
     {
-        _functions = functions;
+        _vmFunctions = vmFunctions;
+        _memory = new byte[memorySize];
     }
 
-    public object? Execute(BytecodeProgram program)
+    public object? Execute(byte[] bytecode)
     {
         _stack.Clear();
 
@@ -168,10 +174,8 @@ public sealed class VirtualMachine
                         for (int i = call.ArgumentCount - 1; i >= 0; i--)
                             args[i] = _stack.Pop();
 
-                        var function =
-                            _functions.GetFunction(call.Name);
 
-                        object? result = function(args);
+                        object? result = _vmFunctions.Invoke(call.Name, args); //  Invoke by index here
 
                         _stack.Push(result);
                         break;
