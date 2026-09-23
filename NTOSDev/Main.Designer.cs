@@ -107,13 +107,13 @@
             // runEmulatorToolStripMenuItem
             // 
             runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
-            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
+            runEmulatorToolStripMenuItem.Size = new Size(181, 26);
             runEmulatorToolStripMenuItem.Text = "Run Emulator";
             // 
             // buildAllFilesToolStripMenuItem
             // 
             buildAllFilesToolStripMenuItem.Name = "buildAllFilesToolStripMenuItem";
-            buildAllFilesToolStripMenuItem.Size = new Size(224, 26);
+            buildAllFilesToolStripMenuItem.Size = new Size(181, 26);
             buildAllFilesToolStripMenuItem.Text = "Build All Files";
             // 
             // dockPanel
@@ -134,7 +134,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip;
             Name = "Main";
-            Text = "Shmursor AI";
+            Text = "NTOS Dev";
             FormClosing += Main_FormClosing;
             FormClosed += Main_FormClosed;
             Load += Main_Load;

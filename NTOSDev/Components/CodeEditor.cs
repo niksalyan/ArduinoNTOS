@@ -1,4 +1,5 @@
-﻿using ScintillaNet.Abstractions.Classes;
+﻿using NTOSDev.Components;
+using ScintillaNet.Abstractions.Classes;
 using ScintillaNet.Abstractions.Enumerations;
 using ScintillaNet.WinForms;
 using System;
@@ -41,7 +42,13 @@ namespace NTOSDev.Controls
 
         private void ScintillaEditor_GotFocus(object? sender, EventArgs e)
         {
+            ReloadEmulator();
+        }
+
+        private void ReloadEmulator()
+        {
             currentFile = filePath;
+            DEmulator.RefreshEmulator();
         }
 
         private void ScintillaEditor_TextChanged(object? sender, EventArgs e)
@@ -118,6 +125,7 @@ namespace NTOSDev.Controls
                 File.WriteAllText(filePath, scintillaEditor.Text);
                 fileSaved = true;
                 UpdateFileName();
+                ReloadEmulator();
             }
             catch (Exception ex)
             {

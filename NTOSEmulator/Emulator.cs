@@ -53,10 +53,15 @@ namespace NTOSEmulator
 
         public void Execute(string name, string source)
         {
+
+            bytecodeGrid.DataSource = null;
+            variablesGrid.DataSource = null;
+
             app.CompileSource(name, source);
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
+
 
             try
             {
