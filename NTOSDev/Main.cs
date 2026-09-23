@@ -1,68 +1,164 @@
-
-using NTOSCompiler;
-using NTOSCompiler.Compiler;
+﻿using NTOSDev.Components;
+using NTOSDev.Controls;
+using NTOSDev.Libs;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace NTOSDev
 {
     public partial class Main : Form
     {
-        VMFunctions vmFunctions = new VMFunctions();
         
+        public ProjectExplorer projectExplorer = new ProjectExplorer() { 
+            HideOnClose = true
+        };
+
+        public DEmulator dEmulator = new DEmulator()
+        {
+            HideOnClose = true
+        };
 
         public Main()
         {
+            NTOS.Main = this;
             InitializeComponent();
-
-
-            vmFunctions.AddFunction(0, "debug", (args) =>
-            {
-                debugOutput.Text += args[0] + Environment.NewLine;
-                return null;
-            });
+            dockPanel.Theme = NTOS.Theme;
+            AttachMenuHandlers(menuStrip.Items);
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void Main_Load(object sender, EventArgs e)
         {
-            try
+
+            // new TerminalControl().Show(dockPanel, DockState.DockBottom);
+
+            NTOS.Reload += (s) =>
             {
-                debugOutput.Text = "";
-                var source = textBox1.Text;
-                var lexer = new Lexer(source);
-                var tokens = lexer.Tokenize();
+                CloseAllPanels();
+                projectExplorer.LoadFolder(s);
+                DoAction("projectExplorer");
+                DoAction("aiAgent");
 
 
-                var parser = new Parser(tokens, vmFunctions);
-                var program = parser.Compile();
+            };
 
-                listBox1.Items.Clear();
-                string bc = "";
+            string command = Environment.GetCommandLineArgs().Skip(1).FirstOrDefault();
+            string lastProject = NTOS.LastProject;
+            if (!string.IsNullOrWhiteSpace(command) && Directory.Exists(command))
+            {
+                NTOS.OpenProject(command);
+            }
+            else if (!string.IsNullOrWhiteSpace(lastProject) && Directory.Exists(lastProject))
+            {
+                NTOS.OpenProject(lastProject);
+            }
+            else
+            {
+                // SM.InitializeEmptyProject();
+            }
 
-                foreach (var instruction in program.Instructions)
+
+
+
+
+#if RELEASE
+            WindowState = FormWindowState.Maximized;
+            // SplashScreen();
+#endif
+        }
+
+        private void AttachMenuHandlers(ToolStripItemCollection items)
+        {
+            foreach (ToolStripItem item in items)
+            {
+                if (item is ToolStripMenuItem menuItem)
                 {
-                    var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty) + "  Addr:" + instruction.Address;
-                    listBox1.Items.Add(item);
+                    menuItem.Text = menuItem.Text;
+                    menuItem.Click += MenuItem_Click;
 
-                    bc += item + Environment.NewLine;
+                    if (menuItem.DropDownItems.Count > 0)
+                    {
+                        AttachMenuHandlers(menuItem.DropDownItems);
+                    }
                 }
-
-                Debug.WriteLine("Bytecode:\n" + bc);
-                Debug.WriteLine(string.Join(" ", program.Bytecode.Select(b => b.ToString("X2"))));
-
-                var vm = new VirtualMachine(4096, vmFunctions);
-                vm.Execute(program.Bytecode);
-
-                
-
             }
+        }
+
+        private void MenuItem_Click(object sender, EventArgs e)
+        {
+            if (sender is ToolStripMenuItem item)
+                DoAction(item.Name.Replace("ToolStripMenuItem", ""));
+        }
 
 
-            catch (Exception ex)
+        public void OpenFile(string filePath)
+        {
+            new CodeEditor(filePath).Show(dockPanel, DockState.Document);
+        }
+
+        public void CloseAllPanels()
+        {
+            var contents = dockPanel.Contents.ToArray();
+            foreach (DockContent p in contents)
             {
-                listBox1.Items.Clear();
-                debugOutput.Text = "Error: " + ex.Message;
-                Debug.WriteLine("Error:\n" + ex.Message);
+                if (p.HideOnClose)
+                {
+                    p.Hide();
+                } else
+                {
+                    p.Close();
+                }
             }
+        }
+
+        public DockContentCollection GetAllPanels()
+        {
+            return dockPanel.Contents;
+        }
+
+        public void DoAction(string action)
+        {
+            switch(action)
+            {
+                case "openProject":
+                    NTOS.OpenProject();
+                    break;
+                case "projectExplorer":
+                    projectExplorer.Show(dockPanel, DockState.DockLeft);
+                    break;
+                case "runEmulator":
+                    dEmulator.Show(dockPanel, DockState.DockRight);
+                    dEmulator.InitEmulator();
+                    break;
+                case "exit":
+                    Close();
+                    break;
+            }
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+#if !DEBUG
+            if (TBMessageBox.Confirm(this, "Project is not saved!", "Do you want to save this project?") == DialogResult.Yes)
+            {
+                DoAction("save");
+            }
+#else
+            DoAction("save");
+#endif
+        }
+
+        private void Main_FormClosed(object sender, FormClosedEventArgs e)
+        {
+#if DEBUG
+            // TranslationService.Save();
+#endif
         }
     }
 }

@@ -1,11 +1,5 @@
 using NTOSCompiler.Compiler;
-using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading.Channels;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace NTOSCompiler;
 

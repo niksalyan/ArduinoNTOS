@@ -3,12 +3,12 @@
     partial class Main
     {
         /// <summary>
-        ///  Required designer variable.
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
-        ///  Clean up any resources being used.
+        /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
@@ -23,103 +23,141 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
-            textBox1 = new TextBox();
-            listBox1 = new ListBox();
-            debugOutput = new TextBox();
-            mainMenu = new MenuStrip();
-            toolsToolStripMenuItem = new ToolStripMenuItem();
-            emulatorToolStripMenuItem = new ToolStripMenuItem();
-            mainMenu.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
+            menuStrip = new MenuStrip();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            openProjectToolStripMenuItem = new ToolStripMenuItem();
+            preferencesToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem1 = new ToolStripSeparator();
+            exitToolStripMenuItem = new ToolStripMenuItem();
+            viewToolStripMenuItem = new ToolStripMenuItem();
+            projectExplorerToolStripMenuItem = new ToolStripMenuItem();
+            buildToolStripMenuItem = new ToolStripMenuItem();
+            runEmulatorToolStripMenuItem = new ToolStripMenuItem();
+            buildAllFilesToolStripMenuItem = new ToolStripMenuItem();
+            dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
+            menuStrip.SuspendLayout();
             SuspendLayout();
             // 
-            // textBox1
+            // menuStrip
             // 
-            textBox1.BorderStyle = BorderStyle.None;
-            textBox1.Dock = DockStyle.Fill;
-            textBox1.Location = new Point(0, 28);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.ScrollBars = ScrollBars.Vertical;
-            textBox1.Size = new Size(447, 342);
-            textBox1.TabIndex = 0;
-            textBox1.TextChanged += textBox1_TextChanged;
+            menuStrip.ImageScalingSize = new Size(20, 20);
+            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, buildToolStripMenuItem });
+            menuStrip.Location = new Point(0, 0);
+            menuStrip.Name = "menuStrip";
+            menuStrip.Size = new Size(1280, 28);
+            menuStrip.TabIndex = 0;
+            menuStrip.Text = "menuStrip1";
             // 
-            // listBox1
+            // fileToolStripMenuItem
             // 
-            listBox1.BorderStyle = BorderStyle.None;
-            listBox1.Dock = DockStyle.Right;
-            listBox1.FormattingEnabled = true;
-            listBox1.Location = new Point(447, 28);
-            listBox1.Name = "listBox1";
-            listBox1.SelectionMode = SelectionMode.MultiExtended;
-            listBox1.Size = new Size(353, 342);
-            listBox1.TabIndex = 1;
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openProjectToolStripMenuItem, preferencesToolStripMenuItem, toolStripMenuItem1, exitToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(46, 24);
+            fileToolStripMenuItem.Text = "File";
             // 
-            // debugOutput
+            // openProjectToolStripMenuItem
             // 
-            debugOutput.BorderStyle = BorderStyle.None;
-            debugOutput.Dock = DockStyle.Bottom;
-            debugOutput.Location = new Point(0, 370);
-            debugOutput.Multiline = true;
-            debugOutput.Name = "debugOutput";
-            debugOutput.ReadOnly = true;
-            debugOutput.ScrollBars = ScrollBars.Vertical;
-            debugOutput.Size = new Size(800, 80);
-            debugOutput.TabIndex = 2;
+            openProjectToolStripMenuItem.Name = "openProjectToolStripMenuItem";
+            openProjectToolStripMenuItem.Size = new Size(178, 26);
+            openProjectToolStripMenuItem.Text = "Open Project";
             // 
-            // mainMenu
+            // preferencesToolStripMenuItem
             // 
-            mainMenu.ImageScalingSize = new Size(20, 20);
-            mainMenu.Items.AddRange(new ToolStripItem[] { toolsToolStripMenuItem });
-            mainMenu.Location = new Point(0, 0);
-            mainMenu.Name = "mainMenu";
-            mainMenu.Size = new Size(800, 28);
-            mainMenu.TabIndex = 3;
-            mainMenu.Text = "menuStrip1";
+            preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
+            preferencesToolStripMenuItem.Size = new Size(178, 26);
+            preferencesToolStripMenuItem.Text = "Preferences";
             // 
-            // toolsToolStripMenuItem
+            // toolStripMenuItem1
             // 
-            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { emulatorToolStripMenuItem });
-            toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            toolsToolStripMenuItem.Size = new Size(58, 24);
-            toolsToolStripMenuItem.Text = "Tools";
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(175, 6);
             // 
-            // emulatorToolStripMenuItem
+            // exitToolStripMenuItem
             // 
-            emulatorToolStripMenuItem.Name = "emulatorToolStripMenuItem";
-            emulatorToolStripMenuItem.Size = new Size(152, 26);
-            emulatorToolStripMenuItem.Text = "Emulator";
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new Size(178, 26);
+            exitToolStripMenuItem.Text = "Exit";
+            // 
+            // viewToolStripMenuItem
+            // 
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { projectExplorerToolStripMenuItem });
+            viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            viewToolStripMenuItem.Size = new Size(55, 24);
+            viewToolStripMenuItem.Text = "View";
+            // 
+            // projectExplorerToolStripMenuItem
+            // 
+            projectExplorerToolStripMenuItem.Name = "projectExplorerToolStripMenuItem";
+            projectExplorerToolStripMenuItem.Size = new Size(197, 26);
+            projectExplorerToolStripMenuItem.Text = "Project Explorer";
+            // 
+            // buildToolStripMenuItem
+            // 
+            buildToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildAllFilesToolStripMenuItem });
+            buildToolStripMenuItem.Name = "buildToolStripMenuItem";
+            buildToolStripMenuItem.Size = new Size(68, 24);
+            buildToolStripMenuItem.Text = "Debug";
+            // 
+            // runEmulatorToolStripMenuItem
+            // 
+            runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
+            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
+            runEmulatorToolStripMenuItem.Text = "Run Emulator";
+            // 
+            // buildAllFilesToolStripMenuItem
+            // 
+            buildAllFilesToolStripMenuItem.Name = "buildAllFilesToolStripMenuItem";
+            buildAllFilesToolStripMenuItem.Size = new Size(224, 26);
+            buildAllFilesToolStripMenuItem.Text = "Build All Files";
+            // 
+            // dockPanel
+            // 
+            dockPanel.Dock = DockStyle.Fill;
+            dockPanel.Location = new Point(0, 28);
+            dockPanel.Name = "dockPanel";
+            dockPanel.Size = new Size(1280, 692);
+            dockPanel.TabIndex = 1;
             // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(textBox1);
-            Controls.Add(listBox1);
-            Controls.Add(debugOutput);
-            Controls.Add(mainMenu);
-            MainMenuStrip = mainMenu;
+            ClientSize = new Size(1280, 720);
+            Controls.Add(dockPanel);
+            Controls.Add(menuStrip);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = menuStrip;
             Name = "Main";
-            Text = "NTOS Dev";
-            mainMenu.ResumeLayout(false);
-            mainMenu.PerformLayout();
+            Text = "Shmursor AI";
+            FormClosing += Main_FormClosing;
+            FormClosed += Main_FormClosed;
+            Load += Main_Load;
+            menuStrip.ResumeLayout(false);
+            menuStrip.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private TextBox textBox1;
-        private ListBox listBox1;
-        private TextBox debugOutput;
-        private MenuStrip mainMenu;
-        private ToolStripMenuItem toolsToolStripMenuItem;
-        private ToolStripMenuItem emulatorToolStripMenuItem;
+        private MenuStrip menuStrip;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem openProjectToolStripMenuItem;
+        private ToolStripMenuItem preferencesToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem1;
+        private ToolStripMenuItem exitToolStripMenuItem;
+        private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
+        private ToolStripMenuItem viewToolStripMenuItem;
+        private ToolStripMenuItem projectExplorerToolStripMenuItem;
+        private ToolStripMenuItem buildToolStripMenuItem;
+        private ToolStripMenuItem runEmulatorToolStripMenuItem;
+        private ToolStripMenuItem buildAllFilesToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem2;
     }
 }

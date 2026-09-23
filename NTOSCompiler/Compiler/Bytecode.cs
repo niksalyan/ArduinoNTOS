@@ -1,3 +1,6 @@
+using NTOSCompiler.Compiler;
+using System.ComponentModel;
+
 namespace NTOSCompiler;
 
 public enum OpCode : byte
@@ -75,6 +78,7 @@ public class Variable
 {
     public string Name { get; }
     public VariableType Type { get; }
+
     public int Address { get; set; }
 
     public bool IsArray { get; }
@@ -115,15 +119,70 @@ public class Variable
     }
 }
 
-public sealed class BytecodeProgram
+public class BytecodeApp
 {
     private List<Variable> _variables = new();
+    private List<Instruction> _instructions;
+
+    public List<Variable> Variables => _variables;
+    public List<Instruction> Instructions => _instructions;
+    private Dictionary<string, byte[]> _bytecodes = new();
+    private VMFunctions _vmFunctions;
+
+    public BytecodeApp(VMFunctions vmFunctions)
+    {
+        _vmFunctions = vmFunctions;
+    }
+
+    public byte[] GetBytecode(string name)
+    {
+        return _bytecodes.ContainsKey(name) ? _bytecodes[name] : new byte[1];
+    }
+
+    public string CompileSource(string name, string source)
+    {
+        try
+        {
+            _instructions = null;
+            var lexer = new Lexer(source);
+            var tokens = lexer.Tokenize();
+
+            var bytecode = new BytecodeProgram(_variables);
+
+            var parser = new Parser(tokens, _vmFunctions);
+            var program = parser.Compile(bytecode);
+
+            _bytecodes[name] = program.Bytecode;
+            _instructions = program.Instructions;
+
+            return null;
+        } catch(Exception ex)
+        {
+            return ex.Message;
+        }
+    }
+
+    public void Reset()
+    {
+        _variables.Clear();
+        _bytecodes.Clear();
+    }
+}
+
+public class BytecodeProgram
+{
+    private List<Variable> _variables;
 
     public List<Instruction> Instructions { get; } = new();
 
     private byte[] _bytecode;
 
     public byte[] Bytecode => _bytecode;
+
+    public BytecodeProgram(List<Variable> sharedVariables = null)
+    {
+        _variables = sharedVariables ?? new();
+    }
 
     public void UpdateBytecode()
     {
@@ -295,11 +354,13 @@ public sealed class BytecodeProgram
     int length = 1,
     int maxLength = 0)
     {
-        if (_variables.Any(x => x.Name == name))
-            throw new InvalidOperationException(
-                $"Variable '{name}' is already declared.");
-
-        var variable = new Variable(
+        var variable = _variables.FirstOrDefault(x => x.Name == name);
+        if (variable != null)
+        {
+            return variable;
+        }
+        
+        variable = new Variable(
             name,
             type,
             isArray,

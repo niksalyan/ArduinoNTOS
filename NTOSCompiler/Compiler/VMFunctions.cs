@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace NTOSCompiler.Compiler
@@ -18,6 +19,7 @@ namespace NTOSCompiler.Compiler
 
         public object Invoke(int index, object[] args)
         {
+            Debug.WriteLine("Invoke: " + index);
             return _functions[index](args);
         }
 

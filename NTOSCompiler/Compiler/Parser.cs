@@ -16,9 +16,10 @@ public sealed class Parser
         _tokens = tokens;
     }
 
-    public BytecodeProgram Compile()
+    public BytecodeProgram Compile(BytecodeProgram program = null)
     {
-        var program = new BytecodeProgram();
+        program = program ?? new BytecodeProgram();
+        program.Instructions.Clear();
 
         while (!Check(TokenKind.Eof))
         {
@@ -160,8 +161,25 @@ public sealed class Parser
 
         if (Match(TokenKind.Assign))
         {
-            // We'll implement array/string initializers later.
-            throw Error("Initializers are not implemented yet.");
+            if (isArray)
+            {
+                throw Error(
+                    "Array initializers are not implemented yet.");
+            }
+
+            var expressionType = CompileExpression(program);
+
+            if (expressionType != type)
+            {
+                throw Error(
+                    $"Cannot assign {expressionType} to variable " +
+                    $"'{name.Text}' of type {type}.");
+            }
+
+            program.Instructions.Add(
+                new Instruction(
+                    GetStoreOpcode(type),
+                    variable.Address));
         }
     }
 
