@@ -17,7 +17,7 @@ public enum OpCode : byte
     Divide,
     Modulo,
 
-    
+
 
     Pop,
     Equal,
@@ -37,9 +37,20 @@ public enum OpCode : byte
     CallFunction,
 }
 
-public readonly record struct Instruction(
-    OpCode OpCode,
-    object? Operand = null);
+public class Instruction
+{
+    public OpCode OpCode { get; }
+    public object? Operand { get; }
+    public int Address { get; set; }
+
+    public Instruction(
+        OpCode opCode,
+        object? operand = null)
+    {
+        OpCode = opCode;
+        Operand = operand;
+    }
+}
 
 public sealed class BytecodeProgram
 {
@@ -49,31 +60,52 @@ public sealed class BytecodeProgram
 
     private int _nextAddress;
 
-    public byte[] ToByteCode()
+    private byte[] _bytecode;
+
+    public byte[] Bytecode => _bytecode;
+
+    public void UpdateBytecode()
+    {
+        PrepareBytecode(true);
+        _bytecode = PrepareBytecode();
+    }
+
+    public byte[] PrepareBytecode(
+    bool assignAddresses = false)
     {
         using var stream = new MemoryStream();
 
         foreach (var instruction in Instructions)
         {
-            stream.WriteByte((byte)instruction.OpCode);
+            if (assignAddresses)
+            {
+                instruction.Address =
+                    checked((int)stream.Length);
+            }
+
+            stream.WriteByte(
+                (byte)instruction.OpCode);
 
             switch (instruction.OpCode)
             {
                 case OpCode.PushInt:
                     WriteInt32(
                         stream,
-                        Convert.ToInt32(instruction.Operand));
+                        Convert.ToInt32(
+                            instruction.Operand));
                     break;
 
                 case OpCode.PushFloat:
                     WriteFloat(
                         stream,
-                        Convert.ToSingle(instruction.Operand));
+                        Convert.ToSingle(
+                            instruction.Operand));
                     break;
 
                 case OpCode.PushBool:
                     stream.WriteByte(
-                        Convert.ToBoolean(instruction.Operand)
+                        Convert.ToBoolean(
+                            instruction.Operand)
                             ? (byte)1
                             : (byte)0);
                     break;
@@ -82,15 +114,61 @@ public sealed class BytecodeProgram
                 case OpCode.StoreVariable:
                     WriteAddress(
                         stream,
-                        Convert.ToInt32(instruction.Operand));
+                        Convert.ToInt32(
+                            instruction.Operand));
                     break;
 
                 case OpCode.Jump:
                 case OpCode.JumpIfFalse:
-                    WriteInt32(
-                        stream,
-                        Convert.ToInt32(instruction.Operand));
-                    break;
+                    {
+                        int targetInstruction =
+                            Convert.ToInt32(
+                                instruction.Operand);
+
+                        if (targetInstruction < 0 ||
+                            targetInstruction > Instructions.Count)
+                        {
+                            throw new InvalidOperationException(
+                                $"Invalid jump target: {targetInstruction}");
+                        }
+
+                        int targetAddress;
+
+                        if (targetInstruction == Instructions.Count)
+                        {
+                            // End of bytecode.
+                            targetAddress =
+                                checked((int)stream.Length + 4);
+                        }
+                        else
+                        {
+                            targetAddress =
+                                Instructions[targetInstruction].Address;
+                        }
+
+                        WriteInt32(
+                            stream,
+                            targetAddress);
+
+                        break;
+                    }
+
+                case OpCode.CallFunction:
+                    {
+                        var call =
+                            (FunctionCall)instruction.Operand!;
+
+                        stream.WriteByte(
+                            (byte)call.Index);
+
+                        stream.WriteByte(
+                            (byte)(call.Index >> 8));
+
+                        stream.WriteByte(
+                            call.ArgumentCount);
+
+                        break;
+                    }
 
                 case OpCode.Add:
                 case OpCode.Subtract:
@@ -113,17 +191,6 @@ public sealed class BytecodeProgram
                 case OpCode.PushString:
                     throw new NotSupportedException(
                         "String bytecode is not implemented yet.");
-
-                case OpCode.CallFunction:
-                    {
-                        var call = (FunctionCall)instruction.Operand!;
-
-                        stream.WriteByte((byte)call.Index);
-                        stream.WriteByte((byte)(call.Index >> 8));
-                        stream.WriteByte(call.ArgumentCount);
-
-                        break;
-                    }
 
                 default:
                     throw new InvalidOperationException(

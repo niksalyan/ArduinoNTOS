@@ -4,7 +4,7 @@ namespace NTOSCompiler;
 
 public sealed class VirtualMachine
 {
-    private readonly Dictionary<string, object?> _variables = new();
+
     private readonly Stack<object?> _stack = new();
 
     private readonly VMFunctions _vmFunctions;
@@ -340,13 +340,6 @@ public sealed class VirtualMachine
 
         return value;
     }
-
-    public object? GetVariable(string name)
-        => _variables.TryGetValue(
-            name,
-            out var value)
-                ? value
-                : null;
 
     private void BinaryNumeric(
         Func<dynamic, dynamic, dynamic> operation)

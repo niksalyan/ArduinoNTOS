@@ -8,6 +8,8 @@ namespace NTOSDev
     public partial class Main : Form
     {
         VMFunctions vmFunctions = new VMFunctions();
+        
+
         public Main()
         {
             InitializeComponent();
@@ -38,14 +40,14 @@ namespace NTOSDev
 
                 foreach (var instruction in program.Instructions)
                 {
-                    var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty);
+                    var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty) + "  Addr:" + instruction.Address;
                     listBox1.Items.Add(item);
 
                     bc += item + Environment.NewLine;
                 }
 
                 var vm = new VirtualMachine(4096, vmFunctions);
-                vm.Execute(program.ToByteCode());
+                vm.Execute(program.Bytecode);
 
                 Debug.WriteLine("Bytecode:\n" + bc);
             }

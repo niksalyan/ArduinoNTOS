@@ -30,6 +30,7 @@ public sealed class Parser
             }
         }
 
+        program.UpdateBytecode();
         return program;
     }
 
