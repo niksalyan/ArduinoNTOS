@@ -323,7 +323,9 @@ public sealed class VirtualMachine
 
                         break;
                     }
-
+                case OpCode.Checkpoint:
+                    instructionCount = 0;
+                    break;
                 case OpCode.CallFunction:
                     {
                         ushort index =
