@@ -272,6 +272,9 @@ public sealed class Lexer
                 '{' => TokenKind.LBrace,
                 '}' => TokenKind.RBrace,
 
+                '[' => TokenKind.LBracket,
+                ']' => TokenKind.RBracket,
+
                 ',' => TokenKind.Comma,
                 ';' => TokenKind.Semicolon,
 
