@@ -102,41 +102,81 @@ public sealed class Parser
     {
         VariableType type;
 
+        int maxLength = 0;
+
         if (Match(TokenKind.IntType))
+        {
             type = VariableType.Int;
+        }
         else if (Match(TokenKind.FloatType))
+        {
             type = VariableType.Float;
+        }
         else if (Match(TokenKind.BoolType))
+        {
             type = VariableType.Bool;
+        }
         else if (Match(TokenKind.StrType))
+        {
             type = VariableType.Str;
+
+            if (Match(TokenKind.LBracket))
+            {
+                maxLength = ParseArrayLength();
+                Consume(
+                    TokenKind.RBracket,
+                    "Expected ']' after string length.");
+            }
+        }
         else
+        {
             throw Error("Expected type.");
+        }
 
         Token name = Consume(
             TokenKind.Identifier,
             "Expected variable name.");
 
+        bool isArray = false;
+        int length = 1;
+
+        if (Match(TokenKind.LBracket))
+        {
+            length = ParseArrayLength();
+
+            Consume(
+                TokenKind.RBracket,
+                "Expected ']' after array length.");
+
+            isArray = true;
+        }
+
         var variable = program.DeclareVariable(
             name.Text,
-            type);
+            type,
+            isArray,
+            length,
+            maxLength);
 
         if (Match(TokenKind.Assign))
         {
-            VariableType expressionType =
-                CompileExpression(program);
-
-            if (expressionType != variable.Type)
-            {
-                throw Error(
-                    $"Cannot assign {expressionType} to variable '{name.Text}' of type {variable.Type}.");
-            }
-
-            program.Instructions.Add(
-                new Instruction(
-                    GetStoreOpcode(variable.Type),
-                    variable.Address));
+            // We'll implement array/string initializers later.
+            throw Error("Initializers are not implemented yet.");
         }
+    }
+
+    private int ParseArrayLength()
+    {
+        Token length = Consume(
+            TokenKind.Int,
+            "Expected constant length.");
+
+        int value = int.Parse(length.Text);
+
+        if (value <= 0)
+            throw Error("Length must be greater than zero.");
+
+        return value;
     }
 
     private void CompileIf(BytecodeProgram program)

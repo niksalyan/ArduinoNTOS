@@ -80,21 +80,21 @@ public class Variable
     public bool IsArray { get; }
     public int Length { get; }
 
-    public int StringLength { get; }
+    public int MaxLength { get; }
 
     public Variable(
         string name,
         VariableType type,
         bool isArray = false,
         int length = 1,
-        int stringLength = 0
+        int maxLength = 0
         )
     {
         Name = name;
         Type = type;
         IsArray = isArray;
         Length = length;
-        StringLength = stringLength;
+        MaxLength = maxLength;
     }
 
     public int GetSize()
@@ -108,7 +108,7 @@ public class Variable
             case VariableType.Bool:
                 return 1 * Length;
             case VariableType.Str:
-                return (StringLength + 1) * Length; // Probably string size + ending zero
+                return (MaxLength + 1) * Length; // Probably string size + ending zero
             default:
                 return 0;
         }
@@ -293,7 +293,7 @@ public sealed class BytecodeProgram
     VariableType type,
     bool isArray = false,
     int length = 1,
-    int stringLength = 0)
+    int maxLength = 0)
     {
         if (_variables.Any(x => x.Name == name))
             throw new InvalidOperationException(
@@ -304,7 +304,7 @@ public sealed class BytecodeProgram
             type,
             isArray,
             length,
-            stringLength);
+            maxLength);
 
         _variables.Add(variable);
         UpdateAddresses();

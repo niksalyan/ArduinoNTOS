@@ -47,6 +47,9 @@ public enum TokenKind
 
     LBrace,
     RBrace,
+
+    LBracket,
+    RBracket,
     Comma,
     Semicolon,
 
