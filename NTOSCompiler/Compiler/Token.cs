@@ -9,7 +9,7 @@ public enum TokenKind
     BoolType,
     StrType,
 
-    Identifier,
+    Assign,
     Int,
     Float,
 

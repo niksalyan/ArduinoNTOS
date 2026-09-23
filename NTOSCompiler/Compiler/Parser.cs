@@ -63,7 +63,7 @@ public sealed class Parser
         }
 
         // x = expression
-        if (Check(TokenKind.Identifier) &&
+        if (Check(TokenKind.Assign) &&
             Peek(1).Kind == TokenKind.Equals)
         {
             string name = Advance().Text;
@@ -114,12 +114,29 @@ public sealed class Parser
             throw Error("Expected type.");
 
         Token name = Consume(
-            TokenKind.Identifier,
+            TokenKind.Assign,
             "Expected variable name.");
 
-        program.DeclareVariable(
+        var variable = program.DeclareVariable(
             name.Text,
             type);
+
+        if (Match(TokenKind.Assign))
+        {
+            VariableType expressionType =
+                CompileExpression(program);
+
+            if (expressionType != variable.Type)
+            {
+                throw Error(
+                    $"Cannot assign {expressionType} to variable '{name.Text}' of type {variable.Type}.");
+            }
+
+            program.Instructions.Add(
+                new Instruction(
+                    GetStoreOpcode(variable.Type),
+                    variable.Address));
+        }
     }
 
     private void CompileIf(BytecodeProgram program)
@@ -532,7 +549,7 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
-        if (Check(TokenKind.Identifier) &&
+        if (Check(TokenKind.Assign) &&
             Peek(1).Kind == TokenKind.LParen)
         {
             return CompileFunctionCall(program);
@@ -590,7 +607,7 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
-        if (Match(TokenKind.Identifier))
+        if (Match(TokenKind.Assign))
         {
             string name =
                 Previous().Text;

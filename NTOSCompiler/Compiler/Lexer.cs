@@ -52,7 +52,7 @@ public sealed class Lexer
                     "else" => TokenKind.Else,
                     "while" => TokenKind.While,
 
-                    _ => TokenKind.Identifier
+                    _ => TokenKind.Assign
                 };
 
                 tokens.Add(new Token(wordKind, text, start));
