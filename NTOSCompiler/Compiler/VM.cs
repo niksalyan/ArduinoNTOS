@@ -1,21 +1,27 @@
 using NTOSCompiler.Compiler;
+using System.Collections;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading.Channels;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NTOSCompiler;
 
 public sealed class VirtualMachine
 {
-
     private readonly Stack<object?> _stack = new();
 
     private readonly VMFunctions _vmFunctions;
 
     private readonly byte[] _memory;
-    private readonly Dictionary<ushort, object?> _variables = new();
 
     public uint MaxInstructions { get; set; } = 100_000;
 
-
-    public VirtualMachine(int memorySize = 4096, VMFunctions vmFunctions = null)
+    public VirtualMachine(
+        int memorySize = 4096,
+        VMFunctions vmFunctions = null)
     {
         _vmFunctions = vmFunctions;
         _memory = new byte[memorySize];
@@ -27,6 +33,7 @@ public sealed class VirtualMachine
 
         int instructionPointer = 0;
         uint instructionCount = 0;
+
         while (instructionPointer < bytecode.Length)
         {
             if (++instructionCount > MaxInstructions)
@@ -37,6 +44,7 @@ public sealed class VirtualMachine
 
             OpCode opcode =
                 (OpCode)bytecode[instructionPointer++];
+
             switch (opcode)
             {
                 case OpCode.PushInt:
@@ -69,126 +77,235 @@ public sealed class VirtualMachine
                         _stack.Push(value);
                         break;
                     }
+
                 case OpCode.PushStr:
-                    // _stack.Push(instruction.Operand);
-                    break;
+                    throw new NotSupportedException(
+                        "String values are not implemented yet.");
 
-
-
-                case OpCode.LoadVariable:
+                case OpCode.LoadInt:
                     {
                         ushort address =
                             ReadAddress(
                                 bytecode,
                                 ref instructionPointer);
 
-                        if (!_variables.TryGetValue(address, out var value))
-                            throw new Exception(
-                                $"Variable at address {address} has not been initialized.");
-
-                        _stack.Push(value);
+                        _stack.Push(
+                            GetInt(address));
 
                         break;
                     }
 
-                case OpCode.StoreVariable:
+                case OpCode.StoreInt:
                     {
                         ushort address =
                             ReadAddress(
                                 bytecode,
                                 ref instructionPointer);
 
-                        object? value = _stack.Pop();
+                        int value =
+                            Convert.ToInt32(_stack.Pop());
 
-                        _variables[address] = value;
+                        SetInt(address, value);
 
                         break;
                     }
+
+                case OpCode.LoadFloat:
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _stack.Push(
+                            GetFloat(address));
+
+                        break;
+                    }
+
+                case OpCode.StoreFloat:
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        float value =
+                            Convert.ToSingle(_stack.Pop());
+
+                        SetFloat(address, value);
+
+                        break;
+                    }
+
+                case OpCode.LoadBool:
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _stack.Push(
+                            GetBool(address));
+
+                        break;
+                    }
+
+                case OpCode.StoreBool:
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        bool value =
+                            Convert.ToBoolean(_stack.Pop());
+
+                        SetBool(address, value);
+
+                        break;
+                    }
+
+                case OpCode.LoadStr:
+                    throw new NotSupportedException(
+                        "String variables are not implemented yet.");
+
+                case OpCode.StoreStr:
+                    throw new NotSupportedException(
+                        "String variables are not implemented yet.");
 
                 case OpCode.Add:
-                    BinaryNumeric((a, b) => a + b);
+                    BinaryNumeric(
+                        (a, b) => a + b);
+
                     break;
 
                 case OpCode.Subtract:
-                    BinaryNumeric((a, b) => a - b);
+                    BinaryNumeric(
+                        (a, b) => a - b);
+
                     break;
 
                 case OpCode.Multiply:
-                    BinaryNumeric((a, b) => a * b);
+                    BinaryNumeric(
+                        (a, b) => a * b);
+
                     break;
 
                 case OpCode.Divide:
-                    BinaryNumeric((a, b) => a / b);
+                    BinaryNumeric(
+                        (a, b) => a / b);
+
                     break;
 
                 case OpCode.Modulo:
-                    BinaryNumeric((a, b) => a % b);
+                    BinaryNumeric(
+                        (a, b) => a % b);
+
                     break;
 
                 case OpCode.Equal:
                     {
-                        object right = _stack.Pop()!;
-                        object left = _stack.Pop()!;
+                        object right =
+                            _stack.Pop()!;
 
-                        _stack.Push(Equals(left, right));
+                        object left =
+                            _stack.Pop()!;
+
+                        _stack.Push(
+                            Equals(left, right));
+
                         break;
                     }
 
                 case OpCode.NotEqual:
                     {
-                        object right = _stack.Pop()!;
-                        object left = _stack.Pop()!;
+                        object right =
+                            _stack.Pop()!;
 
-                        _stack.Push(!Equals(left, right));
+                        object left =
+                            _stack.Pop()!;
+
+                        _stack.Push(
+                            !Equals(left, right));
+
                         break;
                     }
 
                 case OpCode.Less:
-                    Compare((a, b) => a < b);
+                    Compare(
+                        (a, b) => a < b);
+
                     break;
 
                 case OpCode.Greater:
-                    Compare((a, b) => a > b);
+                    Compare(
+                        (a, b) => a > b);
+
                     break;
 
                 case OpCode.LessEqual:
-                    Compare((a, b) => a <= b);
+                    Compare(
+                        (a, b) => a <= b);
+
                     break;
 
                 case OpCode.GreaterEqual:
-                    Compare((a, b) => a >= b);
+                    Compare(
+                        (a, b) => a >= b);
+
                     break;
 
                 case OpCode.And:
                     {
-                        bool right = Convert.ToBoolean(_stack.Pop());
-                        bool left = Convert.ToBoolean(_stack.Pop());
+                        bool right =
+                            Convert.ToBoolean(
+                                _stack.Pop());
 
-                        _stack.Push(left && right);
+                        bool left =
+                            Convert.ToBoolean(
+                                _stack.Pop());
+
+                        _stack.Push(
+                            left && right);
+
                         break;
                     }
 
                 case OpCode.Or:
                     {
-                        bool right = Convert.ToBoolean(_stack.Pop());
-                        bool left = Convert.ToBoolean(_stack.Pop());
+                        bool right =
+                            Convert.ToBoolean(
+                                _stack.Pop());
 
-                        _stack.Push(left || right);
+                        bool left =
+                            Convert.ToBoolean(
+                                _stack.Pop());
+
+                        _stack.Push(
+                            left || right);
+
                         break;
                     }
 
                 case OpCode.Not:
                     {
-                        bool value = Convert.ToBoolean(_stack.Pop());
+                        bool value =
+                            Convert.ToBoolean(
+                                _stack.Pop());
 
-                        _stack.Push(!value);
+                        _stack.Push(
+                            !value);
+
                         break;
                     }
 
                 case OpCode.Jump:
                     {
                         instructionPointer =
-        ReadInt32(bytecode, ref instructionPointer);
+                            ReadInt32(
+                                bytecode,
+                                ref instructionPointer);
 
                         continue;
                     }
@@ -196,10 +313,13 @@ public sealed class VirtualMachine
                 case OpCode.JumpIfFalse:
                     {
                         bool condition =
-                            Convert.ToBoolean(_stack.Pop());
+                            Convert.ToBoolean(
+                                _stack.Pop());
 
                         int target =
-                            ReadInt32(bytecode, ref instructionPointer);
+                            ReadInt32(
+                                bytecode,
+                                ref instructionPointer);
 
                         if (!condition)
                         {
@@ -212,7 +332,6 @@ public sealed class VirtualMachine
 
                 case OpCode.CallFunction:
                     {
-                        instructionCount = 0;
                         ushort index =
                             ReadUInt16(
                                 bytecode,
@@ -225,10 +344,15 @@ public sealed class VirtualMachine
                             new object?[argumentCount];
 
                         for (int i = argumentCount - 1; i >= 0; i--)
-                            args[i] = _stack.Pop();
+                        {
+                            args[i] =
+                                _stack.Pop();
+                        }
 
                         object? result =
-                            _vmFunctions?.Invoke(index, args);
+                            _vmFunctions?.Invoke(
+                                index,
+                                args);
 
                         _stack.Push(result);
 
@@ -238,6 +362,7 @@ public sealed class VirtualMachine
                 case OpCode.Pop:
                     _stack.Pop();
                     break;
+
                 case OpCode.End:
                     return;
 
@@ -246,25 +371,30 @@ public sealed class VirtualMachine
                         $"Unsupported opcode: {opcode}");
             }
         }
-
     }
 
-    private int GetInt(ushort address)
+    private int GetInt(
+        ushort address)
     {
-        if (address + 4 > _memory.Length)
-            throw new Exception(
-                $"Memory access out of range: {address}");
+        EnsureMemory(
+            address,
+            4);
 
-        return BitConverter.ToInt32(_memory, address);
+        return BitConverter.ToInt32(
+            _memory,
+            address);
     }
 
-    private void SetInt(ushort address, int value)
+    private void SetInt(
+        ushort address,
+        int value)
     {
-        if (address + 4 > _memory.Length)
-            throw new Exception(
-                $"Memory access out of range: {address}");
+        EnsureMemory(
+            address,
+            4);
 
-        byte[] bytes = BitConverter.GetBytes(value);
+        byte[] bytes =
+            BitConverter.GetBytes(value);
 
         Buffer.BlockCopy(
             bytes,
@@ -274,22 +404,93 @@ public sealed class VirtualMachine
             4);
     }
 
-    private void Compare(
-        Func<dynamic, dynamic, bool> operation)
+    private float GetFloat(
+        ushort address)
     {
-        double right =
-            Convert.ToDouble(_stack.Pop());
+        EnsureMemory(
+            address,
+            4);
 
-        double left =
-            Convert.ToDouble(_stack.Pop());
+        return BitConverter.ToSingle(
+            _memory,
+            address);
+    }
+
+    private void SetFloat(
+        ushort address,
+        float value)
+    {
+        EnsureMemory(
+            address,
+            4);
+
+        byte[] bytes =
+            BitConverter.GetBytes(value);
+
+        Buffer.BlockCopy(
+            bytes,
+            0,
+            _memory,
+            address,
+            4);
+    }
+
+    private bool GetBool(
+        ushort address)
+    {
+        EnsureMemory(
+            address,
+            1);
+
+        return _memory[address] != 0;
+    }
+
+    private void SetBool(
+        ushort address,
+        bool value)
+    {
+        EnsureMemory(
+            address,
+            1);
+
+        _memory[address] =
+            value ? (byte)1 : (byte)0;
+    }
+
+    private void EnsureMemory(
+        ushort address,
+        int size)
+    {
+        if (address + size > _memory.Length)
+        {
+            throw new Exception(
+                $"Memory access out of range: {address}");
+        }
+    }
+
+    private void Compare(
+    Func<dynamic, dynamic, bool> operation)
+    {
+        dynamic right = _stack.Pop()!;
+        dynamic left = _stack.Pop()!;
+
+        _stack.Push(
+            operation(left, right));
+    }
+
+    private void BinaryNumeric(
+        Func<dynamic, dynamic, dynamic> operation)
+    {
+        dynamic right = _stack.Pop()!;
+        dynamic left = _stack.Pop()!;
 
         _stack.Push(
             operation(left, right));
     }
 
     private static ushort ReadUInt16(
-    byte[] bytecode,
-    ref int instructionPointer)
+        byte[] bytecode,
+        ref int instructionPointer)
     {
         ushort value =
             BitConverter.ToUInt16(
@@ -302,8 +503,8 @@ public sealed class VirtualMachine
     }
 
     private static int ReadInt32(
-    byte[] bytecode,
-    ref int pc)
+        byte[] bytecode,
+        ref int pc)
     {
         int value =
             BitConverter.ToInt32(
@@ -341,18 +542,5 @@ public sealed class VirtualMachine
         pc += 2;
 
         return value;
-    }
-
-    private void BinaryNumeric(
-        Func<dynamic, dynamic, dynamic> operation)
-    {
-        double right =
-            Convert.ToDouble(_stack.Pop());
-
-        double left =
-            Convert.ToDouble(_stack.Pop());
-
-        _stack.Push(
-            operation(left, right));
     }
 }

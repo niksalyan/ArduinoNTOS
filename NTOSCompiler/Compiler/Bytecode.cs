@@ -64,7 +64,7 @@ public class Instruction
 }
 
 public enum VariableType { 
-    Void, // Just in case, we can remove this if not needed
+    None, // Just in case, we can remove this if not needed
     Int,
     Float,
     Bool,
