@@ -50,6 +50,15 @@ public sealed class Parser
             return false;
         }
 
+        if (Check(TokenKind.IntType) ||
+    Check(TokenKind.FloatType) ||
+    Check(TokenKind.BoolType) ||
+    Check(TokenKind.StrType))
+        {
+            CompileDeclaration(program);
+            return true;
+        }
+
         // x = expression
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.Equals)
@@ -75,6 +84,30 @@ public sealed class Parser
         program.Instructions.Add(
             new Instruction(OpCode.Pop));
         return true;
+    }
+
+    private void CompileDeclaration(BytecodeProgram program)
+    {
+        VariableType type;
+
+        if (Match(TokenKind.IntType))
+            type = VariableType.Int;
+        else if (Match(TokenKind.FloatType))
+            type = VariableType.Float;
+        else if (Match(TokenKind.BoolType))
+            type = VariableType.Bool;
+        else if (Match(TokenKind.StrType))
+            type = VariableType.Str;
+        else
+            throw Error("Expected type.");
+
+        Token name = Consume(
+            TokenKind.Identifier,
+            "Expected variable name.");
+
+        program.DeclareVariable(
+            name.Text,
+            type);
     }
 
     private void CompileIf(BytecodeProgram program)
