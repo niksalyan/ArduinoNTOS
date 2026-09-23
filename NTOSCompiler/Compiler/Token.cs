@@ -31,7 +31,6 @@ public enum TokenKind
     True,
     False,
     Equals,
-    EqualEqual,
     NotEqual,
 
     Less,

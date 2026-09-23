@@ -63,8 +63,8 @@ public sealed class Parser
         }
 
         // x = expression
-        if (Check(TokenKind.Assign) &&
-            Peek(1).Kind == TokenKind.Equals)
+        if (Check(TokenKind.Identifier) &&
+            Peek(1).Kind == TokenKind.Assign)
         {
             string name = Advance().Text;
             Advance(); // '='
@@ -114,7 +114,7 @@ public sealed class Parser
             throw Error("Expected type.");
 
         Token name = Consume(
-            TokenKind.Assign,
+            TokenKind.Identifier,
             "Expected variable name.");
 
         var variable = program.DeclareVariable(
@@ -390,7 +390,7 @@ public sealed class Parser
         VariableType type =
             CompileAdditive(program);
 
-        while (Check(TokenKind.EqualEqual) ||
+        while (Check(TokenKind.Equals) ||
                Check(TokenKind.NotEqual) ||
                Check(TokenKind.Less) ||
                Check(TokenKind.Greater) ||
@@ -413,7 +413,7 @@ public sealed class Parser
                 new Instruction(
                     op switch
                     {
-                        TokenKind.EqualEqual =>
+                        TokenKind.Equals =>
                             OpCode.Equal,
 
                         TokenKind.NotEqual =>
@@ -549,7 +549,7 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
-        if (Check(TokenKind.Assign) &&
+        if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.LParen)
         {
             return CompileFunctionCall(program);
@@ -607,7 +607,7 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
-        if (Match(TokenKind.Assign))
+        if (Match(TokenKind.Identifier))
         {
             string name =
                 Previous().Text;
