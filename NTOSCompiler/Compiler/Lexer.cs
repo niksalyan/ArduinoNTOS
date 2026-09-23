@@ -52,7 +52,7 @@ public sealed class Lexer
                     "else" => TokenKind.Else,
                     "while" => TokenKind.While,
 
-                    _ => TokenKind.Assign
+                    _ => TokenKind.Identifier
                 };
 
                 tokens.Add(new Token(wordKind, text, start));
@@ -122,20 +122,18 @@ public sealed class Lexer
             {
                 _position++;
 
-                if (_position < _source.Length &&
-                    _source[_position] == '=')
+                if (_position < _source.Length && _source[_position] == '=')
                 {
                     _position++;
-
                     tokens.Add(new Token(
-                        TokenKind.EqualEqual,
+                        TokenKind.Equals,
                         "==",
                         start));
                 }
                 else
                 {
                     tokens.Add(new Token(
-                        TokenKind.Equals,
+                        TokenKind.Assign,
                         "=",
                         start));
                 }
