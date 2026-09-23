@@ -30,21 +30,21 @@
         {
             screenContainer = new Panel();
             tabControl = new TabControl();
+            tabPage2 = new TabPage();
+            numpadControl1 = new NTOSEmulator.Controls.NumpadControl();
             consoleTab = new TabPage();
             debugOutput = new TextBox();
             variablesTab = new TabPage();
             variablesGrid = new DataGridView();
             tabPage1 = new TabPage();
             bytecodeGrid = new DataGridView();
-            tabPage2 = new TabPage();
-            numpadControl1 = new NTOSEmulator.Controls.NumpadControl();
             tabControl.SuspendLayout();
+            tabPage2.SuspendLayout();
             consoleTab.SuspendLayout();
             variablesTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)variablesGrid).BeginInit();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).BeginInit();
-            tabPage2.SuspendLayout();
             SuspendLayout();
             // 
             // screenContainer
@@ -62,13 +62,40 @@
             tabControl.Controls.Add(consoleTab);
             tabControl.Controls.Add(variablesTab);
             tabControl.Controls.Add(tabPage1);
-            
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 241);
             tabControl.Name = "tabControl";
             tabControl.SelectedIndex = 0;
             tabControl.Size = new Size(800, 209);
             tabControl.TabIndex = 1;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(numpadControl1);
+            tabPage2.Location = new Point(4, 29);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(792, 176);
+            tabPage2.TabIndex = 3;
+            tabPage2.Text = "Input";
+            // 
+            // numpadControl1
+            // 
+            numpadControl1.BackColor = Color.FromArgb(24, 27, 32);
+            numpadControl1.BackgroundColor = Color.FromArgb(24, 27, 32);
+            numpadControl1.Dock = DockStyle.Fill;
+            numpadControl1.ForeColor = Color.FromArgb(235, 238, 242);
+            numpadControl1.KeyColor = Color.FromArgb(45, 49, 58);
+            numpadControl1.KeyHoverColor = Color.FromArgb(58, 64, 75);
+            numpadControl1.KeyPressedColor = Color.FromArgb(70, 125, 175);
+            numpadControl1.KeySpacing = 8;
+            numpadControl1.KeyTextColor = Color.FromArgb(235, 238, 242);
+            numpadControl1.Location = new Point(3, 3);
+            numpadControl1.MinimumSize = new Size(180, 180);
+            numpadControl1.Name = "numpadControl1";
+            numpadControl1.SecondaryTextColor = Color.FromArgb(145, 153, 165);
+            numpadControl1.Size = new Size(786, 180);
+            numpadControl1.TabIndex = 0;
             // 
             // consoleTab
             // 
@@ -140,34 +167,6 @@
             bytecodeGrid.Size = new Size(786, 170);
             bytecodeGrid.TabIndex = 1;
             // 
-            // tabPage2
-            // 
-            tabPage2.Controls.Add(numpadControl1);
-            tabPage2.Location = new Point(4, 29);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(792, 176);
-            tabPage2.TabIndex = 3;
-            tabPage2.Text = "Input";
-            // 
-            // numpadControl1
-            // 
-            numpadControl1.BackColor = Color.FromArgb(24, 27, 32);
-            numpadControl1.BackgroundColor = Color.FromArgb(24, 27, 32);
-            numpadControl1.Dock = DockStyle.Fill;
-            numpadControl1.ForeColor = Color.FromArgb(235, 238, 242);
-            numpadControl1.KeyColor = Color.FromArgb(45, 49, 58);
-            numpadControl1.KeyHoverColor = Color.FromArgb(58, 64, 75);
-            numpadControl1.KeyPressedColor = Color.FromArgb(70, 125, 175);
-            numpadControl1.KeySpacing = 8;
-            numpadControl1.KeyTextColor = Color.FromArgb(235, 238, 242);
-            numpadControl1.Location = new Point(3, 3);
-            numpadControl1.MinimumSize = new Size(180, 180);
-            numpadControl1.Name = "numpadControl1";
-            numpadControl1.SecondaryTextColor = Color.FromArgb(145, 153, 165);
-            numpadControl1.Size = new Size(786, 180);
-            numpadControl1.TabIndex = 0;
-            // 
             // Emulator
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -178,13 +177,13 @@
             Size = new Size(800, 450);
             Resize += Emulator_Resize;
             tabControl.ResumeLayout(false);
+            tabPage2.ResumeLayout(false);
             consoleTab.ResumeLayout(false);
             consoleTab.PerformLayout();
             variablesTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)variablesGrid).EndInit();
             tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).EndInit();
-            tabPage2.ResumeLayout(false);
             ResumeLayout(false);
         }
 

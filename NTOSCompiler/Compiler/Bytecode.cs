@@ -49,6 +49,8 @@ public enum OpCode : byte
     Jump = 128,
     JumpIfFalse,
     CallFunction,
+
+    Checkpoint = 255
 }
 
 public class Instruction
