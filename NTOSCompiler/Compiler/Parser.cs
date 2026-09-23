@@ -30,6 +30,8 @@ public sealed class Parser
             }
         }
 
+        program.Instructions.Add(
+                new Instruction(OpCode.End));
         program.UpdateBytecode();
         return program;
     }

@@ -50,7 +50,11 @@ namespace NTOSDev
                 vm.Execute(program.Bytecode);
 
                 Debug.WriteLine("Bytecode:\n" + bc);
+                Debug.WriteLine(string.Join(" ", program.Bytecode.Select(b => b.ToString("X2"))));
+
             }
+
+
             catch (Exception ex)
             {
                 listBox1.Items.Clear();

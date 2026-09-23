@@ -125,26 +125,10 @@ public sealed class BytecodeProgram
                             Convert.ToInt32(
                                 instruction.Operand);
 
-                        if (targetInstruction < 0 ||
-                            targetInstruction > Instructions.Count)
-                        {
-                            throw new InvalidOperationException(
-                                $"Invalid jump target: {targetInstruction}");
-                        }
-
-                        int targetAddress;
-
-                        if (targetInstruction == Instructions.Count)
-                        {
-                            // End of bytecode.
-                            targetAddress =
-                                checked((int)stream.Length + 4);
-                        }
-                        else
-                        {
-                            targetAddress =
-                                Instructions[targetInstruction].Address;
-                        }
+                        int targetAddress =
+                            targetInstruction < Instructions.Count
+                                ? Instructions[targetInstruction].Address
+                                : (int)stream.Length + 4;
 
                         WriteInt32(
                             stream,
