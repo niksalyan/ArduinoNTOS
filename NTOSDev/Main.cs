@@ -46,11 +46,13 @@ namespace NTOSDev
                     bc += item + Environment.NewLine;
                 }
 
+                Debug.WriteLine("Bytecode:\n" + bc);
+                Debug.WriteLine(string.Join(" ", program.Bytecode.Select(b => b.ToString("X2"))));
+
                 var vm = new VirtualMachine(4096, vmFunctions);
                 vm.Execute(program.Bytecode);
 
-                Debug.WriteLine("Bytecode:\n" + bc);
-                Debug.WriteLine(string.Join(" ", program.Bytecode.Select(b => b.ToString("X2"))));
+                
 
             }
 

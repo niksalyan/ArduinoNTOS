@@ -10,6 +10,7 @@ public sealed class VirtualMachine
     private readonly VMFunctions _vmFunctions;
 
     private readonly byte[] _memory;
+    private readonly Dictionary<ushort, object?> _variables = new();
 
     public uint MaxInstructions { get; set; } = 100_000;
 
@@ -81,8 +82,11 @@ public sealed class VirtualMachine
                                 bytecode,
                                 ref instructionPointer);
 
-                        _stack.Push(
-                            GetInt(address));
+                        if (!_variables.TryGetValue(address, out var value))
+                            throw new Exception(
+                                $"Variable at address {address} has not been initialized.");
+
+                        _stack.Push(value);
 
                         break;
                     }
@@ -94,11 +98,9 @@ public sealed class VirtualMachine
                                 bytecode,
                                 ref instructionPointer);
 
-                        int value =
-                            Convert.ToInt32(
-                                _stack.Pop());
+                        object? value = _stack.Pop();
 
-                        SetInt(address, value);
+                        _variables[address] = value;
 
                         break;
                     }
