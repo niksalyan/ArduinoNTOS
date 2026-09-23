@@ -4,10 +4,17 @@ public enum TokenKind
 {
     Eof,
 
+    IntType,
+    FloatType,
+    BoolType,
+    StrType,
+
     Identifier,
-    Integer,
+    Int,
     Float,
-    String,
+
+    Bool,
+    Str,
 
     Plus,
     Minus,
