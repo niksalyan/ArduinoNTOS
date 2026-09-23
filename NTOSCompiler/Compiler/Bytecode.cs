@@ -171,8 +171,14 @@ public sealed class BytecodeProgram
                             : (byte)0);
                     break;
 
-                case OpCode.LoadVariable:
-                case OpCode.StoreVariable:
+                case OpCode.LoadInt:
+                case OpCode.StoreInt:
+                case OpCode.LoadFloat:
+                case OpCode.StoreFloat:
+                case OpCode.LoadBool:
+                case OpCode.StoreBool:
+                case OpCode.LoadStr:
+                case OpCode.StoreStr:
                     WriteAddress(
                         stream,
                         Convert.ToInt32(
