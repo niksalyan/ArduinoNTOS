@@ -379,7 +379,7 @@ public sealed class Parser
         {
             program.Instructions.Add(
                 new Instruction(
-                    OpCode.PushString,
+                    OpCode.PushStr,
                     Previous().Text));
 
             return;

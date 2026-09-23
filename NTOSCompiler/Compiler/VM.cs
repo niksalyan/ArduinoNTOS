@@ -69,7 +69,7 @@ public sealed class VirtualMachine
                         _stack.Push(value);
                         break;
                     }
-                case OpCode.PushString:
+                case OpCode.PushStr:
                     // _stack.Push(instruction.Operand);
                     break;
 

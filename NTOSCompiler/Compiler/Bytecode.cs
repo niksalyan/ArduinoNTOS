@@ -5,11 +5,22 @@ public enum OpCode : byte
     End = 0,
     PushInt = 1,
     PushFloat,
-    PushString,
+    PushStr,
 
     PushBool,
-    LoadVariable,
-    StoreVariable,
+
+
+    LoadInt,
+    StoreInt,
+
+    LoadFloat,
+    StoreFloat,
+
+    LoadBool,
+    StoreBool,
+
+    LoadStr,
+    StoreStr,
 
     Add = 32,
     Subtract,
@@ -52,13 +63,63 @@ public class Instruction
     }
 }
 
+public enum VariableType { 
+    Void, // Just in case, we can remove this if not needed
+    Int,
+    Float,
+    Bool,
+    Str
+}
+
+public class Variable
+{
+    public string Name { get; }
+    public VariableType Type { get; }
+    public int Address { get; set; }
+
+    public bool IsArray { get; }
+    public int Length { get; }
+
+    public int StringLength { get; }
+
+    public Variable(
+        string name,
+        VariableType type,
+        bool isArray = false,
+        int length = 1,
+        int stringLength = 0
+        )
+    {
+        Name = name;
+        Type = type;
+        IsArray = isArray;
+        Length = length;
+        StringLength = stringLength;
+    }
+
+    public int GetSize()
+    {
+        switch(Type)
+        {
+            case VariableType.Int:
+                return 4 * Length;
+            case VariableType.Float:
+                return 4 * Length;
+            case VariableType.Bool:
+                return 1 * Length;
+            case VariableType.Str:
+                return (StringLength + 1) * Length; // Probably string size + ending zero
+            default:
+                return 0;
+        }
+    }
+}
+
 public sealed class BytecodeProgram
 {
-    public List<KeyValuePair<string, int>> _addresses = new();
+    public List<Variable> _variables = new();
 
     public List<Instruction> Instructions { get; } = new();
-
-    private int _nextAddress;
 
     private byte[] _bytecode;
 
@@ -172,7 +233,7 @@ public sealed class BytecodeProgram
                 case OpCode.End:
                     break;
 
-                case OpCode.PushString:
+                case OpCode.PushStr:
                     throw new NotSupportedException(
                         "String bytecode is not implemented yet.");
 
@@ -210,27 +271,39 @@ public sealed class BytecodeProgram
                 checked((ushort)address)));
     }
 
-    public int GetAddress(string name, int size)
+    public Variable GetVariable(string name,
+        VariableType type,
+        bool isArray = false,
+        int length = 1,
+        int stringLength = 0)
     {
-        if (size <= 0)
-            throw new ArgumentOutOfRangeException(
-                nameof(size));
-
-        foreach (var entry in _addresses)
+        var existing = _variables.FirstOrDefault(x => x.Name == name);
+        if (existing != null)
         {
-            if (entry.Key == name)
-                return entry.Value;
+            return existing;
         }
 
-        int address = _nextAddress;
 
-        _addresses.Add(
-            new KeyValuePair<string, int>(
-                name,
-                address));
+        var variable = new Variable(
+            name,
+            type,
+            isArray,
+            length,
+            stringLength);
 
-        _nextAddress += size;
 
-        return address;
+        _variables.Add(variable);
+        UpdateAddresses();
+        return variable;
+    }
+
+    private void UpdateAddresses()
+    {
+        int address = 0;
+        foreach (var variable in _variables)
+        {
+            variable.Address = address;
+            address += variable.GetSize();
+        }
     }
 }
