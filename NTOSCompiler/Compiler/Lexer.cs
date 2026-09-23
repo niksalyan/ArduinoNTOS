@@ -41,11 +41,17 @@ public sealed class Lexer
 
                 TokenKind wordKind = text switch
                 {
+                    "int" => TokenKind.IntType,
+                    "float" => TokenKind.FloatType,
+                    "bool" => TokenKind.BoolType,
+                    "str" => TokenKind.StrType,
+
                     "true" => TokenKind.True,
                     "false" => TokenKind.False,
                     "if" => TokenKind.If,
                     "else" => TokenKind.Else,
                     "while" => TokenKind.While,
+
                     _ => TokenKind.Identifier
                 };
 
@@ -81,7 +87,7 @@ public sealed class Lexer
                 }
 
                 tokens.Add(new Token(
-                    isFloat ? TokenKind.Float : TokenKind.Integer,
+                    isFloat ? TokenKind.Float : TokenKind.Int,
                     _source[start.._position],
                     start));
 
@@ -105,7 +111,7 @@ public sealed class Lexer
                 _position++;
 
                 tokens.Add(new Token(
-                    TokenKind.String,
+                    TokenKind.Str,
                     _source[(start + 1)..(_position - 1)],
                     start));
 
