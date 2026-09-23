@@ -117,7 +117,7 @@ public class Variable
 
 public sealed class BytecodeProgram
 {
-    public List<Variable> _variables = new();
+    private List<Variable> _variables = new();
 
     public List<Instruction> Instructions { get; } = new();
 
@@ -271,18 +271,27 @@ public sealed class BytecodeProgram
                 checked((ushort)address)));
     }
 
-    public Variable GetVariable(string name,
-        VariableType type,
-        bool isArray = false,
-        int length = 1,
-        int stringLength = 0)
+    public Variable GetVariable(string name)
     {
-        var existing = _variables.FirstOrDefault(x => x.Name == name);
-        if (existing != null)
-        {
-            return existing;
-        }
+        var variable = _variables.FirstOrDefault(x => x.Name == name);
 
+        if (variable == null)
+            throw new InvalidOperationException(
+                $"Variable '{name}' is not declared.");
+
+        return variable;
+    }
+
+    public Variable DeclareVariable(
+    string name,
+    VariableType type,
+    bool isArray = false,
+    int length = 1,
+    int stringLength = 0)
+    {
+        if (_variables.Any(x => x.Name == name))
+            throw new InvalidOperationException(
+                $"Variable '{name}' is already declared.");
 
         var variable = new Variable(
             name,
@@ -291,9 +300,9 @@ public sealed class BytecodeProgram
             length,
             stringLength);
 
-
         _variables.Add(variable);
         UpdateAddresses();
+
         return variable;
     }
 
