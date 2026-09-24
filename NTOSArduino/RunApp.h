@@ -85,6 +85,9 @@ private:
         break;
 
       default:
+        if (key != 0) {
+          NTOSVM::WriteByteToMemory(0, key);
+        }
         break;
     }
   }

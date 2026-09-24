@@ -15,5 +15,5 @@ void loop() {
   NTOSVM::Update();
   Terminal::update();
 
-  delay(10);
+  // delay(10);
 }

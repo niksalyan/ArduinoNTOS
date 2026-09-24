@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 
 
-#define SERIAL_ENABLED true
+#define SERIAL_ENABLED false
 
 // ============================================================
 // TFT

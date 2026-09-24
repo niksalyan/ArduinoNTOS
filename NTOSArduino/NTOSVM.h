@@ -23,7 +23,7 @@
 #endif
 
 #ifndef NTOS_DEBUG
-#define NTOS_DEBUG 1
+#define NTOS_DEBUG 0
 #endif
 
 
@@ -668,7 +668,12 @@ public:
     }
   }
 
+  static void WriteByteToMemory(uint16_t address, uint8_t value) {
+    if (address >= NTOS_MEMORY_SIZE)
+      return;
 
+    _memory[address] = value;
+  }
 
 
 
@@ -989,24 +994,26 @@ private:
     return tft.color565(r, g, b);
   }
 
+
+
   static void ExecuteSystemFunction(
     uint16_t functionIndex,
     uint8_t argumentCount) {
     switch (functionIndex) {
-      case 0:  // cls
+      case 9:  // cls
         {
           tft.fillScreenBlack();
           break;
         }
 
-      case 1:  // fillCircle
+      case 15:  // fillCircle
         {
-          uint8_t color = Pop();
-          uint32_t radius = Pop();
-          uint32_t y = Pop();
-          uint32_t x = Pop();
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t radius = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
 
-          UI::fillCircle(
+          tft.fillCircle(
             (int16_t)x,
             (int16_t)y,
             (int16_t)radius,
