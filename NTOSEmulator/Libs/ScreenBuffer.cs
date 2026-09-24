@@ -57,7 +57,7 @@ namespace NTOSEmulator.Libs
         {
             
 
-            vmFunctions.AddFunction(1, "cls", args =>
+            vmFunctions.AddFunction(9, "cls", args =>
             {
                 using var g = Graphics.FromImage(buffer);
                 g.Clear(Color.Black);
@@ -65,15 +65,6 @@ namespace NTOSEmulator.Libs
                 OnInvalidate?.Invoke();
                 return null;
             });
-
-            vmFunctions.AddFunction(2, "delay", args =>
-            {
-                if (args.Length > 0)
-                    Thread.Sleep(Convert.ToInt32(args[0]));
-
-                return null;
-            });
-
 
             // ============================================================
             // GRAPHICS: 10 - 49

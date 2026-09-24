@@ -32,6 +32,17 @@ namespace NTOSEmulator
                 return null;
             });
 
+            vmFunctions.AddFunction(0, "load", (args) =>
+            {
+                if (args.Length > 0)
+                {
+
+                    // LOAD LOGIC ILL ADD HERE
+                    DebugOutput(args[0]?.ToString() ?? "");
+                }
+                return null;
+            });
+
             screen = new ScreenBuffer(vmFunctions);
 
             app = new BytecodeApp(vmFunctions, screen.colors);
