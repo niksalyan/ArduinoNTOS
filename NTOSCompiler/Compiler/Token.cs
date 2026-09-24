@@ -16,6 +16,8 @@ public enum TokenKind
 
     Identifier,
 
+    CharLiteral,
+
     Assign,
     Int,
     Float,

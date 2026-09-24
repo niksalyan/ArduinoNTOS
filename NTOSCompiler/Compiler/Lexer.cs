@@ -291,6 +291,33 @@ public sealed class Lexer
                 continue;
             }
 
+            if (c == '\'')
+            {
+                _position++;
+
+                if (_position >= _source.Length)
+                    throw new Exception("Unterminated character literal.");
+
+                char value = _source[_position++];
+
+                if (_position >= _source.Length ||
+                    _source[_position] != '\'')
+                {
+                    throw new Exception(
+                        "Character literal must contain exactly one character.");
+                }
+
+                _position++;
+
+                tokens.Add(
+                    new Token(
+                        TokenKind.CharLiteral,
+                        value.ToString(),
+                        start));
+
+                continue;
+            }
+
             TokenKind kind = c switch
             {
                 '+' => TokenKind.Plus,
