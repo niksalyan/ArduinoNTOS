@@ -38,6 +38,14 @@ namespace NTOSEmulator
             {
                 screenContainer.Invalidate();
             };
+
+            typeof(Panel)
+    .GetProperty(
+        "DoubleBuffered",
+        System.Reflection.BindingFlags.Instance |
+        System.Reflection.BindingFlags.NonPublic)
+    ?.SetValue(screenContainer, true);
+
         }
 
         public void ClearDebug()

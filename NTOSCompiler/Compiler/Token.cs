@@ -4,6 +4,7 @@ public enum TokenKind
 {
     Eof,
 
+
     IntType,
     FloatType,
     BoolType,
@@ -25,6 +26,8 @@ public enum TokenKind
     Star,
     Slash,
     Percent,
+
+    Read,
 
     If,
     Else,

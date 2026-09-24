@@ -199,6 +199,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(tabControl);
             Controls.Add(screenContainer);
+            DoubleBuffered = true;
             Name = "Emulator";
             Size = new Size(800, 450);
             Resize += Emulator_Resize;

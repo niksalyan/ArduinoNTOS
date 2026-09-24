@@ -60,7 +60,7 @@ public sealed class Parser
 
         if (Match(TokenKind.Delay))
         {
-            CompileSubroutineCall(program);
+            CompileDelay(program);
             return true;
         }
 

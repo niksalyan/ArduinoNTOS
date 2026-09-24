@@ -53,6 +53,7 @@ public sealed class Lexer
                     "while" => TokenKind.While,
                     "call" => TokenKind.Call,
                     "delay" => TokenKind.Delay,
+                    "read" => TokenKind.Read,
 
                     _ => TokenKind.Identifier
                 };

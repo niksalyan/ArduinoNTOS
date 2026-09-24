@@ -401,7 +401,7 @@ public sealed class VirtualMachine
                         await Task.Delay(
                             TimeSpan.FromSeconds(seconds),
                             _executionCts.Token);
-
+                        _stopwatch.Restart();
                         break;
                     }
 
