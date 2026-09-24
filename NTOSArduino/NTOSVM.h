@@ -55,18 +55,18 @@ class NTOSVM {
 private:
 
   inline static uint8_t _bytecode[NTOS_BYTECODE_SIZE] = {};
-    inline static uint16_t _bytecodeSize = 0;
+  inline static uint16_t _bytecodeSize = 0;
 
-    inline static uint8_t _memory[NTOS_MEMORY_SIZE] = {};
-    inline static uint16_t _ip = 0;
+  inline static uint8_t _memory[NTOS_MEMORY_SIZE] = {};
+  inline static uint16_t _ip = 0;
 
-    inline static StackValue _stack[NTOS_STACK_SIZE] = {};
-    inline static uint8_t _sp = 0;
+  inline static StackValue _stack[NTOS_STACK_SIZE] = {};
+  inline static uint8_t _sp = 0;
 
-    inline static uint16_t _callStack[NTOS_CALL_STACK_SIZE] = {};
-    inline static uint8_t _callSp = 0;
+  inline static uint16_t _callStack[NTOS_CALL_STACK_SIZE] = {};
+  inline static uint8_t _callSp = 0;
 
-    inline static bool _running = false;
+  inline static bool _running = false;
 
 
 
@@ -87,6 +87,28 @@ public:
       return false;
 
     memcpy(
+      _bytecode,
+      bytecode,
+      size);
+
+    _bytecodeSize = size;
+
+    ResetExecution();
+
+    return true;
+  }
+
+  static bool LoadBytecodeFromFlash(
+    const uint8_t* bytecode,
+    uint16_t size) {
+
+    if (bytecode == nullptr)
+      return false;
+
+    if (size > NTOS_BYTECODE_SIZE)
+      return false;
+
+    memcpy_P(
       _bytecode,
       bytecode,
       size);
@@ -137,12 +159,11 @@ public:
   static void Update() {
 
     if (!_running)
-        return;
+      return;
 
-    if (_ip >= _bytecodeSize)
-    {
-        _running = false;
-        return;
+    if (_ip >= _bytecodeSize) {
+      _running = false;
+      return;
     }
 
     uint16_t instructionAddress = _ip;
@@ -150,8 +171,8 @@ public:
     uint8_t rawOpcode = ReadByte();
 
     DebugInstruction(
-    instructionAddress,
-    rawOpcode);
+      instructionAddress,
+      rawOpcode);
 
     switch (rawOpcode) {
         // ------------------------------------------------
@@ -580,32 +601,12 @@ public:
 
       case 0x83:  // CallFunction
         {
-          uint16_t functionIndex =
-            ReadUInt16();
+          uint16_t functionIndex = ReadUInt16();
+          uint8_t argumentCount = ReadByte();
 
-          uint8_t argumentCount =
-            ReadByte();
-
-          // ------------------------------------------------
-          // MONETRIX functions
-          // ------------------------------------------------
-
-          switch (functionIndex) {
-              // TODO:
-              //
-              // case 0:
-              //     load(...)
-              //     break;
-              //
-              // case 1:
-              //     drawText(...)
-              //     break;
-
-            default:
-              break;
-          }
-
-          (void)argumentCount;
+          ExecuteSystemFunction(
+            functionIndex,
+            argumentCount);
 
           break;
         }
@@ -667,8 +668,8 @@ public:
     }
   }
 
-  
-  
+
+
 
 
 private:
@@ -954,26 +955,70 @@ private:
     uint16_t address,
     uint8_t opcode) {
 
-    #if NTOS_DEBUG
-        Serial.print(F("[NTOS] IP="));
+#if NTOS_DEBUG
+    Serial.print(F("[NTOS] IP="));
 
-        if (address < 1000)
-            Serial.print('0');
-        if (address < 100)
-            Serial.print('0');
-        if (address < 10)
-            Serial.print('0');
+    if (address < 1000)
+      Serial.print('0');
+    if (address < 100)
+      Serial.print('0');
+    if (address < 10)
+      Serial.print('0');
 
-        Serial.print(address);
+    Serial.print(address);
 
-        Serial.print(F(" OPCODE=0x"));
+    Serial.print(F(" OPCODE=0x"));
 
-        if (opcode < 0x10)
-            Serial.print('0');
+    if (opcode < 0x10)
+      Serial.print('0');
 
-        Serial.println(opcode, HEX);
-    #endif
+    Serial.println(opcode, HEX);
+#endif
+  }
+
+  static uint16_t Color332To565(uint8_t color) {
+    uint8_t r = (color >> 5) & 0x07;
+    uint8_t g = (color >> 2) & 0x07;
+    uint8_t b = color & 0x03;
+
+    // Expand RGB332 to RGB888
+    r = (r * 255) / 7;
+    g = (g * 255) / 7;
+    b = (b * 255) / 3;
+
+    return tft.color565(r, g, b);
+  }
+
+  static void ExecuteSystemFunction(
+    uint16_t functionIndex,
+    uint8_t argumentCount) {
+    switch (functionIndex) {
+      case 0:  // cls
+        {
+          tft.fillScreenBlack();
+          break;
+        }
+
+      case 1:  // fillCircle
+        {
+          uint8_t color = Pop();
+          uint32_t radius = Pop();
+          uint32_t y = Pop();
+          uint32_t x = Pop();
+
+          UI::fillCircle(
+            (int16_t)x,
+            (int16_t)y,
+            (int16_t)radius,
+            Color332To565(color));
+
+          break;
+        }
+
+      default:
+        Serial.print("[NTOS] Unknown system function: ");
+        Serial.println(functionIndex);
+        break;
     }
-
+  }
 };
-

@@ -47,7 +47,7 @@ public:
     NTOSVM::Stop();
     NTOSVM::ResetExecution();
     NTOSVM::ClearMemory();
-    NTOSVM::LoadBytecode(Bytecode, sizeof(Bytecode));
+    NTOSVM::LoadBytecodeFromFlash(Bytecode, sizeof(Bytecode));
     NTOSVM::Start();
 
     
