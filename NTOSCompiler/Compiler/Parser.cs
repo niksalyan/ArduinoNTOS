@@ -334,6 +334,22 @@ public sealed class Parser
 
             if (expressionType != type)
             {
+                if (type == VariableType.Byte &&
+                    expressionType == VariableType.Int &&
+                    TryConvertLastPushIntToByte(program))
+                {
+                    expressionType = VariableType.Byte;
+                }
+                else
+                {
+                    throw Error(
+                        $"Cannot assign {expressionType} to variable " +
+                        $"'{name.Text}' of type {type}.");
+                }
+            }
+
+            if (expressionType != type)
+            {
                 throw Error(
                     $"Cannot assign {expressionType} to variable " +
                     $"'{name.Text}' of type {type}.");
@@ -1024,6 +1040,35 @@ public sealed class Parser
             _ => throw new InvalidOperationException(
                 $"Cannot store variable of type {type}.")
         };
+    }
+
+    private bool TryConvertLastPushIntToByte(
+    BytecodeProgram program)
+    {
+        if (program.Instructions.Count == 0)
+            return false;
+
+        var instruction =
+            program.Instructions[^1];
+
+        if (instruction.OpCode != OpCode.PushInt)
+            return false;
+
+        int value = Convert.ToInt32(instruction.Operand);
+
+        if (value < byte.MinValue ||
+            value > byte.MaxValue)
+        {
+            throw Error(
+                $"Value {value} cannot be stored in a Byte.");
+        }
+
+        program.Instructions[^1] =
+            new Instruction(
+                OpCode.PushByte,
+                (byte)value);
+
+        return true;
     }
 
     private bool Match(TokenKind kind)
