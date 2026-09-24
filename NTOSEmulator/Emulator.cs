@@ -1,6 +1,7 @@
 using NTOSCompiler;
 using NTOSCompiler.Compiler;
 using NTOSEmulator.Libs;
+using System.Diagnostics;
 using System.Text;
 
 namespace NTOSEmulator
@@ -12,6 +13,8 @@ namespace NTOSEmulator
         private BytecodeApp app;
 
         private ScreenBuffer screen;
+
+        private Variable keyboardInput = new Variable("keyInput", VariableType.Byte);
 
         
 
@@ -40,12 +43,21 @@ namespace NTOSEmulator
             };
 
             typeof(Panel)
-    .GetProperty(
-        "DoubleBuffered",
-        System.Reflection.BindingFlags.Instance |
-        System.Reflection.BindingFlags.NonPublic)
-    ?.SetValue(screenContainer, true);
+            .GetProperty(
+                "DoubleBuffered",
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic)
+            ?.SetValue(screenContainer, true);
 
+            app.Variables.Add(keyboardInput);
+
+            numpadControl.KeyPressed += NumpadControl_KeyPressed;
+
+        }
+
+        private void NumpadControl_KeyPressed(object? sender, char key)
+        {
+            vm.WriteByteToMemory(keyboardInput.Address, (byte)key);
         }
 
         public void ClearDebug()

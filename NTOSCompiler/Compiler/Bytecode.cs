@@ -121,6 +121,7 @@ public class Variable
             case VariableType.Float:
                 return 4 * Length;
             case VariableType.Bool:
+            case VariableType.Byte:
                 return 1 * Length;
             case VariableType.Str:
                 return (MaxLength + 1) * Length; // Probably string size + ending zero
