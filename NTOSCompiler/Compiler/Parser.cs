@@ -12,6 +12,8 @@ public sealed class Parser
     private readonly VMFunctions _vmFunctions;
     private Dictionary<string, byte> _constants;
 
+    private readonly Dictionary<string, int> _subroutines = new();
+
     public Parser(List<Token> tokens, VMFunctions vmFunctions, Dictionary<string, byte>? constants)
     {
         _vmFunctions = vmFunctions ?? new VMFunctions();
@@ -45,6 +47,20 @@ public sealed class Parser
 
     private bool CompileStatement(BytecodeProgram program)
     {
+        if (Match(TokenKind.Call))
+        {
+            CompileSubroutineCall(program);
+            return true;
+        }
+
+        if (Match(TokenKind.Return))
+        {
+            program.Instructions.Add(
+                new Instruction(OpCode.Return));
+
+            return true;
+        }
+
         if (Match(TokenKind.If))
         {
             CompileIf(program);
@@ -102,6 +118,25 @@ public sealed class Parser
         return true;
     }
 
+    private void CompileSubroutineCall(BytecodeProgram program)
+    {
+        Token name = Consume(
+            TokenKind.Identifier,
+            "Expected subroutine name.");
+
+        if (!_subroutines.TryGetValue(
+                name.Text,
+                out int instructionIndex))
+        {
+            throw Error(
+                $"Unknown subroutine '{name.Text}'.");
+        }
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.CallSubroutine,
+                instructionIndex));
+    }
     private void CompileDeclaration(BytecodeProgram program)
     {
         VariableType type;

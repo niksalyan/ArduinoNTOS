@@ -48,8 +48,10 @@ public enum OpCode : byte
 
     Jump = 128,
     JumpIfFalse,
+    CallSubroutine,
 
     CallFunction,
+
 
     Return,
 

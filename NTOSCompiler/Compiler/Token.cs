@@ -55,6 +55,9 @@ public enum TokenKind
     Comma,
     Semicolon,
 
+    Call,
+    Return
+
 
 }
 

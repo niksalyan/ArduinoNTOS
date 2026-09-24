@@ -13,7 +13,6 @@ public sealed class VirtualMachine
 
     private readonly byte[] _memory;
 
-    public uint MaxInstructions { get; set; } = 100_000;
 
     private Stopwatch _stopwatch = new Stopwatch();
 
