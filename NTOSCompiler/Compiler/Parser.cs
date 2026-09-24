@@ -816,6 +816,18 @@ public sealed class Parser
             return VariableType.Float;
         }
 
+        if (Match(TokenKind.CharLiteral))
+        {
+            char value = Previous().Text[0];
+
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.PushByte,
+                    (byte)value));
+
+            return VariableType.Byte;
+        }
+
         if (Match(TokenKind.Str))
         {
             program.Instructions.Add(
@@ -1032,6 +1044,9 @@ public sealed class Parser
                 OpCode.StoreFloat,
 
             VariableType.Bool =>
+                OpCode.StoreByte,
+
+            VariableType.Byte =>
                 OpCode.StoreByte,
 
             VariableType.Str =>

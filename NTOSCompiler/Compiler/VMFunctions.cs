@@ -19,7 +19,6 @@ namespace NTOSCompiler.Compiler
 
         public object Invoke(int index, object[] args)
         {
-            Debug.WriteLine("Invoke: " + index);
             return _functions[index](args);
         }
 
