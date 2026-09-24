@@ -673,11 +673,19 @@ public sealed class Parser
 
         if (Match(TokenKind.Identifier))
         {
-            string name =
-                Previous().Text;
+            string name = Previous().Text;
 
-            Variable variable =
-                program.GetVariable(name);
+            if (_constants.TryGetValue(name, out byte constant))
+            {
+                program.Instructions.Add(
+                    new Instruction(
+                        OpCode.PushByte,
+                        constant));
+
+                return VariableType.Byte;
+            }
+
+            Variable variable = program.GetVariable(name);
 
             program.Instructions.Add(
                 new Instruction(

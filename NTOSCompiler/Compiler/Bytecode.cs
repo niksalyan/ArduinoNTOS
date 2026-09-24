@@ -48,7 +48,10 @@ public enum OpCode : byte
 
     Jump = 128,
     JumpIfFalse,
+
     CallFunction,
+
+    Return,
 
     Checkpoint = 255
 }
@@ -246,7 +249,6 @@ public class BytecodeProgram
                         Convert.ToInt32(
                             instruction.Operand));
                     break;
-
                 case OpCode.Jump:
                 case OpCode.JumpIfFalse:
                     {

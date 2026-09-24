@@ -7,6 +7,7 @@ namespace NTOSCompiler;
 public sealed class VirtualMachine
 {
     private readonly Stack<object?> _stack = new();
+    private readonly Stack<UInt16?> _returnStack = new();
 
     private readonly VMFunctions _vmFunctions;
 

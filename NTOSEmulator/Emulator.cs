@@ -1,6 +1,7 @@
 using NTOSCompiler;
 using NTOSCompiler.Compiler;
 using System.Diagnostics;
+using System.Text;
 
 namespace NTOSEmulator
 {
@@ -71,7 +72,7 @@ namespace NTOSEmulator
             vmFunctions.AddFunction(10, "drawBox", (args) =>
             {
                 using var g = Graphics.FromImage(screenBuffer);
-                using var pen = new Pen(GetColor332((int)args[4]));
+                using var pen = new Pen(GetColor332((byte)args[4]));
                 g.DrawRectangle(pen, new Rectangle((int)args[0], (int)args[1], (int)args[2], (int)args[3]));
                 screenContainer.Invalidate();
                 return null;
@@ -107,6 +108,7 @@ namespace NTOSEmulator
             ClearDebug();
             bytecodeGrid.DataSource = null;
             variablesGrid.DataSource = null;
+            bytecodeOutput.Text = "";
 
             string error = app.CompileSource(name, source);
 
@@ -118,6 +120,7 @@ namespace NTOSEmulator
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
+            bytecodeOutput.Text = ToArduinoArray(app.GetBytecode(name));
 
 
             try
@@ -142,9 +145,8 @@ namespace NTOSEmulator
             e.Graphics.DrawImage(screenBuffer, new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
         }
 
-        public static Color GetColor332(int colorInt)
+        public static Color GetColor332(byte color)
         {
-            byte color = (byte)(colorInt % 256);
             int r = (color >> 5) & 0b111;
             int g = (color >> 2) & 0b111;
             int b = color & 0b11;
@@ -154,6 +156,33 @@ namespace NTOSEmulator
             int blue = b * 255 / 3;
 
             return Color.FromArgb(red, green, blue);
+        }
+
+        public static string ToArduinoArray(byte[] bytecode, int columns = 8)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < bytecode.Length; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append($"0x{bytecode[i]:X2}");
+
+                if (i < bytecode.Length - 1)
+                {
+                    sb.Append(',');
+                }
+
+                if ((i + 1) % columns == 0)
+                {
+                    sb.AppendLine();
+                }
+            }
+
+            return sb.ToString();
         }
 
     }

@@ -38,6 +38,8 @@
             variablesGrid = new DataGridView();
             tabPage1 = new TabPage();
             bytecodeGrid = new DataGridView();
+            tabPage3 = new TabPage();
+            bytecodeOutput = new TextBox();
             tabControl.SuspendLayout();
             tabPage2.SuspendLayout();
             consoleTab.SuspendLayout();
@@ -45,6 +47,7 @@
             ((System.ComponentModel.ISupportInitialize)variablesGrid).BeginInit();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).BeginInit();
+            tabPage3.SuspendLayout();
             SuspendLayout();
             // 
             // screenContainer
@@ -62,6 +65,7 @@
             tabControl.Controls.Add(consoleTab);
             tabControl.Controls.Add(variablesTab);
             tabControl.Controls.Add(tabPage1);
+            tabControl.Controls.Add(tabPage3);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 241);
             tabControl.Name = "tabControl";
@@ -151,7 +155,7 @@
             tabPage1.Padding = new Padding(3);
             tabPage1.Size = new Size(792, 176);
             tabPage1.TabIndex = 2;
-            tabPage1.Text = "Bytecode";
+            tabPage1.Text = "Instructions";
             // 
             // bytecodeGrid
             // 
@@ -166,6 +170,28 @@
             bytecodeGrid.RowHeadersWidth = 51;
             bytecodeGrid.Size = new Size(786, 170);
             bytecodeGrid.TabIndex = 1;
+            // 
+            // tabPage3
+            // 
+            tabPage3.Controls.Add(bytecodeOutput);
+            tabPage3.Location = new Point(4, 29);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Padding = new Padding(3);
+            tabPage3.Size = new Size(792, 176);
+            tabPage3.TabIndex = 4;
+            tabPage3.Text = "Bytecode";
+            // 
+            // bytecodeOutput
+            // 
+            bytecodeOutput.BorderStyle = BorderStyle.None;
+            bytecodeOutput.Dock = DockStyle.Fill;
+            bytecodeOutput.Location = new Point(3, 3);
+            bytecodeOutput.Multiline = true;
+            bytecodeOutput.Name = "bytecodeOutput";
+            bytecodeOutput.ReadOnly = true;
+            bytecodeOutput.ScrollBars = ScrollBars.Vertical;
+            bytecodeOutput.Size = new Size(786, 170);
+            bytecodeOutput.TabIndex = 1;
             // 
             // Emulator
             // 
@@ -184,6 +210,8 @@
             ((System.ComponentModel.ISupportInitialize)variablesGrid).EndInit();
             tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).EndInit();
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -199,5 +227,7 @@
         private DataGridView bytecodeGrid;
         private TabPage tabPage2;
         private Controls.NumpadControl numpadControl1;
+        private TabPage tabPage3;
+        private TextBox bytecodeOutput;
     }
 }
