@@ -55,7 +55,9 @@ public enum TokenKind
     Comma,
     Semicolon,
 
-    Call
+    Call,
+
+    Delay
 
 
 }

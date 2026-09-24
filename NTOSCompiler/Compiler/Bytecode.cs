@@ -307,6 +307,11 @@ public class BytecodeProgram
 
                         break;
                     }
+                case OpCode.Delay:
+                    WriteFloat(
+                        stream,
+                        Convert.ToSingle(instruction.Operand));
+                    break;
 
                 case OpCode.Add:
                 case OpCode.Subtract:

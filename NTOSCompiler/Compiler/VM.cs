@@ -15,7 +15,7 @@ public sealed class VirtualMachine
 
 
     private Stopwatch _stopwatch = new Stopwatch();
-    private bool _isRunning = false;
+    private CancellationTokenSource? _executionCts;
 
     public VirtualMachine(
         int memorySize = 4096,
@@ -27,7 +27,7 @@ public sealed class VirtualMachine
 
     public void Stop()
     {
-        _isRunning = false;
+        _executionCts?.Cancel();
     }
 
     public void Execute(byte[] bytecode)
@@ -36,30 +36,12 @@ public sealed class VirtualMachine
         ExecuteAsync(bytecode);
     }
 
-    private async void ExecuteAsync(byte[] bytecode)
-    {
-        while (_isRunning)
-            await Task.Delay(10);
+  
 
-        _isRunning = true;
-
-        try
-        {
-            await ExecuteBytecodeAsync(bytecode);
-        }
-        catch (Exception ex)
-        {
-            // Handle/log exception
-        }
-        finally
-        {
-            _isRunning = false;
-        }
-    }
-
-    private async Task ExecuteBytecodeAsync(byte[] bytecode)
+    private async Task ExecuteAsync(byte[] bytecode)
     {
         // _isRunning = true;
+        _executionCts = new CancellationTokenSource();
         _stack.Clear();
         _returnStack.Clear();
 
@@ -74,10 +56,7 @@ public sealed class VirtualMachine
                     "VM execution limit exceeded. Possible infinite loop.");
             }
 
-            if (!_isRunning)
-            {
-                return;
-            }
+            _executionCts.Token.ThrowIfCancellationRequested();
 
             OpCode opcode =
                 (OpCode)bytecode[instructionPointer++];
@@ -421,7 +400,7 @@ public sealed class VirtualMachine
 
                         await Task.Delay(
                             TimeSpan.FromSeconds(seconds),
-                            cancellationToken);
+                            _executionCts.Token);
 
                         break;
                     }

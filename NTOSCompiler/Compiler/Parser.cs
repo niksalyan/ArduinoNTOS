@@ -58,6 +58,12 @@ public sealed class Parser
             return true;
         }
 
+        if (Match(TokenKind.Delay))
+        {
+            CompileSubroutineCall(program);
+            return true;
+        }
+
         if (Match(TokenKind.If))
         {
             CompileIf(program);
@@ -122,6 +128,33 @@ public sealed class Parser
             new Instruction(OpCode.Pop));
 
         return true;
+    }
+
+    private void CompileDelay(BytecodeProgram program)
+    {
+        Token value = Advance();
+
+        if (value.Kind != TokenKind.Float &&
+            value.Kind != TokenKind.Int)
+        {
+            throw Error(
+                "Expected number after 'delay'.");
+        }
+
+        float seconds = float.Parse(
+            value.Text,
+            System.Globalization.CultureInfo.InvariantCulture);
+
+        if (seconds < 0)
+        {
+            throw Error(
+                "Delay cannot be negative.");
+        }
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Delay,
+                seconds));
     }
 
     private void CompileSubroutine(BytecodeProgram program)

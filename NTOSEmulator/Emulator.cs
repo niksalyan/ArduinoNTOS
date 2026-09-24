@@ -70,16 +70,17 @@ namespace NTOSEmulator
 
             string error = app.CompileSource(name, source);
 
-            if (error != null)
-            {
-                DebugError(error);
-                return;
-            }
+            
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
             bytecodeOutput.Text = ToArduinoArray(app.GetBytecode(name));
 
+            if (error != null)
+            {
+                DebugError(error);
+                return;
+            }
 
             try
             {
