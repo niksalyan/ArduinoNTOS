@@ -313,6 +313,9 @@ public sealed class Parser
             TokenKind.LParen,
             "Expected '(' after 'while'.");
 
+        program.Instructions.Add(
+            new Instruction(OpCode.Checkpoint));
+
         int loopStart =
             program.Instructions.Count;
 

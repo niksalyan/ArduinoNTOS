@@ -20,8 +20,9 @@ namespace NTOSEmulator
 
             vmFunctions.AddFunction(0, "debug", (args) =>
             {
-                debugOutput.Text += args[0] + "\n";
-                // OnDebugOutput?.Invoke(args[0]);
+                if (args.Length > 0) {
+                    DebugOutput(args[0]?.ToString() ?? "");
+                }
                 return null;
             });
 
@@ -47,17 +48,42 @@ namespace NTOSEmulator
 
             app = new BytecodeApp(vmFunctions);
             vm = new VirtualMachine(4096, vmFunctions);
+        }
 
+        public void ClearDebug()
+        {
+            debugOutput.ForeColor = SystemColors.WindowText;
+            debugOutput.Text = "";
+        }
+
+        public void DebugOutput(string output)
+        {
+            debugOutput.ForeColor = SystemColors.WindowText;
+            debugOutput.Text += output + Environment.NewLine;
+
+        }
+        public void DebugError(string error)
+        {
+            debugOutput.ForeColor = Color.Red;
+            debugOutput.Text = error;
+            tabControl.SelectTab(1);
 
         }
 
+
         public void Execute(string name, string source)
         {
-
+            ClearDebug();
             bytecodeGrid.DataSource = null;
             variablesGrid.DataSource = null;
 
-            app.CompileSource(name, source);
+            string error = app.CompileSource(name, source);
+
+            if (error != null)
+            {
+                DebugError(error);
+                return;
+            }
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
@@ -69,7 +95,7 @@ namespace NTOSEmulator
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("VM Error");
+                DebugError(ex.Message);
             }
         }
 

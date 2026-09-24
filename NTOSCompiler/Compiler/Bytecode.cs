@@ -11,6 +11,7 @@ public enum OpCode : byte
     PushStr,
 
     PushBool,
+    PushByte,
 
 
     LoadInt,
@@ -141,7 +142,7 @@ public class BytecodeApp
         return _bytecodes.ContainsKey(name) ? _bytecodes[name] : new byte[1];
     }
 
-    public string CompileSource(string name, string source)
+    public string? CompileSource(string name, string source)
     {
         try
         {
@@ -231,6 +232,10 @@ public class BytecodeProgram
                             ? (byte)1
                             : (byte)0);
                     break;
+                case OpCode.PushByte:
+                    stream.WriteByte(
+                        Convert.ToByte(instruction.Operand));
+                    break;
 
                 case OpCode.LoadInt:
                 case OpCode.StoreInt:
@@ -298,6 +303,7 @@ public class BytecodeProgram
                 case OpCode.Or:
                 case OpCode.Not:
                 case OpCode.End:
+                case OpCode.Checkpoint:
                     break;
 
                 case OpCode.PushStr:

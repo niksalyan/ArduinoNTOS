@@ -1,4 +1,5 @@
 using NTOSCompiler.Compiler;
+using System.Diagnostics;
 
 
 namespace NTOSCompiler;
@@ -13,6 +14,8 @@ public sealed class VirtualMachine
 
     public uint MaxInstructions { get; set; } = 100_000;
 
+    private Stopwatch _stopwatch = new Stopwatch();
+
     public VirtualMachine(
         int memorySize = 4096,
         VMFunctions vmFunctions = null)
@@ -26,11 +29,11 @@ public sealed class VirtualMachine
         _stack.Clear();
 
         int instructionPointer = 0;
-        uint instructionCount = 0;
+        _stopwatch.Restart();
 
         while (instructionPointer < bytecode.Length)
         {
-            if (++instructionCount > MaxInstructions)
+            if (_stopwatch.ElapsedMilliseconds >= 1000)
             {
                 throw new Exception(
                     "VM execution limit exceeded. Possible infinite loop.");
@@ -71,7 +74,12 @@ public sealed class VirtualMachine
                         _stack.Push(value);
                         break;
                     }
-
+                case OpCode.PushByte:
+                    {
+                        byte value = bytecode[instructionPointer++];
+                        _stack.Push(value);
+                        break;
+                    }
                 case OpCode.PushStr:
                     throw new NotSupportedException(
                         "String values are not implemented yet.");
@@ -324,7 +332,7 @@ public sealed class VirtualMachine
                         break;
                     }
                 case OpCode.Checkpoint:
-                    instructionCount = 0;
+                    _stopwatch.Restart();
                     break;
                 case OpCode.CallFunction:
                     {
