@@ -1,6 +1,6 @@
 using NTOSCompiler;
 using NTOSCompiler.Compiler;
-using System.Diagnostics;
+using NTOSEmulator.Libs;
 using System.Text;
 
 namespace NTOSEmulator
@@ -11,39 +11,9 @@ namespace NTOSEmulator
         private VirtualMachine vm;
         private BytecodeApp app;
 
-        private Bitmap screenBuffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+        private ScreenBuffer screen;
 
-        private Dictionary<string, byte> colors = new Dictionary<string, byte>
-        {
-            ["BLACK"] = 0x00,
-            ["WHITE"] = 0xFF,
-
-            ["RED"] = 0xE0,
-            ["GREEN"] = 0x1C,
-            ["BLUE"] = 0x03,
-
-            ["YELLOW"] = 0xFC,
-            ["CYAN"] = 0x1F,
-            ["MAGENTA"] = 0xE3,
-
-            ["ORANGE"] = 0xE8,
-            ["PURPLE"] = 0x83,
-            ["PINK"] = 0xE6,
-
-            ["GRAY"] = 0x92,
-            ["DARKGRAY"] = 0x49,
-            ["LIGHTGRAY"] = 0xDB,
-
-            ["BROWN"] = 0xA0,
-            ["DARKRED"] = 0x80,
-            ["DARKGREEN"] = 0x10,
-            ["DARKBLUE"] = 0x02,
-
-            ["LIME"] = 0x3C,
-            ["NAVY"] = 0x02,
-            ["TEAL"] = 0x12,
-            ["OLIVE"] = 0xB0
-        };
+        
 
         // public Action<object> OnCompilerError;
 
@@ -59,27 +29,15 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(1, "cls", (args) =>
-            {
-                using (var g = Graphics.FromImage(screenBuffer))
-                {
-                    g.Clear(Color.Black);
-                }
-                screenContainer.Invalidate();
-                return null;
-            });
+            screen = new ScreenBuffer(vmFunctions);
 
-            vmFunctions.AddFunction(10, "drawBox", (args) =>
-            {
-                using var g = Graphics.FromImage(screenBuffer);
-                using var pen = new Pen(GetColor332((byte)args[4]));
-                g.DrawRectangle(pen, new Rectangle((int)args[0], (int)args[1], (int)args[2], (int)args[3]));
-                screenContainer.Invalidate();
-                return null;
-            });
-
-            app = new BytecodeApp(vmFunctions, colors);
+            app = new BytecodeApp(vmFunctions, screen.colors);
             vm = new VirtualMachine(4096, vmFunctions);
+
+            screen.OnInvalidate += () =>
+            {
+                screenContainer.Invalidate();
+            };
         }
 
         public void ClearDebug()
@@ -142,22 +100,10 @@ namespace NTOSEmulator
 
         private void screenContainer_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(screenBuffer, new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
+            e.Graphics.DrawImage(screen.GetBuffer(), new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
         }
 
-        public static Color GetColor332(byte color)
-        {
-            int r = (color >> 5) & 0b111;
-            int g = (color >> 2) & 0b111;
-            int b = color & 0b11;
-
-            int red = r * 255 / 7;
-            int green = g * 255 / 7;
-            int blue = b * 255 / 3;
-
-            return Color.FromArgb(red, green, blue);
-        }
-
+       
         public static string ToArduinoArray(byte[] bytecode, int columns = 8)
         {
             var sb = new StringBuilder();

@@ -52,7 +52,6 @@ public sealed class Lexer
                     "else" => TokenKind.Else,
                     "while" => TokenKind.While,
                     "call" => TokenKind.Call,
-                    "return" => TokenKind.Return,
 
                     _ => TokenKind.Identifier
                 };
@@ -260,12 +259,39 @@ public sealed class Lexer
                 continue;
             }
 
+            if (c == '/')
+            {
+                // Single-line comment
+                if (_position + 1 < _source.Length &&
+                    _source[_position + 1] == '/')
+                {
+                    _position += 2;
+
+                    while (_position < _source.Length &&
+                           _source[_position] != '\n')
+                    {
+                        _position++;
+                    }
+
+                    continue;
+                }
+
+                // Normal division operator
+                _position++;
+
+                tokens.Add(new Token(
+                    TokenKind.Slash,
+                    "/",
+                    start));
+
+                continue;
+            }
+
             TokenKind kind = c switch
             {
                 '+' => TokenKind.Plus,
                 '-' => TokenKind.Minus,
                 '*' => TokenKind.Star,
-                '/' => TokenKind.Slash,
                 '%' => TokenKind.Percent,
 
                 '(' => TokenKind.LParen,

@@ -58,14 +58,6 @@ public sealed class Parser
             return true;
         }
 
-        if (Match(TokenKind.Return))
-        {
-            program.Instructions.Add(
-                new Instruction(OpCode.Return));
-
-            return true;
-        }
-
         if (Match(TokenKind.If))
         {
             CompileIf(program);
@@ -146,6 +138,15 @@ public sealed class Parser
                 $"Subroutine '{name}' is already declared.");
         }
 
+        // Skip subroutine during normal execution.
+        int jumpIndex = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Jump,
+                -1));
+
+        // First instruction of the actual subroutine body.
         _subroutines[name] =
             program.Instructions.Count;
 
@@ -166,6 +167,19 @@ public sealed class Parser
         Consume(
             TokenKind.RBrace,
             "Expected '}' after subroutine.");
+
+        // Automatically return when the subroutine reaches its end.
+        program.Instructions.Add(
+            new Instruction(OpCode.Return));
+
+        // Skip the entire subroutine during normal execution.
+        int endIndex =
+            program.Instructions.Count;
+
+        program.Instructions[jumpIndex] =
+            new Instruction(
+                OpCode.Jump,
+                endIndex);
     }
 
     private void CompileSubroutineCall(BytecodeProgram program)
