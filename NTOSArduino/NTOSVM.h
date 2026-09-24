@@ -22,6 +22,10 @@
 #define NTOS_CALL_STACK_SIZE 32
 #endif
 
+#ifndef NTOS_DEBUG
+#define NTOS_DEBUG 1
+#endif
+
 
 // ============================================================
 // Stack
@@ -144,6 +148,10 @@ public:
     uint16_t instructionAddress = _ip;
 
     uint8_t rawOpcode = ReadByte();
+
+    DebugInstruction(
+    instructionAddress,
+    rawOpcode);
 
     switch (rawOpcode) {
         // ------------------------------------------------
@@ -659,6 +667,9 @@ public:
     }
   }
 
+  
+  
+
 
 private:
 
@@ -938,5 +949,31 @@ private:
 
     return left.value == right.value;
   }
+
+  static void DebugInstruction(
+    uint16_t address,
+    uint8_t opcode) {
+
+    #if NTOS_DEBUG
+        Serial.print(F("[NTOS] IP="));
+
+        if (address < 1000)
+            Serial.print('0');
+        if (address < 100)
+            Serial.print('0');
+        if (address < 10)
+            Serial.print('0');
+
+        Serial.print(address);
+
+        Serial.print(F(" OPCODE=0x"));
+
+        if (opcode < 0x10)
+            Serial.print('0');
+
+        Serial.println(opcode, HEX);
+    #endif
+    }
+
 };
 
