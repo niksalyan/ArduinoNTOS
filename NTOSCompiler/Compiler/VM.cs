@@ -91,8 +91,31 @@ public sealed class VirtualMachine
                         break;
                     }
                 case OpCode.PushStr:
-                    throw new NotSupportedException(
-                        "String values are not implemented yet.");
+                    {
+                        int start = instructionPointer;
+
+                        while (instructionPointer < bytecode.Length &&
+                               bytecode[instructionPointer] != 0)
+                        {
+                            instructionPointer++;
+                        }
+
+                        if (instructionPointer >= bytecode.Length)
+                        {
+                            throw new InvalidOperationException(
+                                "Unterminated string literal in bytecode.");
+                        }
+
+                        string value = System.Text.Encoding.ASCII.GetString(
+                            bytecode,
+                            start,
+                            instructionPointer - start);
+
+                        instructionPointer++; // Skip '\0'
+
+                        _stack.Push(value);
+                        break;
+                    }
 
                 case OpCode.LoadInt:
                     {

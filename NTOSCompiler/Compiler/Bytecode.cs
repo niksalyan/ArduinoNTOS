@@ -88,28 +88,34 @@ public enum VariableType {
 public class Variable
 {
     public string Name { get; }
+
+    [DisplayName("Type")]
+    public string DisplayType => Type.ToString();
+
+    [Browsable(false)]
     public VariableType Type { get; }
 
     public int Address { get; set; }
 
-    public bool IsArray { get; }
-    public int Length { get; }
+    public int Size => GetSize();
 
-    public int MaxLength { get; }
+    public bool IsArray = false;
+    public int Length;
+    public int MaxStringLength;
 
     public Variable(
         string name,
         VariableType type,
         bool isArray = false,
         int length = 1,
-        int maxLength = 0
+        int maxStringLength = 0
         )
     {
         Name = name;
         Type = type;
         IsArray = isArray;
         Length = length;
-        MaxLength = maxLength;
+        MaxStringLength = maxStringLength;
     }
 
     public int GetSize()
@@ -124,7 +130,7 @@ public class Variable
             case VariableType.Byte:
                 return 1 * Length;
             case VariableType.Str:
-                return (MaxLength + 1) * Length; // Probably string size + ending zero
+                return (MaxStringLength + 1) * Length; // Probably string size + ending zero
             default:
                 return 0;
         }
@@ -335,8 +341,24 @@ public class BytecodeProgram
                     break;
 
                 case OpCode.PushStr:
-                    throw new NotSupportedException(
-                        "String bytecode is not implemented yet.");
+                    {
+                        string value = Convert.ToString(
+                            instruction.Operand) ?? string.Empty;
+
+                        foreach (byte b in System.Text.Encoding.ASCII.GetBytes(value))
+                        {
+                            if (b == 0)
+                            {
+                                throw new InvalidOperationException(
+                                    "String literal cannot contain a null character.");
+                            }
+
+                            stream.WriteByte(b);
+                        }
+
+                        stream.WriteByte(0);
+                        break;
+                    }
 
                 default:
                     throw new InvalidOperationException(
@@ -388,7 +410,7 @@ public class BytecodeProgram
     VariableType type,
     bool isArray = false,
     int length = 1,
-    int maxLength = 0)
+    int maxStringLength = 0)
     {
         var variable = _variables.FirstOrDefault(x => x.Name == name);
         if (variable != null)
@@ -401,7 +423,7 @@ public class BytecodeProgram
             type,
             isArray,
             length,
-            maxLength);
+            maxStringLength);
 
         _variables.Add(variable);
         UpdateAddresses();
