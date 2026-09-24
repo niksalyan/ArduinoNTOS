@@ -10,6 +10,8 @@ public enum TokenKind
     BoolType,
 
     ByteType,
+
+    CharType,
     StrType,
 
     Identifier,

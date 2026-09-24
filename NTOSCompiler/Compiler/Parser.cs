@@ -270,6 +270,14 @@ public sealed class Parser
         {
             type = VariableType.Bool;
         }
+        else if (Match(TokenKind.ByteType))
+        {
+            type = VariableType.Byte;
+        }
+        else if (Match(TokenKind.CharType))
+        {
+            type = VariableType.Byte;
+        }
         else if (Match(TokenKind.StrType))
         {
             type = VariableType.Str;

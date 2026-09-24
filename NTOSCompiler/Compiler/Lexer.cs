@@ -44,6 +44,8 @@ public sealed class Lexer
                     "int" => TokenKind.IntType,
                     "float" => TokenKind.FloatType,
                     "bool" => TokenKind.BoolType,
+                    "byte" => TokenKind.ByteType,
+                    "char" => TokenKind.CharType,
                     "str" => TokenKind.StrType,
 
                     "true" => TokenKind.True,
@@ -53,7 +55,7 @@ public sealed class Lexer
                     "while" => TokenKind.While,
                     "call" => TokenKind.Call,
                     "delay" => TokenKind.Delay,
-                    "read" => TokenKind.Read,
+
 
                     _ => TokenKind.Identifier
                 };
