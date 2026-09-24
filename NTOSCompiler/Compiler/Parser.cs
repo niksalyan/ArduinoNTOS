@@ -76,6 +76,12 @@ public sealed class Parser
             return false;
         }
 
+        if (Match(TokenKind.Loop))
+        {
+            CompileLoop(program);
+            return false;
+        }
+
         if (Check(TokenKind.IntType) ||
             Check(TokenKind.FloatType) ||
             Check(TokenKind.BoolType) ||
@@ -549,6 +555,57 @@ public sealed class Parser
             program.Instructions.Count;
 
         program.Instructions[jumpIfFalseIndex] =
+            new Instruction(
+                OpCode.JumpIfFalse,
+                endIndex);
+    }
+
+    private void CompileLoop(BytecodeProgram program)
+    {
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{' after 'loop'.");
+
+        int loopStart = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.PushByte,
+                1));
+
+        int jumpOutIndex = program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.JumpIfFalse,
+                -1));
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                Consume(
+                    TokenKind.Semicolon,
+                    "Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}' after loop.");
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Jump,
+                loopStart));
+
+        int endIndex = program.Instructions.Count;
+
+        program.Instructions[jumpOutIndex] =
             new Instruction(
                 OpCode.JumpIfFalse,
                 endIndex);

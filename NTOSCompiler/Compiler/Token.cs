@@ -37,6 +37,8 @@ public enum TokenKind
     Else,
 
     While,
+
+    Loop,
     True,
     False,
     Equals,
