@@ -7,6 +7,8 @@ public enum TokenKind
     IntType,
     FloatType,
     BoolType,
+
+    ByteType,
     StrType,
 
     Identifier,

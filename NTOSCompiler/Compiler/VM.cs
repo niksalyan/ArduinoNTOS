@@ -65,15 +65,6 @@ public sealed class VirtualMachine
                         _stack.Push(value);
                         break;
                     }
-
-                case OpCode.PushBool:
-                    {
-                        bool value =
-                            bytecode[instructionPointer++] != 0;
-
-                        _stack.Push(value);
-                        break;
-                    }
                 case OpCode.PushByte:
                     {
                         byte value = bytecode[instructionPointer++];
@@ -140,7 +131,7 @@ public sealed class VirtualMachine
                         break;
                     }
 
-                case OpCode.LoadBool:
+                case OpCode.LoadByte:
                     {
                         ushort address =
                             ReadAddress(
@@ -153,7 +144,7 @@ public sealed class VirtualMachine
                         break;
                     }
 
-                case OpCode.StoreBool:
+                case OpCode.StoreByte:
                     {
                         ushort address =
                             ReadAddress(

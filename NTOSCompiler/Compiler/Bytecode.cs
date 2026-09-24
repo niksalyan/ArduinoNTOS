@@ -10,9 +10,8 @@ public enum OpCode : byte
     PushFloat,
     PushStr,
 
-    PushBool,
     PushByte,
-
+    
 
     LoadInt,
     StoreInt,
@@ -20,8 +19,8 @@ public enum OpCode : byte
     LoadFloat,
     StoreFloat,
 
-    LoadBool,
-    StoreBool,
+    LoadByte,
+    StoreByte,
 
     LoadStr,
     StoreStr,
@@ -73,6 +72,8 @@ public enum VariableType {
     None, // Just in case, we can remove this if not needed
     Int,
     Float,
+
+    Byte,
     Bool,
     Str
 }
@@ -224,14 +225,6 @@ public class BytecodeProgram
                         Convert.ToSingle(
                             instruction.Operand));
                     break;
-
-                case OpCode.PushBool:
-                    stream.WriteByte(
-                        Convert.ToBoolean(
-                            instruction.Operand)
-                            ? (byte)1
-                            : (byte)0);
-                    break;
                 case OpCode.PushByte:
                     stream.WriteByte(
                         Convert.ToByte(instruction.Operand));
@@ -241,8 +234,8 @@ public class BytecodeProgram
                 case OpCode.StoreInt:
                 case OpCode.LoadFloat:
                 case OpCode.StoreFloat:
-                case OpCode.LoadBool:
-                case OpCode.StoreBool:
+                case OpCode.LoadByte:
+                case OpCode.StoreByte:
                 case OpCode.LoadStr:
                 case OpCode.StoreStr:
                     WriteAddress(

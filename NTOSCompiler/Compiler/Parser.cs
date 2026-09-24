@@ -652,8 +652,8 @@ public sealed class Parser
         {
             program.Instructions.Add(
                 new Instruction(
-                    OpCode.PushBool,
-                    true));
+                    OpCode.PushByte,
+                    1));
 
             return VariableType.Bool;
         }
@@ -662,8 +662,8 @@ public sealed class Parser
         {
             program.Instructions.Add(
                 new Instruction(
-                    OpCode.PushBool,
-                    false));
+                    OpCode.PushByte,
+                    0));
 
             return VariableType.Bool;
         }
@@ -762,7 +762,10 @@ public sealed class Parser
                 OpCode.LoadFloat,
 
             VariableType.Bool =>
-                OpCode.LoadBool,
+                OpCode.LoadByte,
+
+            VariableType.Byte =>
+                OpCode.LoadByte,
 
             VariableType.Str =>
                 OpCode.LoadStr,
@@ -784,7 +787,7 @@ public sealed class Parser
                 OpCode.StoreFloat,
 
             VariableType.Bool =>
-                OpCode.StoreBool,
+                OpCode.StoreByte,
 
             VariableType.Str =>
                 OpCode.StoreStr,
