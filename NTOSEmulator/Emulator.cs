@@ -71,13 +71,13 @@ namespace NTOSEmulator
             vmFunctions.AddFunction(10, "drawBox", (args) =>
             {
                 using var g = Graphics.FromImage(screenBuffer);
-                using var pen = new Pen(GetColor332((byte)args[4]));
+                using var pen = new Pen(GetColor332((int)args[4]));
                 g.DrawRectangle(pen, new Rectangle((int)args[0], (int)args[1], (int)args[2], (int)args[3]));
                 screenContainer.Invalidate();
                 return null;
             });
 
-            app = new BytecodeApp(vmFunctions);
+            app = new BytecodeApp(vmFunctions, colors);
             vm = new VirtualMachine(4096, vmFunctions);
         }
 
@@ -142,8 +142,9 @@ namespace NTOSEmulator
             e.Graphics.DrawImage(screenBuffer, new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
         }
 
-        public static Color GetColor332(byte color)
+        public static Color GetColor332(int colorInt)
         {
+            byte color = (byte)(colorInt % 256);
             int r = (color >> 5) & 0b111;
             int g = (color >> 2) & 0b111;
             int b = color & 0b11;

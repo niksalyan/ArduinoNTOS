@@ -132,10 +132,12 @@ public class BytecodeApp
     public List<Instruction> Instructions => _instructions;
     private Dictionary<string, byte[]> _bytecodes = new();
     private VMFunctions _vmFunctions;
+    private Dictionary<string, byte> _constants;
 
-    public BytecodeApp(VMFunctions vmFunctions)
+    public BytecodeApp(VMFunctions vmFunctions, Dictionary<string, byte>? constants)
     {
-        _vmFunctions = vmFunctions;
+        _vmFunctions = vmFunctions ?? new VMFunctions();
+        _constants = constants ?? new();
     }
 
     public byte[] GetBytecode(string name)
@@ -176,6 +178,7 @@ public class BytecodeApp
 public class BytecodeProgram
 {
     private List<Variable> _variables;
+    
 
     public List<Instruction> Instructions { get; } = new();
 
