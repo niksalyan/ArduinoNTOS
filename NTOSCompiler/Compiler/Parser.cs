@@ -875,9 +875,45 @@ public sealed class Parser
 
         Variable variable = program.GetVariable(name);
 
+        // Load the value
         program.Instructions.Add(
             new Instruction(
                 GetLoadOpcode(variable.Type),
+                variable.Address));
+
+        // Clear the source variable
+        switch (variable.Type)
+        {
+            case VariableType.Int:
+                program.Instructions.Add(
+                    new Instruction(
+                        OpCode.PushInt,
+                        0));
+                break;
+
+            case VariableType.Float:
+                program.Instructions.Add(
+                    new Instruction(
+                        OpCode.PushFloat,
+                        0f));
+                break;
+
+            case VariableType.Byte:
+            case VariableType.Bool:
+                program.Instructions.Add(
+                    new Instruction(
+                        OpCode.PushByte,
+                        0));
+                break;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Cannot read variable of type {variable.Type}.");
+        }
+
+        program.Instructions.Add(
+            new Instruction(
+                GetStoreOpcode(variable.Type),
                 variable.Address));
 
         return variable.Type;
