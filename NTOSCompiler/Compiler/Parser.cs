@@ -79,6 +79,8 @@ public sealed class Parser
         if (Check(TokenKind.IntType) ||
             Check(TokenKind.FloatType) ||
             Check(TokenKind.BoolType) ||
+            Check(TokenKind.ByteType) ||
+            Check(TokenKind.CharType) ||
             Check(TokenKind.StrType))
         {
             CompileDeclaration(program);
