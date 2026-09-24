@@ -1,5 +1,5 @@
 #include "Terminal.h"
-
+#include "NTOSVM.h"
 #include "Navigation.h"
 #include "SplashScreen.h"
 
@@ -12,5 +12,6 @@ void setup() {
 }
 
 void loop() {
+  NTOSVM::Update();
   Terminal::update();
 }

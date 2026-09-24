@@ -44,8 +44,11 @@ public:
     UI::setHandler(handler);
 
     draw();
+    NTOSVM::Stop();
+    NTOSVM::ResetExecution();
+    NTOSVM::ClearMemory();
     NTOSVM::LoadBytecode(Bytecode, sizeof(Bytecode));
-    NTOSVM::Execute();
+    NTOSVM::Start();
 
     
   }
