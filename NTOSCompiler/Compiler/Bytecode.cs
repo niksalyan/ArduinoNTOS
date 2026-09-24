@@ -251,6 +251,25 @@ public class BytecodeProgram
                         Convert.ToInt32(
                             instruction.Operand));
                     break;
+                case OpCode.CallSubroutine:
+                    {
+                        int targetInstruction =
+                            Convert.ToInt32(instruction.Operand);
+
+                        if (targetInstruction < 0 ||
+                            targetInstruction >= Instructions.Count)
+                        {
+                            throw new InvalidOperationException(
+                                $"Invalid subroutine target instruction: {targetInstruction}");
+                        }
+
+                        int targetAddress =
+                            Instructions[targetInstruction].Address;
+
+                        WriteAddress(stream, targetAddress);
+
+                        break;
+                    }
                 case OpCode.Jump:
                 case OpCode.JumpIfFalse:
                     {
@@ -302,6 +321,7 @@ public class BytecodeProgram
                 case OpCode.And:
                 case OpCode.Or:
                 case OpCode.Not:
+                case OpCode.Return:
                 case OpCode.End:
                 case OpCode.Checkpoint:
                     break;

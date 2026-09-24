@@ -14,6 +14,8 @@ public sealed class Parser
 
     private readonly Dictionary<string, int> _subroutines = new();
 
+    private readonly List<(int InstructionIndex, string Name)> _unresolvedSubroutineCalls = new();
+
     public Parser(List<Token> tokens, VMFunctions vmFunctions, Dictionary<string, byte>? constants)
     {
         _vmFunctions = vmFunctions ?? new VMFunctions();
@@ -23,6 +25,8 @@ public sealed class Parser
 
     public BytecodeProgram Compile(BytecodeProgram program = null)
     {
+        _subroutines.Clear();
+        _unresolvedSubroutineCalls.Clear();
         program = program ?? new BytecodeProgram();
         program.Instructions.Clear();
 
@@ -40,6 +44,7 @@ public sealed class Parser
         program.Instructions.Add(
             new Instruction(OpCode.End));
 
+        ResolveSubroutineCalls(program);
         program.UpdateBytecode();
 
         return program;
@@ -82,6 +87,13 @@ public sealed class Parser
             return true;
         }
 
+        if (Check(TokenKind.Identifier) &&
+            Peek(1).Kind == TokenKind.LBrace)
+        {
+            CompileSubroutine(program);
+            return false;
+        }
+
         // x = expression
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.Assign)
@@ -109,6 +121,8 @@ public sealed class Parser
             return true;
         }
 
+
+
         // expression
         CompileExpression(program);
 
@@ -118,25 +132,79 @@ public sealed class Parser
         return true;
     }
 
+    private void CompileSubroutine(BytecodeProgram program)
+    {
+        string name = Advance().Text;
+
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{' after subroutine name.");
+
+        if (_subroutines.ContainsKey(name))
+        {
+            throw Error(
+                $"Subroutine '{name}' is already declared.");
+        }
+
+        _subroutines[name] =
+            program.Instructions.Count;
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                Consume(
+                    TokenKind.Semicolon,
+                    "Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}' after subroutine.");
+    }
+
     private void CompileSubroutineCall(BytecodeProgram program)
     {
         Token name = Consume(
             TokenKind.Identifier,
             "Expected subroutine name.");
 
-        if (!_subroutines.TryGetValue(
-                name.Text,
-                out int instructionIndex))
-        {
-            throw Error(
-                $"Unknown subroutine '{name.Text}'.");
-        }
+        int instructionIndex = program.Instructions.Count;
 
         program.Instructions.Add(
             new Instruction(
                 OpCode.CallSubroutine,
-                instructionIndex));
+                -1));
+
+        _unresolvedSubroutineCalls.Add(
+            (instructionIndex, name.Text));
     }
+
+    private void ResolveSubroutineCalls(BytecodeProgram program)
+    {
+        foreach (var (instructionIndex, name)
+            in _unresolvedSubroutineCalls)
+        {
+            if (!_subroutines.TryGetValue(
+                    name,
+                    out int targetInstructionIndex))
+            {
+                throw new Exception(
+                    $"Unknown subroutine '{name}'.");
+            }
+
+            program.Instructions[instructionIndex] =
+                new Instruction(
+                    OpCode.CallSubroutine,
+                    targetInstructionIndex);
+        }
+    }
+
     private void CompileDeclaration(BytecodeProgram program)
     {
         VariableType type;
