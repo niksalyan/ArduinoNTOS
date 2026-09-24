@@ -7,7 +7,7 @@ namespace NTOSCompiler;
 public sealed class VirtualMachine
 {
     private readonly Stack<object?> _stack = new();
-    private readonly Stack<UInt16?> _returnStack = new();
+    private readonly Stack<ushort> _returnStack = new();
 
     private readonly VMFunctions _vmFunctions;
 
@@ -27,6 +27,7 @@ public sealed class VirtualMachine
     public void Execute(byte[] bytecode)
     {
         _stack.Clear();
+        _returnStack.Clear();
 
         int instructionPointer = 0;
         _stopwatch.Restart();
@@ -325,6 +326,26 @@ public sealed class VirtualMachine
                 case OpCode.Checkpoint:
                     _stopwatch.Restart();
                     break;
+                case OpCode.Return:
+                    {
+                        instructionPointer = _returnStack.Pop();
+                        break;
+                    }
+                case OpCode.CallSubroutine:
+                    {
+                        ushort targetAddress =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _returnStack.Push(
+                            checked((ushort)instructionPointer));
+
+                        instructionPointer = targetAddress;
+
+                        break;
+                    }
+
                 case OpCode.CallFunction:
                     {
                         ushort index =
