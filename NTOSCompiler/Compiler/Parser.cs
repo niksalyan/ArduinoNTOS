@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic;
 using NTOSCompiler.Compiler;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -9,10 +10,12 @@ public sealed class Parser
     private readonly List<Token> _tokens;
     private int _position;
     private readonly VMFunctions _vmFunctions;
+    private Dictionary<string, byte> _constants;
 
-    public Parser(List<Token> tokens, VMFunctions vmFunctions)
+    public Parser(List<Token> tokens, VMFunctions vmFunctions, Dictionary<string, byte>? constants)
     {
-        _vmFunctions = vmFunctions;
+        _vmFunctions = vmFunctions ?? new VMFunctions();
+        _constants = constants ?? new();
         _tokens = tokens;
     }
 

@@ -155,7 +155,7 @@ public class BytecodeApp
 
             var bytecode = new BytecodeProgram(_variables);
 
-            var parser = new Parser(tokens, _vmFunctions);
+            var parser = new Parser(tokens, _vmFunctions, _constants);
             var program = parser.Compile(bytecode);
 
             _bytecodes[name] = program.Bytecode;
