@@ -203,7 +203,7 @@ namespace NTOSEmulator.Libs
                 if (args.Length < 4)
                     return null;
 
-                string text = args[2]?.ToString() ?? "";
+                string text = args[0]?.ToString() ?? "";
 
                 using var g = Graphics.FromImage(buffer);
                 using var brush = new SolidBrush(
@@ -213,8 +213,8 @@ namespace NTOSEmulator.Libs
                     text,
                     SystemFonts.DefaultFont,
                     brush,
-                    (int)args[0],
-                    (int)args[1]);
+                    (int)args[1],
+                    (int)args[2]);
 
                 OnInvalidate?.Invoke();
                 return null;

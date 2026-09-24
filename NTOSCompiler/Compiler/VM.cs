@@ -30,18 +30,37 @@ public sealed class VirtualMachine
         _executionCts?.Cancel();
     }
 
-    public void Execute(byte[] bytecode)
+    public async Task Execute(byte[] bytecode)
     {
         Stop();
-        ExecuteAsync(bytecode);
+
+        var cts = new CancellationTokenSource();
+        _executionCts = cts;
+
+        try
+        {
+            await ExecuteAsync(bytecode, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when execution is stopped.
+        }
+        finally
+        {
+            if (ReferenceEquals(_executionCts, cts))
+            {
+                _executionCts = null;
+            }
+
+            cts.Dispose();
+        }
     }
 
 
 
-    private async Task ExecuteAsync(byte[] bytecode)
+    private async Task ExecuteAsync(byte[] bytecode, CancellationToken cancellationToken)
     {
         // _isRunning = true;
-        _executionCts = new CancellationTokenSource();
         _stack.Clear();
         _returnStack.Clear();
 
@@ -56,7 +75,7 @@ public sealed class VirtualMachine
                     "VM execution limit exceeded. Possible infinite loop.");
             }
 
-            _executionCts.Token.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             OpCode opcode =
                 (OpCode)bytecode[instructionPointer++];
@@ -607,9 +626,6 @@ public sealed class VirtualMachine
 
     public void WriteByteToMemory(int address, byte value)
     {
-        Debug.WriteLine(
-        $"WRITE MEMORY: address={address}, value={value}");
-
         _memory[address] = value;
     }
 }

@@ -16,7 +16,7 @@ namespace NTOSEmulator
 
         private Variable keyboardInput = new Variable("keyInput", VariableType.Byte);
 
-        
+        private string appPath;
 
         // public Action<object> OnCompilerError;
 
@@ -36,9 +36,9 @@ namespace NTOSEmulator
             {
                 if (args.Length > 0)
                 {
-
-                    // LOAD LOGIC ILL ADD HERE
-                    DebugOutput(args[0]?.ToString() ?? "");
+                    string file = appPath + args[0]?.ToString() + ".ntos";
+                    Debug.WriteLine(file);
+                    Execute(file);
                 }
                 return null;
             });
@@ -92,8 +92,12 @@ namespace NTOSEmulator
         }
 
 
-        public void Execute(string name, string source)
+        public void Execute(string file)
         {
+            appPath = Path.GetDirectoryName(file) + "\\";
+            string name = Path.GetFileNameWithoutExtension(file);
+            string source = File.ReadAllText(file);
+
             ClearDebug();
             bytecodeGrid.DataSource = null;
             variablesGrid.DataSource = null;

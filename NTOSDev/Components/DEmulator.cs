@@ -40,31 +40,7 @@ namespace NTOSDev.Components
             {
                 if (File.Exists(CodeEditor.currentFile))
                 {
-                    /*Debug.WriteLine("Loading: " + CodeEditor.currentFile);
-                    string source = File.ReadAllText(CodeEditor.currentFile);
-
-                    var lexer = new Lexer(source);
-                    var tokens = lexer.Tokenize();
-
-
-                    var parser = new Parser(tokens, emulator.vmFunctions);
-                    var program = parser.Compile();
-
-                    string bc = "";
-                    foreach (var instruction in program.Instructions)
-                    {
-                        var item = instruction.OpCode.ToString() + " " + (instruction.Operand?.ToString() ?? string.Empty) + "  Addr:" + instruction.Address;
-                        // listBox1.Items.Add(item);
-
-                        bc += item + Environment.NewLine;
-                    }
-
-                    Debug.WriteLine("Bytecode:\n" + bc);
-                    Debug.WriteLine(string.Join(" ", program.Bytecode.Select(b => b.ToString("X2"))));*/
-
-                    string fileName = Path.GetFileNameWithoutExtension(CodeEditor.currentFile);
-                    string source = File.ReadAllText(CodeEditor.currentFile);
-                    emulator.Execute(fileName, source);
+                    emulator.Execute(CodeEditor.currentFile);
 
                 }
             }
