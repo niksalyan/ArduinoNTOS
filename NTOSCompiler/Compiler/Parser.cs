@@ -528,8 +528,7 @@ public sealed class Parser
                 endIndex);
     }
 
-    private VariableType CompileExpression(
-        BytecodeProgram program)
+    private VariableType CompileExpression(BytecodeProgram program)
     {
         return CompileOr(program);
     }
@@ -821,6 +820,11 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
+        if (Match(TokenKind.Read))
+        {
+            return CompileRead(program);
+        }
+
         if (Match(TokenKind.Identifier))
         {
             string name = Previous().Text;
@@ -859,6 +863,24 @@ public sealed class Parser
 
         throw Error(
             $"Unexpected token '{Current().Text}'.");
+    }
+
+    private VariableType CompileRead(BytecodeProgram program)
+    {
+        Token variableToken = Consume(
+            TokenKind.Identifier,
+            "Expected variable name after 'read'.");
+
+        string name = variableToken.Text;
+
+        Variable variable = program.GetVariable(name);
+
+        program.Instructions.Add(
+            new Instruction(
+                GetLoadOpcode(variable.Type),
+                variable.Address));
+
+        return variable.Type;
     }
 
     private VariableType CompileFunctionCall(
