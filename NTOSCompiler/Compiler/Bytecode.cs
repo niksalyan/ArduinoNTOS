@@ -55,6 +55,8 @@ public enum OpCode : byte
 
     Return,
 
+    Delay,
+
     Checkpoint = 255
 }
 

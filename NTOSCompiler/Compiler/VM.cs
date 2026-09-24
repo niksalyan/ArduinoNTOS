@@ -15,6 +15,7 @@ public sealed class VirtualMachine
 
 
     private Stopwatch _stopwatch = new Stopwatch();
+    private bool _isRunning = false;
 
     public VirtualMachine(
         int memorySize = 4096,
@@ -24,8 +25,41 @@ public sealed class VirtualMachine
         _memory = new byte[memorySize];
     }
 
+    public void Stop()
+    {
+        _isRunning = false;
+    }
+
     public void Execute(byte[] bytecode)
     {
+        Stop();
+        ExecuteAsync(bytecode);
+    }
+
+    private async void ExecuteAsync(byte[] bytecode)
+    {
+        while (_isRunning)
+            await Task.Delay(10);
+
+        _isRunning = true;
+
+        try
+        {
+            await ExecuteBytecodeAsync(bytecode);
+        }
+        catch (Exception ex)
+        {
+            // Handle/log exception
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    private async Task ExecuteBytecodeAsync(byte[] bytecode)
+    {
+        // _isRunning = true;
         _stack.Clear();
         _returnStack.Clear();
 
@@ -38,6 +72,11 @@ public sealed class VirtualMachine
             {
                 throw new Exception(
                     "VM execution limit exceeded. Possible infinite loop.");
+            }
+
+            if (!_isRunning)
+            {
+                return;
             }
 
             OpCode opcode =
@@ -371,6 +410,18 @@ public sealed class VirtualMachine
                                 args);
 
                         _stack.Push(result);
+
+                        break;
+                    }
+                case OpCode.Delay:
+                    {
+                        float seconds = ReadFloat(
+                            bytecode,
+                            ref instructionPointer);
+
+                        await Task.Delay(
+                            TimeSpan.FromSeconds(seconds),
+                            cancellationToken);
 
                         break;
                     }
