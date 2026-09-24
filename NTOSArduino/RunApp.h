@@ -80,6 +80,7 @@ private:
     switch (key) {
 
       case '*':
+        NTOSVM::Stop();
         Navigation::MainView();
         break;
 

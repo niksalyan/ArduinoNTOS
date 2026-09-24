@@ -50,43 +50,21 @@ struct StackValue {
 class NTOSVM {
 private:
 
-  // --------------------------------------------------------
-  // Program memory
-  // --------------------------------------------------------
+  inline static uint8_t _bytecode[NTOS_BYTECODE_SIZE] = {};
+    inline static uint16_t _bytecodeSize = 0;
 
-  static uint8_t _bytecode[NTOS_BYTECODE_SIZE];
-  static uint16_t _bytecodeSize;
+    inline static uint8_t _memory[NTOS_MEMORY_SIZE] = {};
+    inline static uint16_t _ip = 0;
 
+    inline static StackValue _stack[NTOS_STACK_SIZE] = {};
+    inline static uint8_t _sp = 0;
 
-  // --------------------------------------------------------
-  // Shared variable memory
-  // --------------------------------------------------------
+    inline static uint16_t _callStack[NTOS_CALL_STACK_SIZE] = {};
+    inline static uint8_t _callSp = 0;
 
-  static uint8_t _memory[NTOS_MEMORY_SIZE];
-
-
-  // --------------------------------------------------------
-  // Execution state
-  // --------------------------------------------------------
-
-  static uint16_t _ip;
-  static bool _running;
+    inline static bool _running = false;
 
 
-  // --------------------------------------------------------
-  // Value stack
-  // --------------------------------------------------------
-
-  static StackValue _stack[NTOS_STACK_SIZE];
-  static uint8_t _sp;
-
-
-  // --------------------------------------------------------
-  // Call stack
-  // --------------------------------------------------------
-
-  static uint16_t _callStack[NTOS_CALL_STACK_SIZE];
-  static uint8_t _callSp;
 
 
 public:
@@ -962,24 +940,3 @@ private:
   }
 };
 
-
-// ============================================================
-// Static storage
-// ============================================================
-
-uint8_t NTOSVM::_bytecode[NTOS_BYTECODE_SIZE];
-
-uint8_t NTOSVM::_memory[NTOS_MEMORY_SIZE];
-
-uint16_t NTOSVM::_bytecodeSize = 0;
-
-uint16_t NTOSVM::_ip = 0;
-bool NTOSVM::_running = false;
-
-StackValue NTOSVM::_stack[NTOS_STACK_SIZE];
-
-uint8_t NTOSVM::_sp = 0;
-
-uint16_t NTOSVM::_callStack[NTOS_CALL_STACK_SIZE];
-
-uint8_t NTOSVM::_callSp = 0;

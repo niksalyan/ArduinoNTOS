@@ -14,4 +14,6 @@ void setup() {
 void loop() {
   NTOSVM::Update();
   Terminal::update();
+
+  delay(500);
 }
