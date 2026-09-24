@@ -47,7 +47,7 @@ public sealed class Lexer
                     "byte" => TokenKind.ByteType,
                     "char" => TokenKind.CharType,
                     "str" => TokenKind.StrType,
-
+                    "read" => TokenKind.Read,
                     "true" => TokenKind.True,
                     "false" => TokenKind.False,
                     "if" => TokenKind.If,

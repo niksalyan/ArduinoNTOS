@@ -1033,7 +1033,7 @@ public sealed class Parser
     }
 
     private static OpCode GetStoreOpcode(
-        VariableType type)
+    VariableType type)
     {
         return type switch
         {

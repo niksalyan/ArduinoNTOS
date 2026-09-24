@@ -36,7 +36,7 @@ public sealed class VirtualMachine
         ExecuteAsync(bytecode);
     }
 
-  
+
 
     private async Task ExecuteAsync(byte[] bytecode)
     {
@@ -158,7 +158,7 @@ public sealed class VirtualMachine
                                 ref instructionPointer);
 
                         _stack.Push(
-                            GetBool(address));
+                            GetByte(address));
 
                         break;
                     }
@@ -170,10 +170,10 @@ public sealed class VirtualMachine
                                 bytecode,
                                 ref instructionPointer);
 
-                        bool value =
-                            Convert.ToBoolean(_stack.Pop());
+                        byte value =
+                            Convert.ToByte(_stack.Pop());
 
-                        SetBool(address, value);
+                        SetByte(address, value);
 
                         break;
                     }
@@ -481,26 +481,18 @@ public sealed class VirtualMachine
             4);
     }
 
-    private bool GetBool(
-        ushort address)
+    private byte GetByte(ushort address)
     {
-        EnsureMemory(
-            address,
-            1);
+        EnsureMemory(address, 1);
 
-        return _memory[address] != 0;
+        return _memory[address];
     }
 
-    private void SetBool(
-        ushort address,
-        bool value)
+    private void SetByte(ushort address, byte value)
     {
-        EnsureMemory(
-            address,
-            1);
+        EnsureMemory(address, 1);
 
-        _memory[address] =
-            value ? (byte)1 : (byte)0;
+        _memory[address] = value;
     }
 
     private void EnsureMemory(
@@ -592,6 +584,9 @@ public sealed class VirtualMachine
 
     public void WriteByteToMemory(int address, byte value)
     {
+        Debug.WriteLine(
+        $"WRITE MEMORY: address={address}, value={value}");
+
         _memory[address] = value;
     }
 }
