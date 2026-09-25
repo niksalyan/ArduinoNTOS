@@ -4,128 +4,126 @@
 
 class Storage {
 private:
-    static constexpr uint8_t BUFFER_SIZE = 64;
+  static constexpr uint8_t BUFFER_SIZE = 64;
 
-    inline static char commandBuffer[BUFFER_SIZE];
-    inline static uint8_t commandLength = 0;
+  inline static char commandBuffer[BUFFER_SIZE];
+  inline static uint8_t commandLength = 0;
 
 public:
-    static void begin() {
-        SD.begin();
-        Serial.print("OK");
-    }
+  static void begin() {
+    SD.begin();
+    Serial.print("OK");
+  }
 
-    static void update() {
-
+  static void update() {
     while (Serial.available() > 0) {
 
-        uint8_t c = Serial.read();
+      uint8_t c = Serial.read();
 
-        // Command terminator
-        if (c == '\r' || c == '\n') {
+      // End of command
+      if (c == '\r' || c == '\n') {
 
-            if (commandLength == 0)
-                continue;
+        // Ignore empty lines
+        if (commandLength == 0)
+          continue;
 
-            commandBuffer[commandLength] = '\0';
+        commandBuffer[commandLength] = '\0';
 
-            processCommand(commandBuffer);
+        processCommand(commandBuffer);
 
-            commandLength = 0;
+        commandLength = 0;
 
-            continue;
-        }
+        continue;
+      }
 
-        // Prevent buffer overflow
-        if (commandLength < BUFFER_SIZE - 1) {
-            commandBuffer[commandLength++] = c;
-        }
+      // Store character
+      if (commandLength < BUFFER_SIZE - 1) {
+        commandBuffer[commandLength++] = c;
+      }
     }
-}
+  }
 
-    static void listApps(void (*callback)(const char* name)) {
-        File root = SD.open("/");
+  static void listApps(void (*callback)(const char* name)) {
+    File root = SD.open("/");
 
-        if (!root)
-            return;
+    if (!root)
+      return;
 
-        while (true) {
-            File entry = root.openNextFile();
+    while (true) {
+      File entry = root.openNextFile();
 
-            if (!entry)
-                break;
+      if (!entry)
+        break;
 
-            if (entry.isDirectory()) {
-                char mainPath[64];
-
-                snprintf(
-                    mainPath,
-                    sizeof(mainPath),
-                    "/%s/main.ntx",
-                    entry.name()
-                );
-
-                if (SD.exists(mainPath))
-                    callback(entry.name());
-            }
-
-            entry.close();
-        }
-
-        root.close();
-    }
-
-private:
-    static void processCommand(const char* command) {
-        if (command[0] == 'C' && command[1] == ' ') {
-            createApp(command + 2);
-            return;
-        }
-
-        if (command[0] == 'D' && command[1] == ' ') {
-            deleteApp(command + 2);
-            return;
-        }
-    }
-
-    static void createApp(const char* appName) {
-        if (!isValidName(appName))
-            return;
-
-        if (SD.exists(appName))
-            return;
-
-        if (!SD.mkdir(appName))
-            return;
-
+      if (entry.isDirectory()) {
         char mainPath[64];
 
         snprintf(
-            mainPath,
-            sizeof(mainPath),
-            "/%s/main.ntx",
-            appName
-        );
+          mainPath,
+          sizeof(mainPath),
+          "/%s/main.ntx",
+          entry.name());
 
-        File file = SD.open(mainPath, FILE_WRITE);
+        if (SD.exists(mainPath))
+          callback(entry.name());
+      }
 
-        if (file)
-            file.close();
+      entry.close();
     }
 
-    static bool isValidName(const char* name) {
-        if (!name || name[0] == '\0')
-            return false;
+    root.close();
+  }
 
-        for (uint8_t i = 0; name[i] != '\0'; i++) {
-            if (name[i] == '/' || name[i] == '\\')
-                return false;
-        }
-
-        return true;
+private:
+  static void processCommand(const char* command) {
+    if (command[0] == 'C' && command[1] == ' ') {
+      createApp(command + 2);
+      return;
     }
 
-    static void deleteApp(const char* appName) {
-        // We'll implement recursive deletion next.
+    if (command[0] == 'D' && command[1] == ' ') {
+      deleteApp(command + 2);
+      return;
     }
+  }
+
+  static void createApp(const char* appName) {
+    if (!isValidName(appName))
+      return;
+
+    if (SD.exists(appName))
+      return;
+
+    if (!SD.mkdir(appName))
+      return;
+
+    char mainPath[64];
+
+    snprintf(
+      mainPath,
+      sizeof(mainPath),
+      "/%s/main.ntx",
+      appName);
+
+    File file = SD.open(mainPath, FILE_WRITE);
+
+    if (file)
+      file.close();
+  }
+
+  static bool isValidName(const char* name) {
+    if (!name || name[0] == '\0')
+      return false;
+
+    for (uint8_t i = 0; name[i] != '\0'; i++) {
+      if (name[i] == '/' || name[i] == '\\')
+        return false;
+    }
+
+    return true;
+  }
+
+  static void deleteApp(const char* appName) {
+    // We'll implement recursive deletion next.
+  }
 };
