@@ -1,5 +1,4 @@
 #pragma once
-
 #define SOFTWARE_SPI_FOR_SD
 #include <SoftSD.h>
 
@@ -11,8 +10,8 @@ private:
   inline static uint8_t commandLength = 0;
 
   // Last U command
-  inline static char uploadApp[9] = { 0 };
-  inline static char uploadFileName[13] = { 0 };
+  inline static char uploadApp[9] = "";
+  inline static char uploadFileName[13] = "";
 
   // Upload state
   inline static bool isUploading = false;
@@ -21,16 +20,14 @@ private:
   inline static bool hasHighNibble = false;
   inline static uint8_t highNibble = 0;
 
+  // Diagnostics
+  inline static uint32_t uploadHexChars = 0;
+  inline static uint32_t uploadBytes = 0;
+
 public:
 
-  // ============================================================
-  // BEGIN
-  // ============================================================
-
   static void begin() {
-
     Serial.begin(115200);
-
     SD.begin();
 
     Serial.println();
@@ -43,11 +40,9 @@ public:
   // ============================================================
 
   static void update() {
-
     while (Serial.available()) {
 
       char c = Serial.read();
-
 
       // ========================================================
       // UPLOAD MODE
@@ -57,20 +52,13 @@ public:
 
         // '>' finishes upload
         if (c == '>') {
-
           finishUpload();
-
           continue;
         }
 
-
-        // Ignore line endings inside upload
-        if (
-          c == '\r' ||
-          c == '\n'
-        )
+        // Ignore CR/LF inside upload
+        if (c == '\r' || c == '\n')
           continue;
-
 
         processHexCharacter(c);
 
@@ -85,10 +73,7 @@ public:
       if (c == '<') {
 
         if (!beginUpload()) {
-
-          Serial.println(
-            "[NTOS] ERROR: upload start failed"
-          );
+          Serial.println("[NTOS] ERROR: upload start failed");
         }
 
         continue;
@@ -102,16 +87,10 @@ public:
       if (c == '\r')
         continue;
 
-
-      // ========================================================
-      // END COMMAND
-      // ========================================================
-
       if (c == '\n') {
 
         if (commandLength == 0)
           continue;
-
 
         commandBuffer[commandLength] = '\0';
 
@@ -133,9 +112,7 @@ public:
 
       } else {
 
-        Serial.println(
-          "[NTOS] ERROR: command too long"
-        );
+        Serial.println("[NTOS] ERROR: command too long");
 
         commandLength = 0;
       }
@@ -179,51 +156,24 @@ public:
     }
 
 
-    Serial.print(
-      "[NTOS] ERROR: unknown command: "
-    );
-
+    Serial.print("[NTOS] ERROR: unknown command: ");
     Serial.println(command);
   }
 
 
   // ============================================================
-  // PREPARE UPLOAD
-  //
   // U MyApp main.ntx
   //
-  // Only remembers the destination.
-  //
+  // Remember destination.
   // ============================================================
 
   static bool prepareUpload(const char* arguments) {
 
-    // ----------------------------------------------------------
-    // IMPORTANT:
-    //
-    // Clear the previous target FIRST.
-    //
-    // This prevents a failed U command from accidentally
-    // reusing an old target.
-    // ----------------------------------------------------------
-
-    uploadApp[0] = '\0';
-    uploadFileName[0] = '\0';
-
-
-    // ----------------------------------------------------------
-    // Find separator
-    // ----------------------------------------------------------
-
-    const char* separator =
-      strchr(arguments, ' ');
-
+    const char* separator = strchr(arguments, ' ');
 
     if (!separator) {
 
-      Serial.println(
-        "[NTOS] ERROR: invalid U command"
-      );
+      Serial.println("[NTOS] ERROR: invalid U command");
 
       return false;
     }
@@ -233,18 +183,14 @@ public:
     // App name
     // ----------------------------------------------------------
 
-    size_t appLength =
-      separator - arguments;
-
+    size_t appLength = separator - arguments;
 
     if (
       appLength == 0 ||
       appLength > 8
     ) {
 
-      Serial.println(
-        "[NTOS] ERROR: invalid app name"
-      );
+      Serial.println("[NTOS] ERROR: invalid app name");
 
       return false;
     }
@@ -261,11 +207,10 @@ public:
 
     if (!isValidName(uploadApp)) {
 
-      uploadApp[0] = '\0';
+      Serial.println("[NTOS] ERROR: invalid app name");
 
-      Serial.println(
-        "[NTOS] ERROR: invalid app name"
-      );
+      uploadApp[0] = '\0';
+      uploadFileName[0] = '\0';
 
       return false;
     }
@@ -275,17 +220,14 @@ public:
     // Filename
     // ----------------------------------------------------------
 
-    const char* filename =
-      separator + 1;
-
+    const char* filename = separator + 1;
 
     if (!isValidFileName(filename)) {
 
-      uploadApp[0] = '\0';
+      Serial.println("[NTOS] ERROR: invalid filename");
 
-      Serial.println(
-        "[NTOS] ERROR: invalid filename"
-      );
+      uploadApp[0] = '\0';
+      uploadFileName[0] = '\0';
 
       return false;
     }
@@ -298,10 +240,7 @@ public:
 
 
     // ----------------------------------------------------------
-    // Make sure there isn't another space after filename
-    //
-    // isValidFileName() already rejects spaces, so this is
-    // effectively enforced there.
+    // Show target
     // ----------------------------------------------------------
 
     Serial.print("[NTOS] TARGET: /");
@@ -309,23 +248,20 @@ public:
     Serial.print("/");
     Serial.println(uploadFileName);
 
-
     return true;
   }
 
 
   // ============================================================
-  // BEGIN UPLOAD
-  //
   // <
   //
-  // Starts writing to the remembered destination.
+  // Begin actual upload
   // ============================================================
 
   static bool beginUpload() {
 
     // ----------------------------------------------------------
-    // A U command must have been received first.
+    // U command must have been received first
     // ----------------------------------------------------------
 
     if (
@@ -373,40 +309,27 @@ public:
     );
 
 
-    Serial.print(
-      "[NTOS] UPLOAD: "
-    );
-
+    Serial.print("[NTOS] UPLOAD: ");
     Serial.println(path);
 
 
     // ----------------------------------------------------------
-    // Remove existing file
+    // Overwrite existing file
     // ----------------------------------------------------------
 
     if (SD.exists(path)) {
-
-      if (!SD.remove(path)) {
-
-        Serial.println(
-          "[NTOS] ERROR: cannot overwrite file"
-        );
-
-        return false;
-      }
+      SD.remove(path);
     }
 
 
     // ----------------------------------------------------------
-    // Open new file
+    // Open file
     // ----------------------------------------------------------
 
-    uploadFile =
-      SD.open(
-        path,
-        FILE_WRITE
-      );
-
+    uploadFile = SD.open(
+      path,
+      FILE_WRITE
+    );
 
     if (!uploadFile) {
 
@@ -419,37 +342,31 @@ public:
 
 
     // ----------------------------------------------------------
-    // Reset HEX decoder
+    // Reset decoder
     // ----------------------------------------------------------
 
     hasHighNibble = false;
     highNibble = 0;
 
+    uploadHexChars = 0;
+    uploadBytes = 0;
+
     isUploading = true;
 
 
-    Serial.println(
-      "[NTOS] UPLOAD START"
-    );
-
+    Serial.println("[NTOS] UPLOAD START");
 
     return true;
   }
 
 
   // ============================================================
-  // HEX CHARACTER
+  // HEX
   // ============================================================
 
   static void processHexCharacter(char c) {
 
-    int8_t value =
-      hexValue(c);
-
-
-    // ----------------------------------------------------------
-    // Invalid HEX
-    // ----------------------------------------------------------
+    int8_t value = hexValue(c);
 
     if (value < 0) {
 
@@ -465,6 +382,9 @@ public:
     }
 
 
+    uploadHexChars++;
+
+
     // ----------------------------------------------------------
     // First nibble
     // ----------------------------------------------------------
@@ -472,7 +392,6 @@ public:
     if (!hasHighNibble) {
 
       highNibble = value;
-
       hasHighNibble = true;
 
       return;
@@ -487,13 +406,7 @@ public:
       (highNibble << 4) | value;
 
 
-    // ----------------------------------------------------------
-    // Write byte
-    // ----------------------------------------------------------
-
-    size_t written =
-      uploadFile.write(byteValue);
-
+    size_t written = uploadFile.write(byteValue);
 
     if (written != 1) {
 
@@ -507,14 +420,15 @@ public:
     }
 
 
+    uploadBytes++;
     hasHighNibble = false;
   }
 
 
   // ============================================================
-  // FINISH UPLOAD
-  //
   // >
+  //
+  // Finish upload
   // ============================================================
 
   static void finishUpload() {
@@ -525,9 +439,11 @@ public:
 
     if (hasHighNibble) {
 
-      Serial.println(
-        "[NTOS] ERROR: incomplete HEX byte"
+      Serial.print(
+        "[NTOS] ERROR: incomplete HEX byte, chars="
       );
+
+      Serial.println(uploadHexChars);
 
       abortUpload();
 
@@ -540,66 +456,65 @@ public:
     // ----------------------------------------------------------
 
     uploadFile.flush();
-
-
-    // ----------------------------------------------------------
-    // Close
-    // ----------------------------------------------------------
-
     uploadFile.close();
-
 
     isUploading = false;
 
 
-    Serial.println(
-      "[NTOS] UPLOAD OK"
-    );
+    // ----------------------------------------------------------
+    // Diagnostics
+    // ----------------------------------------------------------
+
+    Serial.print("[NTOS] HEX CHARS: ");
+    Serial.println(uploadHexChars);
+
+    Serial.print("[NTOS] BYTES: ");
+    Serial.println(uploadBytes);
+
+    Serial.println("[NTOS] UPLOAD OK");
   }
 
 
   // ============================================================
-  // ABORT UPLOAD
-  //
-  // IMPORTANT:
-  // Remove the partially-written file.
+  // ABORT
   // ============================================================
 
   static void abortUpload() {
+
+    // Build path
+    char path[32];
+
+    if (
+      uploadApp[0] != '\0' &&
+      uploadFileName[0] != '\0'
+    ) {
+
+      snprintf(
+        path,
+        sizeof(path),
+        "/%s/%s",
+        uploadApp,
+        uploadFileName
+      );
+    }
+
 
     if (uploadFile)
       uploadFile.close();
 
 
     isUploading = false;
-
     hasHighNibble = false;
     highNibble = 0;
 
 
-    // ----------------------------------------------------------
-    // Remove partial file.
-    // ----------------------------------------------------------
-
+    // Remove incomplete file
     if (
-      uploadApp[0] == '\0' ||
-      uploadFileName[0] == '\0'
-    )
-      return;
-
-
-    char path[32];
-
-    snprintf(
-      path,
-      sizeof(path),
-      "/%s/%s",
-      uploadApp,
-      uploadFileName
-    );
-
-
-    SD.remove(path);
+      uploadApp[0] != '\0' &&
+      uploadFileName[0] != '\0'
+    ) {
+      SD.remove(path);
+    }
   }
 
 
@@ -609,26 +524,14 @@ public:
 
   static int8_t hexValue(char c) {
 
-    if (
-      c >= '0' &&
-      c <= '9'
-    )
+    if (c >= '0' && c <= '9')
       return c - '0';
 
-
-    if (
-      c >= 'A' &&
-      c <= 'F'
-    )
+    if (c >= 'A' && c <= 'F')
       return c - 'A' + 10;
 
-
-    if (
-      c >= 'a' &&
-      c <= 'f'
-    )
+    if (c >= 'a' && c <= 'f')
       return c - 'a' + 10;
-
 
     return -1;
   }
@@ -640,21 +543,14 @@ public:
 
   static bool isValidName(const char* name) {
 
-    if (
-      !name ||
-      name[0] == '\0'
-    )
+    if (!name || name[0] == '\0')
       return false;
-
 
     uint8_t length = 0;
 
-
     while (name[length] != '\0') {
 
-      char c =
-        name[length];
-
+      char c = name[length];
 
       if (
         c == '/' ||
@@ -663,14 +559,11 @@ public:
       )
         return false;
 
-
       length++;
-
 
       if (length > 8)
         return false;
     }
-
 
     return true;
   }
@@ -680,26 +573,17 @@ public:
   // VALID 8.3 FILENAME
   // ============================================================
 
-  static bool isValidFileName(
-    const char* name
-  ) {
+  static bool isValidFileName(const char* name) {
 
-    if (
-      !name ||
-      name[0] == '\0'
-    )
+    if (!name || name[0] == '\0')
       return false;
-
 
     uint8_t length = 0;
     int8_t dot = -1;
 
-
     while (name[length] != '\0') {
 
-      char c =
-        name[length];
-
+      char c = name[length];
 
       if (
         c == '/' ||
@@ -707,7 +591,6 @@ public:
         c == ' '
       )
         return false;
-
 
       if (c == '.') {
 
@@ -717,30 +600,19 @@ public:
         dot = length;
       }
 
-
       length++;
-
 
       if (length > 12)
         return false;
     }
 
 
-    // ----------------------------------------------------------
     // No extension
-    // ----------------------------------------------------------
-
     if (dot < 0)
       return length <= 8;
 
 
-    // ----------------------------------------------------------
-    // 8.3
-    // ----------------------------------------------------------
-
-    uint8_t baseLength =
-      dot;
-
+    uint8_t baseLength = dot;
 
     uint8_t extensionLength =
       length - dot - 1;
@@ -756,17 +628,9 @@ public:
 
   // ============================================================
   // DELETE APP
-  //
-  // D MyApp
   // ============================================================
 
-  static void deleteApp(
-    const char* appName
-  ) {
-
-    // ----------------------------------------------------------
-    // Validate first
-    // ----------------------------------------------------------
+  static void deleteApp(const char* appName) {
 
     if (!isValidName(appName)) {
 
@@ -778,59 +642,32 @@ public:
     }
 
 
-    // ----------------------------------------------------------
-    // Clear remembered target BEFORE doing anything else.
-    //
-    // This fixes the stale-target bug when the directory does
-    // not exist.
-    // ----------------------------------------------------------
-
-    if (
-      strcmp(
-        uploadApp,
-        appName
-      ) == 0
-    ) {
-
-      uploadApp[0] = '\0';
-      uploadFileName[0] = '\0';
-    }
-
-
-    // ----------------------------------------------------------
-    // Open directory
-    // ----------------------------------------------------------
-
-    File dir =
-      SD.open(appName);
+    File dir = SD.open(appName);
 
 
     if (!dir) {
 
-      Serial.println(
-        "[NTOS] DELETE OK"
-      );
+      // Still clear remembered target
+      if (strcmp(uploadApp, appName) == 0) {
+        uploadApp[0] = '\0';
+        uploadFileName[0] = '\0';
+      }
+
+      Serial.println("[NTOS] DELETE OK");
 
       return;
     }
 
 
-    // ----------------------------------------------------------
-    // Delete files
-    // ----------------------------------------------------------
-
     while (true) {
 
-      File file =
-        dir.openNextFile();
-
+      File file = dir.openNextFile();
 
       if (!file)
         break;
 
 
       char path[32];
-
 
       snprintf(
         path,
@@ -843,24 +680,24 @@ public:
 
       file.close();
 
-
       SD.remove(path);
     }
 
 
     dir.close();
 
-
-    // ----------------------------------------------------------
-    // Remove directory
-    // ----------------------------------------------------------
-
     SD.rmdir(appName);
 
 
-    Serial.println(
-      "[NTOS] DELETE OK"
-    );
+    // Clear remembered upload target
+    if (strcmp(uploadApp, appName) == 0) {
+
+      uploadApp[0] = '\0';
+      uploadFileName[0] = '\0';
+    }
+
+
+    Serial.println("[NTOS] DELETE OK");
   }
 
 
@@ -878,7 +715,6 @@ public:
 
     char path[32];
 
-
     snprintf(
       path,
       sizeof(path),
@@ -888,12 +724,10 @@ public:
     );
 
 
-    file =
-      SD.open(
-        path,
-        FILE_READ
-      );
-
+    file = SD.open(
+      path,
+      FILE_READ
+    );
 
     return file;
   }
@@ -907,9 +741,7 @@ public:
     void (*callback)(const char* name)
   ) {
 
-    File root =
-      SD.open("/");
-
+    File root = SD.open("/");
 
     if (!root)
       return;
@@ -917,9 +749,7 @@ public:
 
     while (true) {
 
-      File entry =
-        root.openNextFile();
-
+      File entry = root.openNextFile();
 
       if (!entry)
         break;
@@ -928,7 +758,6 @@ public:
       if (entry.isDirectory()) {
 
         char path[32];
-
 
         snprintf(
           path,

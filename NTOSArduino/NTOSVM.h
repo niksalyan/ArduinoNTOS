@@ -78,70 +78,81 @@ public:
   // ========================================================
   // Program
   // ========================================================
+  static bool LoadBytecodeFromFlash(
+    const uint8_t* bytecode,
+    uint16_t size) {
 
+    if (bytecode == nullptr)
+      return false;
 
-  static bool LoadBytecodeFromFile(File& file) {
+    if (size > NTOS_BYTECODE_SIZE)
+      return false;
 
-  if (!file)
-    return false;
+    memcpy_P(
+      _bytecode,
+      bytecode,
+      size);
 
-  uint32_t size = file.size();
+    _bytecodeSize = size;
 
-  Serial.print("[NTOS] FILE SIZE=");
-  Serial.println(size);
+    ResetExecution();
 
-  if (size == 0 || size > NTOS_BYTECODE_SIZE)
-    return false;
-
-  if (!file.seek(0)) {
-    Serial.println("[NTOS] SEEK FAILED");
-    return false;
+    return true;
   }
 
-  uint16_t totalRead = 0;
+  static bool LoadBytecodeFromFile(File& file) {
+    if (!file)
+      return false;
 
-  while (totalRead < size) {
+    uint32_t size = file.size();
 
-    uint16_t remaining =
-      static_cast<uint16_t>(size - totalRead);
+    Serial.print("[NTOS] FILE SIZE=");
+    Serial.println(size);
 
-    uint16_t chunkSize =
-      remaining > 32 ? 32 : remaining;
+    if (size == 0 || size > NTOS_BYTECODE_SIZE)
+      return false;
 
-    size_t bytesRead =
-      file.read(
-        &_bytecode[totalRead],
-        chunkSize);
-
-    if (bytesRead == 0) {
-      Serial.println("[NTOS] READ FAILED");
+    if (!file.seek(0)) {
+      Serial.println("[NTOS] SEEK FAILED");
       return false;
     }
 
-    totalRead += bytesRead;
+    size_t bytesRead = file.read(
+      _bytecode,
+      size);
+
+    Serial.print("[NTOS] READ=");
+    Serial.println(bytesRead);
+
+    if (bytesRead != size) {
+      Serial.println("[NTOS] READ SIZE MISMATCH");
+      return false;
+    }
+
+    _bytecodeSize = bytesRead;
+
+    Serial.print("[NTOS] LOADED=");
+    Serial.println(_bytecodeSize);
+
+    Serial.print("[NTOS] FIRST 16: ");
+
+    for (uint8_t i = 0;
+         i < 16 && i < _bytecodeSize;
+         i++) {
+
+      if (_bytecode[i] < 0x10)
+        Serial.print('0');
+
+      Serial.print(_bytecode[i], HEX);
+      Serial.print(' ');
+    }
+
+    Serial.println();
+
+    ResetExecution();
+
+    return true;
   }
-
-  _bytecodeSize = totalRead;
-
-  Serial.print("[NTOS] LOADED=");
-  Serial.println(_bytecodeSize);
-
-  Serial.print("[NTOS] FIRST 16: ");
-
-  for (uint8_t i = 0; i < 16 && i < _bytecodeSize; i++) {
-    if (_bytecode[i] < 0x10)
-      Serial.print('0');
-
-    Serial.print(_bytecode[i], HEX);
-    Serial.print(' ');
-  }
-
-  Serial.println();
-
-  ResetExecution();
-
-  return true;
-}
 
 
   // ========================================================

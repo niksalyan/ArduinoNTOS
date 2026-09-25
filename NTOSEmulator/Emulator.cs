@@ -148,21 +148,19 @@ namespace NTOSEmulator
             {
                 if (i > 0)
                 {
-                    // sb.Append(' ');
+                    sb.Append(' ');
                 }
 
-                // sb.Append($"0x{bytecode[i]:X2}");
-
-                sb.Append($"{bytecode[i]:X2}");
+                sb.Append($"0x{bytecode[i]:X2}");
 
                 if (i < bytecode.Length - 1)
                 {
-                    // sb.Append(',');
+                    sb.Append(',');
                 }
 
                 if ((i + 1) % columns == 0)
                 {
-                    //sb.AppendLine();
+                    sb.AppendLine();
                 }
             }
 
