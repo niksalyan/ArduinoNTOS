@@ -1006,18 +1006,64 @@ private:
           break;
         }
 
-      case 15:  // fillCircle
+        case 10:  // drawBox
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t radius = Pop().value;
+          uint32_t h = Pop().value;
+          uint32_t w = Pop().value;
           uint32_t y = Pop().value;
           uint32_t x = Pop().value;
 
-          tft.fillCircle(
-            (int16_t)x,
-            (int16_t)y,
-            (int16_t)radius,
-            Color332To565(color));
+          tft.drawRect(x, y, w, h, Color332To565(color));
+
+          break;
+        }
+
+      case 11:  // fillBox
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t h = Pop().value;
+          uint32_t w = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.fastFillRect(x, y, w, h, Color332To565(color));
+
+          break;
+        }
+
+        case 12:  // pixel
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.drawPixel(x, y, Color332To565(color));
+
+          break;
+        }
+        
+        case 13:  // line
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t y2 = Pop().value;
+          uint32_t x2 = Pop().value;
+          uint32_t y1 = Pop().value;
+          uint32_t x1 = Pop().value;
+
+          tft.drawLine(x1, y1, x2, y2, Color332To565(color));
+
+          break;
+        }
+
+      case 15:  // fillCircle
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t r = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.fillCircle(x, y, r, Color332To565(color));
 
           break;
         }
@@ -1025,6 +1071,10 @@ private:
       default:
         Serial.print("[NTOS] Unknown system function: ");
         Serial.println(functionIndex);
+
+        for (uint8_t i = 0; i < argumentCount; i++) {
+            Pop();
+        }
         break;
     }
   }
