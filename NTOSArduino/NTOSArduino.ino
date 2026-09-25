@@ -18,4 +18,5 @@ void loop() {
   Terminal::update();
 
   Storage::update();
+  delay(10);
 }
