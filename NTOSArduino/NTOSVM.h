@@ -7,11 +7,11 @@
 // ============================================================
 
 #ifndef NTOS_BYTECODE_SIZE
-#define NTOS_BYTECODE_SIZE 3584
+#define NTOS_BYTECODE_SIZE 2500
 #endif
 
 #ifndef NTOS_MEMORY_SIZE
-#define NTOS_MEMORY_SIZE 1536
+#define NTOS_MEMORY_SIZE 1500
 #endif
 
 #ifndef NTOS_STACK_SIZE

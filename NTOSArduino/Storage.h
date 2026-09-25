@@ -12,6 +12,7 @@ private:
 public:
   static void begin() {
     SD.begin();
+    Serial.begin(9600);
     Serial.print("OK");
   }
 

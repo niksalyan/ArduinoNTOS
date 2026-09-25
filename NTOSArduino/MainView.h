@@ -76,6 +76,8 @@ private:
       appCount++;
     });
 
+    selectedApp = constrain(selectedApp, 0, appCount - 1);
+
     // Make sure current page is still valid.
     if (currentPage >= pageCount())
       currentPage = pageCount() - 1;
@@ -176,9 +178,6 @@ public:
   // --------------------------------------------------
 
   static void open() {
-
-    currentPage = 0;
-    selectedApp = 0;
 
     // Discover applications from SD.
     loadApps();

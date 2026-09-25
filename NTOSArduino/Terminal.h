@@ -4,10 +4,6 @@
 #include <Adafruit_GFX.h>
 #include <EEPROM.h>
 
-
-
-#define SERIAL_ENABLED true
-
 // ============================================================
 // TFT
 // ============================================================
@@ -514,15 +510,11 @@ class Terminal {
 public:
 
   inline static KeyHandler keyHandler = nullptr;
-  inline static KeyHandler serialHandler = nullptr;
   inline static EventHandler drawHandler = nullptr;
   inline static EventHandler updateHandler = nullptr;
 
 
   static void begin() {
-    if (SERIAL_ENABLED) {
-        Serial.begin(115200);
-    }
     uint16_t ID = tft.readID();
 
     if (ID == 0xD3D3) {
@@ -545,29 +537,9 @@ public:
     }
   }
 
-  static char getSerialKey() {
-    if (!SERIAL_ENABLED) return 0;
-    if (Serial.available() > 0)
-    {
-        char key = Serial.read();
-        if (serialHandler) {
-            serialHandler(key);
-        }
-        if (key > 32 && key < 127) {
-            return key;
-        } 
-    }
-    return 0;
-  }
-
   static char getKey() {
-    char sk = getSerialKey();
-    if (sk > 0) {
-        return sk;
-    }
     return keypad.getKey();
   }
-
 
   static void update() {
 
@@ -579,27 +551,5 @@ public:
     if (updateHandler) {
         updateHandler();
     }
-  }
-
-  static void sendData(const char* key, const char* val, int index = -1) {
-    if (!SERIAL_ENABLED) return;
-    Serial.print(key);
-    if (index >= 0) {
-        Serial.print(index);
-    }
-    Serial.print('=');
-    Serial.print(val);
-    Serial.print('\n');
-  }
-
-  static void sendData(const char* key, const long val, int index = -1) {
-    if (!SERIAL_ENABLED) return;
-    Serial.print(key);
-    if (index >= 0) {
-        Serial.print(index);
-    }
-    Serial.print('=');
-    Serial.print(val);
-    Serial.print('\n');
   }
 };
