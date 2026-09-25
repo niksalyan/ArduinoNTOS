@@ -6,7 +6,7 @@
 
 
 
-#define SERIAL_ENABLED false
+#define SERIAL_ENABLED true
 
 // ============================================================
 // TFT

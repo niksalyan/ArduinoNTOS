@@ -1,9 +1,9 @@
 #include "Terminal.h"
-#include "Storage.h"
+
 #include "NTOSVM.h"
 #include "Navigation.h"
 #include "SplashScreen.h"
-
+#include "Storage.h"
 
 void setup() {
   randomSeed(analogRead(0));

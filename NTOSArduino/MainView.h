@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UI.h"
+#include "Storage.h"
 
 class MainView {
 private:
@@ -9,7 +10,12 @@ private:
   static constexpr uint8_t ROWS = 2;
 
   static constexpr uint8_t APPS_PER_PAGE = COLS * ROWS;
-  static constexpr uint8_t appCount = 10;
+
+  // Maximum number of applications NTOS will keep in memory.
+  static constexpr uint8_t MAX_APPS = 32;
+
+  // Maximum application folder name length.
+  static constexpr uint8_t MAX_APP_NAME = 20;
 
   static constexpr int TILE_WIDTH = 130;
   static constexpr int TILE_HEIGHT = 82;
@@ -20,12 +26,17 @@ private:
   static constexpr int COL_GAP = 20;
   static constexpr int ROW_GAP = 12;
 
-  static const char* apps[];
+  static char apps[MAX_APPS][MAX_APP_NAME];
+  static uint8_t appCount;
 
   static uint8_t currentPage;
   static uint8_t selectedApp;
 
   static uint8_t pageCount() {
+
+    if (appCount == 0)
+      return 1;
+
     return (appCount + APPS_PER_PAGE - 1) / APPS_PER_PAGE;
   }
 
@@ -40,6 +51,51 @@ private:
   static int tileY(uint8_t row) {
     return GRID_Y + row * (TILE_HEIGHT + ROW_GAP);
   }
+
+  // --------------------------------------------------
+  // Load applications from SD
+  // --------------------------------------------------
+
+  static void loadApps() {
+
+    appCount = 0;
+
+    Storage::listApps([](const char* name) {
+
+      if (appCount >= MAX_APPS)
+        return;
+
+      strncpy(
+        apps[appCount],
+        name,
+        MAX_APP_NAME - 1
+      );
+
+      apps[appCount][MAX_APP_NAME - 1] = '\0';
+
+      appCount++;
+    });
+
+    // Make sure current page is still valid.
+    if (currentPage >= pageCount())
+      currentPage = pageCount() - 1;
+
+    // Make sure selection is still valid.
+    if (appCount == 0) {
+      selectedApp = 0;
+      return;
+    }
+
+    if (selectedApp >= appCount)
+      selectedApp = appCount - 1;
+
+    // Selection may have moved to another page.
+    currentPage = selectedApp / APPS_PER_PAGE;
+  }
+
+  // --------------------------------------------------
+  // Tile
+  // --------------------------------------------------
 
   static void drawTile(uint8_t index) {
 
@@ -86,14 +142,20 @@ private:
 
     // Placeholder icon
     //
-    // Later this becomes an actual icon loaded
-    // from the app metadata / SD card.
+    // Later this can become:
+    // Storage::loadIcon(...)
+    //
+    // or an icon.bmp loaded from the
+    // application's directory.
+
     tft.drawRect(
       x + TILE_WIDTH / 2 - 15,
       y + 10,
       30,
       25,
-      selected ? TFT_YELLOW : TFT_CYAN
+      selected
+        ? TFT_YELLOW
+        : TFT_CYAN
     );
 
     // Application name
@@ -101,32 +163,49 @@ private:
       apps[index],
       x + TILE_WIDTH / 2,
       y + 52,
-      selected ? TFT_YELLOW : TFT_WHITE
+      selected
+        ? TFT_YELLOW
+        : TFT_WHITE
     );
   }
 
 public:
+
+  // --------------------------------------------------
+  // Open
+  // --------------------------------------------------
 
   static void open() {
 
     currentPage = 0;
     selectedApp = 0;
 
+    // Discover applications from SD.
+    loadApps();
+
     UI::setHandler(handler);
 
     draw();
   }
 
+  // --------------------------------------------------
+  // Update
+  // --------------------------------------------------
+
   static void update() {
 
-    // Eventually:
+    // For now applications are discovered when
+    // the view is opened.
     //
-    // - check SD card
-    // - detect new applications
-    // - update status information
+    // Later we can detect SD changes here.
     //
-    // Nothing should be redrawn unless something changed.
+    // IMPORTANT:
+    // Do not redraw unless something actually changed.
   }
+
+  // --------------------------------------------------
+  // Draw
+  // --------------------------------------------------
 
   static void draw() {
 
@@ -138,13 +217,17 @@ public:
     if (end > appCount)
       end = appCount;
 
-    // Draw all tiles
+    // Draw applications
     for (uint8_t i = start; i < end; i++) {
       drawTile(i);
     }
 
     // Empty tiles
-    for (uint8_t i = end; i < start + APPS_PER_PAGE; i++) {
+    for (
+      uint8_t i = end;
+      i < start + APPS_PER_PAGE;
+      i++
+    ) {
 
       uint8_t localIndex = i - start;
 
@@ -168,9 +251,12 @@ public:
 
 private:
 
+  // --------------------------------------------------
+  // Footer
+  // --------------------------------------------------
+
   static void drawFooter() {
 
-    // Clear footer
     tft.fillRect(
       0,
       250,
@@ -217,6 +303,10 @@ private:
     );
   }
 
+  // --------------------------------------------------
+  // Input
+  // --------------------------------------------------
+
   static void handler(char key) {
 
     switch (key) {
@@ -238,6 +328,10 @@ private:
     }
   }
 
+  // --------------------------------------------------
+  // Previous application
+  // --------------------------------------------------
+
   static void moveLeft() {
 
     if (selectedApp == 0)
@@ -247,10 +341,15 @@ private:
 
     selectedApp--;
 
-    currentPage = selectedApp / APPS_PER_PAGE;
+    currentPage =
+      selectedApp / APPS_PER_PAGE;
 
     redrawSelection(oldSelection);
   }
+
+  // --------------------------------------------------
+  // Next application
+  // --------------------------------------------------
 
   static void moveRight() {
 
@@ -261,18 +360,28 @@ private:
 
     selectedApp++;
 
-    currentPage = selectedApp / APPS_PER_PAGE;
+    currentPage =
+      selectedApp / APPS_PER_PAGE;
 
     redrawSelection(oldSelection);
   }
 
-  static void redrawSelection(uint8_t oldSelection) {
+  // --------------------------------------------------
+  // Redraw selection
+  // --------------------------------------------------
+
+  static void redrawSelection(
+    uint8_t oldSelection
+  ) {
 
     // Page changed
-    if (oldSelection / APPS_PER_PAGE !=
-        selectedApp / APPS_PER_PAGE) {
+    if (
+      oldSelection / APPS_PER_PAGE !=
+      selectedApp / APPS_PER_PAGE
+    ) {
 
       draw();
+
       return;
     }
 
@@ -282,37 +391,36 @@ private:
     drawTile(selectedApp);
   }
 
+  // --------------------------------------------------
+  // Launch
+  // --------------------------------------------------
+
   static void launchSelected() {
-    Navigation::RunApp("mama");
-    // Later:
-    //
-    // AppManager::launch(apps[selectedApp]);
+
+    if (appCount == 0)
+      return;
+
+    if (selectedApp >= appCount)
+      return;
+
+    Navigation::RunApp(
+      apps[selectedApp]
+    );
   }
-};
-
-
-// --------------------------------------------------
-// Mock applications
-// --------------------------------------------------
-
-const char* MainView::apps[] = {
-
-  "Monetrix",
-  "Calculator",
-  "Terminal",
-  "File Manager",
-  "Settings",
-  "System Info",
-  "Games",
-  "Paint",
-  "Notes",
-  "Diagnostics"
 };
 
 
 // --------------------------------------------------
 // State
 // --------------------------------------------------
+
+char MainView::apps[
+  MainView::MAX_APPS
+][
+  MainView::MAX_APP_NAME
+];
+
+uint8_t MainView::appCount = 0;
 
 uint8_t MainView::currentPage = 0;
 uint8_t MainView::selectedApp = 0;
