@@ -1,5 +1,7 @@
 #pragma once
 
+#define SOFTWARE_SPI_FOR_SD
+#include <SoftSD.h>
 #include <Arduino.h>
 
 // ============================================================
@@ -77,43 +79,25 @@ public:
   // Program
   // ========================================================
 
-  static bool LoadBytecode(
-    const uint8_t* bytecode,
-    uint16_t size) {
-    if (bytecode == nullptr)
+
+  static bool LoadBytecodeFromFile(File& file) {
+
+    if (!file)
       return false;
 
-    if (size > NTOS_BYTECODE_SIZE)
+    uint32_t size = file.size();
+
+    if (size == 0 || size > NTOS_BYTECODE_SIZE)
       return false;
 
-    memcpy(
+    size_t bytesRead = file.read(
       _bytecode,
-      bytecode,
       size);
 
-    _bytecodeSize = size;
-
-    ResetExecution();
-
-    return true;
-  }
-
-  static bool LoadBytecodeFromFlash(
-    const uint8_t* bytecode,
-    uint16_t size) {
-
-    if (bytecode == nullptr)
+    if (bytesRead != size)
       return false;
 
-    if (size > NTOS_BYTECODE_SIZE)
-      return false;
-
-    memcpy_P(
-      _bytecode,
-      bytecode,
-      size);
-
-    _bytecodeSize = size;
+    _bytecodeSize = static_cast<uint16_t>(size);
 
     ResetExecution();
 
@@ -1006,7 +990,7 @@ private:
           break;
         }
 
-        case 10:  // drawBox
+      case 10:  // drawBox
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t h = Pop().value;
@@ -1032,7 +1016,7 @@ private:
           break;
         }
 
-        case 12:  // pixel
+      case 12:  // pixel
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t y = Pop().value;
@@ -1042,8 +1026,8 @@ private:
 
           break;
         }
-        
-        case 13:  // line
+
+      case 13:  // line
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t y2 = Pop().value;
@@ -1073,7 +1057,7 @@ private:
         Serial.println(functionIndex);
 
         for (uint8_t i = 0; i < argumentCount; i++) {
-            Pop();
+          Pop();
         }
         break;
     }
