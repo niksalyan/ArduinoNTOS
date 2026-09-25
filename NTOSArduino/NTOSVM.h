@@ -25,7 +25,7 @@
 #endif
 
 #ifndef NTOS_DEBUG
-#define NTOS_DEBUG 1
+#define NTOS_DEBUG 0
 #endif
 
 
