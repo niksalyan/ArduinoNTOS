@@ -29,6 +29,12 @@ public:
 
         commandBuffer[commandLength] = '\0';
 
+        Serial.print("[NTOS] COMMAND: <");
+        Serial.print(commandBuffer);
+        Serial.println(">");
+
+
+
         processCommand(commandBuffer);
 
         commandLength = 0;
@@ -88,14 +94,29 @@ private:
   }
 
   static void createApp(const char* appName) {
-    if (!isValidName(appName))
-      return;
+    Serial.print("[NTOS] CREATE: ");
+    Serial.println(appName);
 
-    if (SD.exists(appName))
+    if (!isValidName(appName)) {
+      Serial.println("[NTOS] ERROR: invalid app name");
       return;
+    }
 
-    if (!SD.mkdir(appName))
+    Serial.println("[NTOS] Name valid");
+
+    if (SD.exists(appName)) {
+      Serial.println("[NTOS] ERROR: app already exists");
       return;
+    }
+
+    Serial.println("[NTOS] App does not exist");
+
+    if (!SD.mkdir(appName)) {
+      Serial.println("[NTOS] ERROR: mkdir failed");
+      return;
+    }
+
+    Serial.println("[NTOS] Directory created");
 
     char mainPath[64];
 
@@ -105,10 +126,21 @@ private:
       "/%s/main.ntx",
       appName);
 
+    Serial.print("[NTOS] Creating file: ");
+    Serial.println(mainPath);
+
     File file = SD.open(mainPath, FILE_WRITE);
 
-    if (file)
-      file.close();
+    if (!file) {
+      Serial.println("[NTOS] ERROR: main.ntx creation failed");
+      return;
+    }
+
+    file.close();
+
+    Serial.println("[NTOS] main.ntx created");
+    Serial.print("[NTOS] APP CREATED: ");
+    Serial.println(appName);
   }
 
   static bool isValidName(const char* name) {
