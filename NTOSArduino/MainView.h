@@ -15,7 +15,7 @@ private:
   static constexpr uint8_t MAX_APPS = 32;
 
   // Maximum application folder name length.
-  static constexpr uint8_t MAX_APP_NAME = 20;
+  static constexpr uint8_t MAX_APP_NAME = 11;
 
   static constexpr int TILE_WIDTH = 130;
   static constexpr int TILE_HEIGHT = 82;
@@ -61,15 +61,13 @@ private:
     appCount = 0;
 
     Storage::listApps([](const char* name) {
-
       if (appCount >= MAX_APPS)
         return;
 
       strncpy(
         apps[appCount],
         name,
-        MAX_APP_NAME - 1
-      );
+        MAX_APP_NAME - 1);
 
       apps[appCount][MAX_APP_NAME - 1] = '\0';
 
@@ -117,12 +115,12 @@ private:
     bool selected = index == selectedApp;
 
     uint16_t background = selected
-      ? TFT_DARKGREY
-      : TFT_BLACK;
+                            ? TFT_DARKGREY
+                            : TFT_BLACK;
 
     uint16_t border = selected
-      ? TFT_YELLOW
-      : TFT_DARKGREY;
+                        ? TFT_YELLOW
+                        : TFT_DARKGREY;
 
     // Tile background
     tft.fillRect(
@@ -130,8 +128,7 @@ private:
       y,
       TILE_WIDTH,
       TILE_HEIGHT,
-      background
-    );
+      background);
 
     // Tile border
     tft.drawRect(
@@ -139,8 +136,7 @@ private:
       y,
       TILE_WIDTH,
       TILE_HEIGHT,
-      border
-    );
+      border);
 
     // Placeholder icon
     //
@@ -157,18 +153,32 @@ private:
       25,
       selected
         ? TFT_YELLOW
-        : TFT_CYAN
-    );
+        : TFT_CYAN);
+
+    char displayName[MAX_APP_NAME];
+
+    strncpy(
+      displayName,
+      apps[index],
+      MAX_APP_NAME - 1);
+
+    displayName[MAX_APP_NAME - 1] = '\0';
+
+    // Convert '_' to spaces for display only.
+    for (uint8_t i = 0; displayName[i] != '\0'; i++) {
+      if (displayName[i] == '_')
+        displayName[i] = ' ';
+    }
+
 
     // Application name
     UI::printCentered(
-      apps[index],
+      displayName,
       x + TILE_WIDTH / 2,
       y + 52,
       selected
         ? TFT_YELLOW
-        : TFT_WHITE
-    );
+        : TFT_WHITE);
   }
 
 public:
@@ -225,8 +235,7 @@ public:
     for (
       uint8_t i = end;
       i < start + APPS_PER_PAGE;
-      i++
-    ) {
+      i++) {
 
       uint8_t localIndex = i - start;
 
@@ -241,8 +250,7 @@ public:
         y,
         TILE_WIDTH,
         TILE_HEIGHT,
-        TFT_BLACK
-      );
+        TFT_BLACK);
     }
 
     drawFooter();
@@ -261,8 +269,7 @@ private:
       250,
       tft.width(),
       70,
-      TFT_BLACK
-    );
+      TFT_BLACK);
 
     char pageText[20];
 
@@ -270,36 +277,31 @@ private:
       pageText,
       "%d / %d",
       currentPage + 1,
-      pageCount()
-    );
+      pageCount());
 
     UI::print(
       "* PREV",
       25,
       275,
-      TFT_CYAN
-    );
+      TFT_CYAN);
 
     UI::printCentered(
       pageText,
       tft.width() / 2,
       275,
-      TFT_CYAN
-    );
+      TFT_CYAN);
 
     UI::printRight(
       "# NEXT",
       455,
       275,
-      TFT_CYAN
-    );
+      TFT_CYAN);
 
     UI::printCentered(
       "0 = OPEN",
       tft.width() / 2,
       300,
-      TFT_WHITE
-    );
+      TFT_WHITE);
   }
 
   // --------------------------------------------------
@@ -370,14 +372,11 @@ private:
   // --------------------------------------------------
 
   static void redrawSelection(
-    uint8_t oldSelection
-  ) {
+    uint8_t oldSelection) {
 
     // Page changed
     if (
-      oldSelection / APPS_PER_PAGE !=
-      selectedApp / APPS_PER_PAGE
-    ) {
+      oldSelection / APPS_PER_PAGE != selectedApp / APPS_PER_PAGE) {
 
       draw();
 
@@ -403,8 +402,7 @@ private:
       return;
 
     Navigation::RunApp(
-      apps[selectedApp]
-    );
+      apps[selectedApp]);
   }
 };
 
@@ -413,11 +411,7 @@ private:
 // State
 // --------------------------------------------------
 
-char MainView::apps[
-  MainView::MAX_APPS
-][
-  MainView::MAX_APP_NAME
-];
+char MainView::apps[MainView::MAX_APPS][MainView::MAX_APP_NAME];
 
 uint8_t MainView::appCount = 0;
 

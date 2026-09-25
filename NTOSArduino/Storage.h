@@ -89,7 +89,7 @@ private:
     }
 
     if (command[0] == 'D' && command[1] == ' ') {
-      deleteApp(command + 2);
+      deleteDirectory(command + 2);
       return;
     }
   }
@@ -156,7 +156,71 @@ private:
     return true;
   }
 
-  static void deleteApp(const char* appName) {
-    // We'll implement recursive deletion next.
+  static bool deleteDirectory(const char* path) {
+
+    File dir = SD.open(path);
+
+    if (!dir) {
+      Serial.print("[NTOS] ERROR: cannot open directory: ");
+      Serial.println(path);
+      return false;
+    }
+
+    if (!dir.isDirectory()) {
+      dir.close();
+
+      Serial.print("[NTOS] Removing file: ");
+      Serial.println(path);
+
+      return SD.remove(path);
+    }
+
+    File entry = dir.openNextFile();
+
+    while (entry) {
+
+      char entryPath[96];
+
+      snprintf(
+        entryPath,
+        sizeof(entryPath),
+        "%s/%s",
+        path,
+        entry.name());
+
+      bool isDirectory = entry.isDirectory();
+
+      entry.close();
+
+      if (isDirectory) {
+
+        if (!deleteDirectory(entryPath)) {
+          dir.close();
+          return false;
+        }
+
+      } else {
+
+        Serial.print("[NTOS] Removing file: ");
+        Serial.println(entryPath);
+
+        if (!SD.remove(entryPath)) {
+          Serial.print("[NTOS] ERROR: failed to remove ");
+          Serial.println(entryPath);
+
+          dir.close();
+          return false;
+        }
+      }
+
+      entry = dir.openNextFile();
+    }
+
+    dir.close();
+
+    Serial.print("[NTOS] Removing directory: ");
+    Serial.println(path);
+
+    return SD.rmdir(path);
   }
 };
