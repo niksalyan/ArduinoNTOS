@@ -16,6 +16,10 @@ private:
   inline static bool hasHighNibble = false;
   inline static uint8_t highNibble = 0;
 
+  // U command header parsing
+  inline static bool parsingUpload = false;
+  inline static uint8_t uploadSpaces = 0;
+
 public:
   static void begin() {
     SD.begin();
@@ -33,56 +37,74 @@ public:
         continue;
       }
 
-      // Detect upload command immediately.
-      // We don't wait for the complete line.
+      // Start U command
       if (commandLength == 0 && c == 'U') {
         commandBuffer[commandLength++] = c;
         continue;
       }
 
-      if (commandLength == 1 && commandBuffer[0] == 'U' && c == ' ') {
-        commandBuffer[commandLength++] = c;
-        continue;
-      }
+      // U command parsing
+      if (commandLength > 0 && commandBuffer[0] == 'U') {
 
-      // If this is an U command, look for the third space.
-      if (commandLength >= 2 &&
-          commandBuffer[0] == 'U' &&
-          c != '\r' &&
-          c != '\n') {
-
-        if (c == ' ') {
-          commandBuffer[commandLength] = '\0';
-
-          if (startUpload(commandBuffer + 2)) {
-            commandLength = 0;
-            continue;
-          }
-
+        if (c == '\r' || c == '\n') {
           commandLength = 0;
           continue;
         }
 
+        // We need the SECOND space:
+        //
+        // U Zakat main.ntx
+        // ^     ^        ^
+        //       1st      2nd
+        //
+        if (c == ' ') {
+
+          uint8_t spaces = 0;
+
+          for (uint8_t i = 0; i < commandLength; i++) {
+            if (commandBuffer[i] == ' ')
+              spaces++;
+          }
+
+          // First space: just store it
+          if (spaces == 0) {
+            if (commandLength < BUFFER_SIZE - 1)
+              commandBuffer[commandLength++] = c;
+
+            continue;
+          }
+
+          // Second space: header is complete
+          if (spaces == 1) {
+            commandBuffer[commandLength] = '\0';
+
+            if (startUpload(commandBuffer + 2)) {
+              commandLength = 0;
+              continue;
+            }
+
+            commandLength = 0;
+            continue;
+          }
+        }
+
+        // Store upload header
         if (commandLength < BUFFER_SIZE - 1) {
           commandBuffer[commandLength++] = c;
         } else {
-          Serial.println("[NTOS] ERROR: command too long");
+          Serial.println("[NTOS] ERROR: upload header too long");
           commandLength = 0;
         }
 
         continue;
       }
 
-      // Normal command mode
+      // Normal commands
       if (c == '\r' || c == '\n') {
         if (commandLength == 0)
           continue;
 
         commandBuffer[commandLength] = '\0';
-
-        Serial.print("[NTOS] COMMAND: <");
-        Serial.print(commandBuffer);
-        Serial.println(">");
 
         processCommand(commandBuffer);
 
@@ -90,9 +112,8 @@ public:
         continue;
       }
 
-      if (commandLength < BUFFER_SIZE - 1) {
+      if (commandLength < BUFFER_SIZE - 1)
         commandBuffer[commandLength++] = c;
-      }
     }
   }
 
@@ -160,8 +181,7 @@ private:
   // arguments:
   // CalcApp main.ntx
   //
-  // The HEX data has NOT been buffered.
-  // The next bytes received from Serial are the HEX data.
+  // HEX data starts immediately after this header.
   static bool startUpload(const char* arguments) {
 
     const char* separator = strchr(arguments, ' ');
@@ -335,9 +355,7 @@ private:
 
     for (uint8_t i = 0; name[i] != '\0'; i++) {
 
-      if (name[i] == '/' ||
-          name[i] == '\\' ||
-          name[i] == ' ')
+      if (name[i] == '/' || name[i] == '\\' || name[i] == ' ')
         return false;
 
       length++;

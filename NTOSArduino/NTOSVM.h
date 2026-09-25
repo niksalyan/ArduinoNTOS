@@ -82,27 +82,66 @@ public:
 
   static bool LoadBytecodeFromFile(File& file) {
 
-    if (!file)
-      return false;
+  if (!file)
+    return false;
 
-    uint32_t size = file.size();
+  uint32_t size = file.size();
 
-    if (size == 0 || size > NTOS_BYTECODE_SIZE)
-      return false;
+  Serial.print("[NTOS] FILE SIZE=");
+  Serial.println(size);
 
-    size_t bytesRead = file.read(
-      _bytecode,
-      size);
+  if (size == 0 || size > NTOS_BYTECODE_SIZE)
+    return false;
 
-    if (bytesRead != size)
-      return false;
-
-    _bytecodeSize = static_cast<uint16_t>(size);
-
-    ResetExecution();
-
-    return true;
+  if (!file.seek(0)) {
+    Serial.println("[NTOS] SEEK FAILED");
+    return false;
   }
+
+  uint16_t totalRead = 0;
+
+  while (totalRead < size) {
+
+    uint16_t remaining =
+      static_cast<uint16_t>(size - totalRead);
+
+    uint16_t chunkSize =
+      remaining > 32 ? 32 : remaining;
+
+    size_t bytesRead =
+      file.read(
+        &_bytecode[totalRead],
+        chunkSize);
+
+    if (bytesRead == 0) {
+      Serial.println("[NTOS] READ FAILED");
+      return false;
+    }
+
+    totalRead += bytesRead;
+  }
+
+  _bytecodeSize = totalRead;
+
+  Serial.print("[NTOS] LOADED=");
+  Serial.println(_bytecodeSize);
+
+  Serial.print("[NTOS] FIRST 16: ");
+
+  for (uint8_t i = 0; i < 16 && i < _bytecodeSize; i++) {
+    if (_bytecode[i] < 0x10)
+      Serial.print('0');
+
+    Serial.print(_bytecode[i], HEX);
+    Serial.print(' ');
+  }
+
+  Serial.println();
+
+  ResetExecution();
+
+  return true;
+}
 
 
   // ========================================================
