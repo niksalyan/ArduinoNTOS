@@ -26,7 +26,7 @@
 #endif
 
 #ifndef NTOS_DEBUG
-#define NTOS_DEBUG 0
+#define NTOS_DEBUG 1
 #endif
 
 
@@ -1073,6 +1073,8 @@ private:
           const char* text =
             reinterpret_cast<const char*>(
               &_bytecode[stringOffset]);
+
+          Serial.print("->");
           Serial.print(text);
           break;
         }
