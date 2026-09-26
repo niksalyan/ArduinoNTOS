@@ -76,6 +76,12 @@ public sealed class Parser
             return false;
         }
 
+        if (Match(TokenKind.For))
+        {
+            CompileFor(program);
+            return false;
+        }
+
         if (Match(TokenKind.Loop))
         {
             CompileLoop(program);
@@ -562,6 +568,164 @@ public sealed class Parser
             new Instruction(
                 OpCode.Jump,
                 loopStart));
+
+        int endIndex =
+            program.Instructions.Count;
+
+        program.Instructions[jumpIfFalseIndex] =
+            new Instruction(
+                OpCode.JumpIfFalse,
+                endIndex);
+    }
+
+    private void CompileFor(BytecodeProgram program)
+    {
+        Consume(
+            TokenKind.LParen,
+            "Expected '(' after 'for'.");
+
+        // ------------------------------------------------------------
+        // Initializer
+        // ------------------------------------------------------------
+
+        if (Check(TokenKind.IntType) ||
+            Check(TokenKind.FloatType) ||
+            Check(TokenKind.BoolType) ||
+            Check(TokenKind.ByteType) ||
+            Check(TokenKind.CharType) ||
+            Check(TokenKind.StrType))
+        {
+            CompileDeclaration(program);
+
+            Consume(
+                TokenKind.Semicolon,
+                "Expected ';' after for initializer.");
+        }
+        else if (!Check(TokenKind.Semicolon))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                Consume(
+                    TokenKind.Semicolon,
+                    "Expected ';' after for initializer.");
+            }
+        }
+        else
+        {
+            Consume(
+                TokenKind.Semicolon,
+                "Expected ';' after for initializer.");
+        }
+
+        // ------------------------------------------------------------
+        // Condition
+        // ------------------------------------------------------------
+
+        program.Instructions.Add(
+            new Instruction(OpCode.Checkpoint));
+
+        int loopStart =
+            program.Instructions.Count;
+
+        VariableType conditionType =
+            CompileExpression(program);
+
+        if (conditionType != VariableType.Bool)
+        {
+            throw Error(
+                "For loop condition must be of type Bool.");
+        }
+
+        Consume(
+            TokenKind.Semicolon,
+            "Expected ';' after for condition.");
+
+        // ------------------------------------------------------------
+        // Increment
+        // ------------------------------------------------------------
+
+        int incrementStart =
+            program.Instructions.Count;
+
+        if (!Check(TokenKind.RParen))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            // The ')' terminates the increment.
+            // Do NOT consume a semicolon here.
+        }
+
+        List<Instruction> incrementInstructions =
+            ExtractInstructions(
+                program,
+                incrementStart);
+
+        Consume(
+            TokenKind.RParen,
+            "Expected ')' after for clauses.");
+
+        // ------------------------------------------------------------
+        // JumpIfFalse
+        // ------------------------------------------------------------
+
+        int jumpIfFalseIndex =
+            program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.JumpIfFalse,
+                -1));
+
+        // ------------------------------------------------------------
+        // Body
+        // ------------------------------------------------------------
+
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{'.");
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                Consume(
+                    TokenKind.Semicolon,
+                    "Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}' after for.");
+
+        // ------------------------------------------------------------
+        // Increment
+        // ------------------------------------------------------------
+
+        AppendInstructions(
+            program,
+            incrementInstructions);
+
+        // ------------------------------------------------------------
+        // Back to condition
+        // ------------------------------------------------------------
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Jump,
+                loopStart));
+
+        // ------------------------------------------------------------
+        // End
+        // ------------------------------------------------------------
 
         int endIndex =
             program.Instructions.Count;
@@ -1262,6 +1426,34 @@ public sealed class Parser
             _ => throw new InvalidOperationException(
                 $"Cannot store variable of type {type}.")
         };
+    }
+
+    private List<Instruction> ExtractInstructions(
+    BytecodeProgram program,
+    int startIndex)
+    {
+        int count =
+            program.Instructions.Count - startIndex;
+
+        List<Instruction> instructions =
+            program.Instructions
+                .GetRange(startIndex, count);
+
+        program.Instructions.RemoveRange(
+            startIndex,
+            count);
+
+        return instructions;
+    }
+
+    private void AppendInstructions(
+        BytecodeProgram program,
+        List<Instruction> instructions)
+    {
+        foreach (Instruction instruction in instructions)
+        {
+            program.Instructions.Add(instruction);
+        }
     }
 
     private bool TryConvertLastPushIntToByte(
