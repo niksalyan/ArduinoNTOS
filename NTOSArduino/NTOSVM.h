@@ -106,23 +106,12 @@ public:
 
     uint32_t size = file.size();
 
-    Serial.print("[NTOS] FILE SIZE=");
-    Serial.println(size);
-
     if (size == 0 || size > NTOS_BYTECODE_SIZE)
       return false;
-
-    if (!file.seek(0)) {
-      Serial.println("[NTOS] SEEK FAILED");
-      return false;
-    }
 
     size_t bytesRead = file.read(
       _bytecode,
       size);
-
-    Serial.print("[NTOS] READ=");
-    Serial.println(bytesRead);
 
     if (bytesRead != size) {
       Serial.println("[NTOS] READ SIZE MISMATCH");
@@ -130,24 +119,6 @@ public:
     }
 
     _bytecodeSize = bytesRead;
-
-    Serial.print("[NTOS] LOADED=");
-    Serial.println(_bytecodeSize);
-
-    Serial.print("[NTOS] FIRST 16: ");
-
-    for (uint8_t i = 0;
-         i < 16 && i < _bytecodeSize;
-         i++) {
-
-      if (_bytecode[i] < 0x10)
-        Serial.print('0');
-
-      Serial.print(_bytecode[i], HEX);
-      Serial.print(' ');
-    }
-
-    Serial.println();
 
     ResetExecution();
 
