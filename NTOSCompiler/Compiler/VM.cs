@@ -381,7 +381,7 @@ public sealed class VirtualMachine
                 case OpCode.Jump:
                     {
                         instructionPointer =
-                            ReadInt32(
+                            ReadUint16(
                                 bytecode,
                                 ref instructionPointer);
 
@@ -389,7 +389,7 @@ public sealed class VirtualMachine
                     }
                 case OpCode.JumpIfInitialized:
                     {
-                        int target = ReadInt32(
+                        int target = ReadUint16(
                             bytecode,
                             ref instructionPointer);
 
@@ -408,7 +408,7 @@ public sealed class VirtualMachine
                                 _stack.Pop());
 
                         int target =
-                            ReadInt32(
+                            ReadUint16(
                                 bytecode,
                                 ref instructionPointer);
 
@@ -467,7 +467,7 @@ public sealed class VirtualMachine
                                 index,
                                 args);
 
-                        _stack.Push(result);
+                        // _stack.Push(result);
 
                         break;
                     }
@@ -629,6 +629,20 @@ public sealed class VirtualMachine
                 pc);
 
         pc += 4;
+
+        return value;
+    }
+
+    private static int ReadUint16(
+        byte[] bytecode,
+        ref int pc)
+    {
+        int value =
+            BitConverter.ToUInt16(
+                bytecode,
+                pc);
+
+        pc += 2;
 
         return value;
     }

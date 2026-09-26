@@ -293,15 +293,15 @@ public class BytecodeProgram
                 case OpCode.JumpIfInitialized:
                     {
                         int targetInstruction =
-                            Convert.ToInt32(
+                            Convert.ToUInt16(
                                 instruction.Operand);
 
-                        int targetAddress =
-                            targetInstruction < Instructions.Count
-                                ? Instructions[targetInstruction].Address
-                                : (int)stream.Length + 4;
+                        UInt16 targetAddress =
+                            (ushort)(targetInstruction < Instructions.Count
+                                ? (UInt16)Instructions[targetInstruction].Address
+                                : (UInt16)stream.Length + 2);
 
-                        WriteInt32(
+                        WriteUint16(
                             stream,
                             targetAddress);
 
@@ -384,6 +384,14 @@ public class BytecodeProgram
     private static void WriteInt32(
         Stream stream,
         int value)
+    {
+        stream.Write(
+            BitConverter.GetBytes(value));
+    }
+
+    private static void WriteUint16(
+        Stream stream,
+        UInt16 value)
     {
         stream.Write(
             BitConverter.GetBytes(value));

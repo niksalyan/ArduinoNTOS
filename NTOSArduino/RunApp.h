@@ -13,7 +13,7 @@ public:
 
     UI::setHandler(handler);
 
-    draw();
+    UI::dialog(name);
 
     NTOSVM::Stop();
     NTOSVM::ResetExecution();
@@ -45,11 +45,6 @@ public:
     // - update status information
     //
     // Nothing should be redrawn unless something changed.
-  }
-
-  static void draw() {
-
-    UI::dialog("APP");
   }
 
 private:
