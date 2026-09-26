@@ -69,7 +69,7 @@ private:
   inline static uint8_t _callSp = 0;
 
   inline static bool _running = false;
-
+  inline static char* appName = "";
 
 
 
@@ -103,8 +103,8 @@ public:
     return true;
   }
 
-  static bool LoadBytecodeFromFile(File& file) {
-
+  static bool LoadBytecodeFromFile(File& file, char* name) {
+    appName = name;
     ClearBytecode();
 
     if (!file)
@@ -1064,6 +1064,42 @@ private:
     uint16_t functionIndex,
     uint8_t argumentCount) {
     switch (functionIndex) {
+      case 0: // debug
+        uint16_t stringOffset = (uint16_t)Pop().value;
+
+          const char* text =
+            reinterpret_cast<const char*>(
+              &_bytecode[stringOffset]);
+        Serial.print(text);
+        break;
+      case 1: // load() /// The load name need to prefix AppName/<text>.ntos // What is the best way to do it ?
+        uint16_t stringOffset = (uint16_t)Pop().value;
+
+          const char* text =
+            reinterpret_cast<const char*>(
+              &_bytecode[stringOffset]);
+        
+          Stop();
+          ResetExecution();
+          
+          File file;
+
+          if (!Storage::openAppFile(appName, text + ".ntx", file)) {
+            return;
+          }
+
+          bool loaded = LoadBytecodeFromFile(file, appName);
+
+          file.close();
+
+          if (!loaded) {
+            return;
+          }
+          NTOSVM::initialized = true;
+          NTOSVM::Start();
+
+
+        break;
       case 9:  // cls
         {
           tft.fillScreenBlack();

@@ -25,7 +25,7 @@ public:
       return;
     }
 
-    bool loaded = NTOSVM::LoadBytecodeFromFile(file);
+    bool loaded = NTOSVM::LoadBytecodeFromFile(file, name);
 
     file.close();
 
