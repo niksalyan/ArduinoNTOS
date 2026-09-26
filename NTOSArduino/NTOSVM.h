@@ -1091,6 +1091,18 @@ private:
           break;
         }
 
+        case 14:  // drawCircle
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t r = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.drawCircle(x, y, r, Color332To565(color));
+
+          break;
+        }
+
       case 15:  // fillCircle
         {
           uint8_t color = (uint8_t)Pop().value;
@@ -1099,6 +1111,22 @@ private:
           uint32_t x = Pop().value;
 
           tft.fillCircle(x, y, r, Color332To565(color));
+
+          break;
+        }
+
+        case 16:  // drawText
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t text = Pop().value; // How to get text ?
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.setTextSize(2);
+          tft.setTextColor(color);
+          tft.setCursor(x, y);
+
+          tft.print(text);
 
           break;
         }

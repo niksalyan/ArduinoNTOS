@@ -596,29 +596,15 @@ public sealed class Parser
             Check(TokenKind.StrType))
         {
             CompileDeclaration(program);
-
-            Consume(
-                TokenKind.Semicolon,
-                "Expected ';' after for initializer.");
         }
         else if (!Check(TokenKind.Semicolon))
         {
-            bool requiresSemicolon =
-                CompileStatement(program);
+            CompileStatement(program);
+        }
 
-            if (requiresSemicolon)
-            {
-                Consume(
-                    TokenKind.Semicolon,
-                    "Expected ';' after for initializer.");
-            }
-        }
-        else
-        {
-            Consume(
-                TokenKind.Semicolon,
-                "Expected ';' after for initializer.");
-        }
+        Consume(
+            TokenKind.Semicolon,
+            "Expected ';' after for initializer.");
 
         // ------------------------------------------------------------
         // Condition
@@ -652,11 +638,7 @@ public sealed class Parser
 
         if (!Check(TokenKind.RParen))
         {
-            bool requiresSemicolon =
-                CompileStatement(program);
-
-            // The ')' terminates the increment.
-            // Do NOT consume a semicolon here.
+            CompileStatement(program);
         }
 
         List<Instruction> incrementInstructions =
