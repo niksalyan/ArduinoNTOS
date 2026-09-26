@@ -38,7 +38,7 @@ namespace NTOSEmulator
                 {
                     string file = appPath + args[0]?.ToString() + ".ntos";
                     Debug.WriteLine(file);
-                    Execute(file);
+                    Execute(file, true);
                 }
                 return null;
             });
@@ -92,7 +92,7 @@ namespace NTOSEmulator
         }
 
 
-        public void Execute(string file)
+        public void Execute(string file, bool initialized = false)
         {
             appPath = Path.GetDirectoryName(file) + "\\";
             string name = Path.GetFileNameWithoutExtension(file);
@@ -119,6 +119,7 @@ namespace NTOSEmulator
 
             try
             {
+                vm.Initialized = initialized;
                 vm.Execute(app.GetBytecode(name));
             }
             catch (Exception ex)
@@ -141,6 +142,33 @@ namespace NTOSEmulator
 
        
         public static string ToArduinoArray(byte[] bytecode, int columns = 8)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < bytecode.Length; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append($"0x{bytecode[i]:X2}");
+
+                if (i < bytecode.Length - 1)
+                {
+                    sb.Append(',');
+                }
+
+                if ((i + 1) % columns == 0)
+                {
+                    sb.AppendLine();
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static string ToComArray(byte[] bytecode, int columns = 8)
         {
             var sb = new StringBuilder();
 

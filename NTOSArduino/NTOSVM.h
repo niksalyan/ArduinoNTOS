@@ -82,6 +82,8 @@ public:
     const uint8_t* bytecode,
     uint16_t size) {
 
+    ClearBytecode();
+
     if (bytecode == nullptr)
       return false;
 
@@ -101,6 +103,9 @@ public:
   }
 
   static bool LoadBytecodeFromFile(File& file) {
+
+    ClearBytecode();
+
     if (!file)
       return false;
 
@@ -154,6 +159,14 @@ public:
       _memory,
       0,
       sizeof(_memory));
+  }
+
+  static void ClearBytecode() {
+    memset(
+      _bytecode,
+      0,
+      sizeof(_bytecode));
+      _bytecodeSize = 0;
   }
 
 
