@@ -49,23 +49,29 @@ public:
     NTOSVM::ResetExecution();
     NTOSVM::ClearMemory();
 
-    //  NOT WORKING
-    // File file;
 
-    // if (!Storage::openAppFile(name, "main.ntx", file)) {
-    //   return;
-    // }
+    if (strcmp(name, "WORKING") == 0) {
+      NTOSVM::LoadBytecodeFromFlash(Bytecode, sizeof(Bytecode));
+    } else {
+      File file;
 
-    // bool loaded = NTOSVM::LoadBytecodeFromFile(file);
+      if (!Storage::openAppFile(name, "main.ntx", file)) {
+        return;
+      }
 
-    // file.close();
+      bool loaded = NTOSVM::LoadBytecodeFromFile(file);
 
-    // if (!loaded) {
-    //   return;
-    // }
+      file.close();
 
-    // WORKING 
-    NTOSVM::LoadBytecodeFromFlash(Bytecode, sizeof(Bytecode));
+      if (!loaded) {
+        return;
+      }
+    }
+    //NOT WORKING
+
+
+    // WORKING
+    //NTOSVM::LoadBytecodeFromFlash(Bytecode, sizeof(Bytecode));
 
     NTOSVM::Start();
   }

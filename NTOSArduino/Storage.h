@@ -27,7 +27,7 @@ private:
 public:
 
   static void begin() {
-    Serial.begin(115200);
+    Serial.begin(4800);
     SD.begin();
 
     Serial.println();
