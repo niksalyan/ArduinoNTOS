@@ -32,7 +32,7 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(0, "load", (args) =>
+            vmFunctions.AddFunction(1, "load", (args) =>
             {
                 if (args.Length > 0)
                 {

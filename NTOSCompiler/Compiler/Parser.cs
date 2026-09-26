@@ -119,32 +119,72 @@ public sealed class Parser
         }
 
         // x = expression
-        if (Check(TokenKind.Identifier) &&
-            Peek(1).Kind == TokenKind.Assign)
+        // x[index] = expression
+        if (Check(TokenKind.Identifier))
         {
-            string name = Advance().Text;
-            Advance(); // '='
+            string name = Peek(0).Text;
 
-            Variable variable = program.GetVariable(name);
+            Variable variable =
+                program.GetVariable(name);
 
-            VariableType expressionType =
-                CompileExpression(program);
-
-            if (expressionType != variable.Type)
+            // x[index] = expression
+            if (Peek(1).Kind == TokenKind.LBracket)
             {
-                throw Error(
-                    $"Cannot assign {expressionType} to variable " +
-                    $"'{name}' of type {variable.Type}.");
+                Advance(); // identifier
+
+                int index =
+                    ParseArrayIndex(program, variable);
+
+                Consume(
+                    TokenKind.Assign,
+                    "Expected '=' after array index.");
+
+                VariableType expressionType =
+                    CompileExpression(program);
+
+                if (expressionType != variable.Type)
+                {
+                    throw Error(
+                        $"Cannot assign {expressionType} to array " +
+                        $"'{name}' of type {variable.Type}.");
+                }
+
+                int address =
+                    variable.Address +
+                    index * variable.GetElementSize();
+
+                program.Instructions.Add(
+                    new Instruction(
+                        GetStoreOpcode(variable.Type),
+                        address));
+
+                return true;
             }
 
-            program.Instructions.Add(
-                new Instruction(
-                    GetStoreOpcode(variable.Type),
-                    variable.Address));
+            // x = expression
+            if (Peek(1).Kind == TokenKind.Assign)
+            {
+                Advance(); // identifier
+                Advance(); // '='
 
-            return true;
+                VariableType expressionType =
+                    CompileExpression(program);
+
+                if (expressionType != variable.Type)
+                {
+                    throw Error(
+                        $"Cannot assign {expressionType} to variable " +
+                        $"'{name}' of type {variable.Type}.");
+                }
+
+                program.Instructions.Add(
+                    new Instruction(
+                        GetStoreOpcode(variable.Type),
+                        variable.Address));
+
+                return true;
+            }
         }
-
 
 
         // expression
@@ -398,6 +438,40 @@ public sealed class Parser
             throw Error("Length must be greater than zero.");
 
         return value;
+    }
+
+    private int ParseArrayIndex(
+    BytecodeProgram program,
+    Variable variable)
+    {
+        Consume(
+            TokenKind.LBracket,
+            "Expected '['.");
+
+        Token indexToken = Consume(
+            TokenKind.Int,
+            "Expected constant array index.");
+
+        int index = int.Parse(indexToken.Text);
+
+        Consume(
+            TokenKind.RBracket,
+            "Expected ']' after array index.");
+
+        if (!variable.IsArray)
+        {
+            throw Error(
+                $"Variable '{variable.Name}' is not an array.");
+        }
+
+        if (index < 0 || index >= variable.Length)
+        {
+            throw Error(
+                $"Array index {index} is outside the bounds of " +
+                $"array '{variable.Name}' with length {variable.Length}.");
+        }
+
+        return index;
     }
 
     private void CompileIf(BytecodeProgram program)
@@ -1232,10 +1306,21 @@ public sealed class Parser
 
             Variable variable = program.GetVariable(name);
 
+            int address = variable.Address;
+
+            if (Check(TokenKind.LBracket))
+            {
+                int index =
+                    ParseArrayIndex(program, variable);
+
+                address +=
+                    index * variable.GetElementSize();
+            }
+
             program.Instructions.Add(
                 new Instruction(
                     GetLoadOpcode(variable.Type),
-                    variable.Address));
+                    address));
 
             return variable.Type;
         }
