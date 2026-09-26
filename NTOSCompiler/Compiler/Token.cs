@@ -38,6 +38,9 @@ public enum TokenKind
 
     While,
 
+    Switch,
+    Case,
+
     Loop,
 
     Init,

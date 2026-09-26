@@ -82,6 +82,18 @@ public sealed class Parser
             return false;
         }
 
+        if (Match(TokenKind.Init))
+        {
+            CompileInit(program);
+            return false;
+        }
+
+        if (Match(TokenKind.Switch))
+        {
+            CompileSwitch(program);
+            return false;
+        }
+
         if (Check(TokenKind.IntType) ||
             Check(TokenKind.FloatType) ||
             Check(TokenKind.BoolType) ||
@@ -609,6 +621,64 @@ public sealed class Parser
             new Instruction(
                 OpCode.JumpIfFalse,
                 endIndex);
+    }
+
+    private void CompileInit(BytecodeProgram program)
+    {
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{' after 'init'.");
+
+        int jumpIfInitializedIndex =
+            program.Instructions.Count;
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.JumpIfInitialized,
+                -1));
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            bool requiresSemicolon =
+                CompileStatement(program);
+
+            if (requiresSemicolon)
+            {
+                Consume(
+                    TokenKind.Semicolon,
+                    "Expected ';'.");
+            }
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}' after init.");
+
+        int endIndex =
+            program.Instructions.Count;
+
+        program.Instructions[jumpIfInitializedIndex] =
+            new Instruction(
+                OpCode.JumpIfInitialized,
+                endIndex);
+    }
+
+    private void CompileSwitch(BytecodeProgram program)
+    {
+        Consume(TokenKind.LParen, "Expected '(' after 'switch'.");
+
+        // Compile switch expression.
+        // Store its result in an internal variable.
+
+        Consume(TokenKind.RParen, "Expected ')' after switch expression.");
+        Consume(TokenKind.LBrace, "Expected '{' after switch.");
+
+        // Parse cases...
+
+        Consume(TokenKind.RBrace, "Expected '}' after switch.");
+
+        // Patch jumps...
     }
 
     private VariableType CompileExpression(BytecodeProgram program)

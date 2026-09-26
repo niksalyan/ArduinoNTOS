@@ -282,6 +282,7 @@ public class BytecodeProgram
                     }
                 case OpCode.Jump:
                 case OpCode.JumpIfFalse:
+                case OpCode.JumpIfInitialized:
                     {
                         int targetInstruction =
                             Convert.ToInt32(

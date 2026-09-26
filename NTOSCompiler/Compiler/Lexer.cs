@@ -54,6 +54,8 @@ public sealed class Lexer
                     "else" => TokenKind.Else,
                     "while" => TokenKind.While,
                     "loop" => TokenKind.Loop,
+                    "switch" => TokenKind.Switch,
+                    "case" => TokenKind.Case,
                     "init" => TokenKind.Init,
                     "call" => TokenKind.Call,
                     "delay" => TokenKind.Delay,

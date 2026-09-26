@@ -367,18 +367,18 @@ public sealed class VirtualMachine
                     }
                 case OpCode.JumpIfInitialized:
                     {
+                        int target = ReadInt32(
+                            bytecode,
+                            ref instructionPointer);
+
                         if (Initialized)
                         {
-                            instructionPointer =
-                            ReadInt32(
-                                bytecode,
-                                ref instructionPointer);
-
-
+                            instructionPointer = target;
+                            continue;
                         }
-                        continue;
-                    }
 
+                        break;
+                    }
                 case OpCode.JumpIfFalse:
                     {
                         bool condition =
