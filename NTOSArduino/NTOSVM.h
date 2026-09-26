@@ -749,25 +749,44 @@ private:
   // Stack
   // ========================================================
 
-  static void Push(
-    StackValue value) {
-    if (_sp >= NTOS_STACK_SIZE)
-      return;
-
-    _stack[_sp++] = value;
+  static void Push(StackValue value) {
+  if (_sp >= NTOS_STACK_SIZE) {
+    Serial.println(F("[NTOS STACK] OVERFLOW"));
+    return;
   }
 
+  Serial.print(F("[NTOS STACK] PUSH sp="));
+  Serial.print(_sp);
+  Serial.print(F(" type="));
+  Serial.print((uint8_t)value.type);
+  Serial.print(F(" value="));
+  Serial.println(value.value);
 
-  static StackValue Pop() {
-    if (_sp == 0) {
-      return {
-        StackValueType::None,
-        0
-      };
-    }
+  _stack[_sp++] = value;
+}
 
-    return _stack[--_sp];
+
+static StackValue Pop() {
+  if (_sp == 0) {
+    Serial.println(F("[NTOS STACK] UNDERFLOW"));
+
+    return {
+      StackValueType::None,
+      0
+    };
   }
+
+  StackValue value = _stack[--_sp];
+
+  Serial.print(F("[NTOS STACK] POP  sp="));
+  Serial.print(_sp);
+  Serial.print(F(" type="));
+  Serial.print((uint8_t)value.type);
+  Serial.print(F(" value="));
+  Serial.println(value.value);
+
+  return value;
+}
 
 
   // ========================================================
