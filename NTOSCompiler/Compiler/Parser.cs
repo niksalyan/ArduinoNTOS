@@ -16,6 +16,7 @@ public sealed class Parser
 
     private readonly List<(int InstructionIndex, string Name)> _unresolvedSubroutineCalls = new();
 
+
     public Parser(List<Token> tokens, VMFunctions vmFunctions, Dictionary<string, byte>? constants)
     {
         _vmFunctions = vmFunctions ?? new VMFunctions();
@@ -140,8 +141,9 @@ public sealed class Parser
             {
                 Advance(); // identifier
 
-                int index =
-                    ParseArrayIndex(program, variable);
+                CompileArrayAddress(
+                    program,
+                    variable);
 
                 Consume(
                     TokenKind.Assign,
@@ -159,7 +161,7 @@ public sealed class Parser
 
                 int address =
                     variable.Address +
-                    index * variable.GetElementSize();
+                    variable.GetElementSize();
 
                 program.Instructions.Add(
                     new Instruction(
@@ -448,7 +450,7 @@ public sealed class Parser
         return value;
     }
 
-    private int ParseArrayIndex(
+    private void CompileArrayAddress(
     BytecodeProgram program,
     Variable variable)
     {
@@ -456,30 +458,64 @@ public sealed class Parser
             TokenKind.LBracket,
             "Expected '['.");
 
-        Token indexToken = Consume(
-            TokenKind.Int,
-            "Expected constant array index.");
+        if (Check(TokenKind.Int))
+        {
+            int index =
+                int.Parse(Advance().Text);
 
-        int index = int.Parse(indexToken.Text);
+            if (!variable.IsArray)
+            {
+                throw Error(
+                    $"Variable '{variable.Name}' is not an array.");
+            }
+
+            if (index < 0 || index >= variable.Length)
+            {
+                throw Error(
+                    $"Array index {index} is outside the bounds of " +
+                    $"array '{variable.Name}'.");
+            }
+
+            Consume(
+                TokenKind.RBracket,
+                "Expected ']' after array index.");
+
+            int address =
+                variable.Address +
+                index * variable.GetElementSize();
+
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.PushInt,
+                    address));
+
+            return;
+        }
+
+        // Dynamic index
+        CompileExpression(program);
 
         Consume(
             TokenKind.RBracket,
             "Expected ']' after array index.");
 
-        if (!variable.IsArray)
-        {
-            throw Error(
-                $"Variable '{variable.Name}' is not an array.");
-        }
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.PushInt,
+                variable.GetElementSize()));
 
-        if (index < 0 || index >= variable.Length)
-        {
-            throw Error(
-                $"Array index {index} is outside the bounds of " +
-                $"array '{variable.Name}' with length {variable.Length}.");
-        }
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Multiply));
 
-        return index;
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.PushInt,
+                variable.Address));
+
+        program.Instructions.Add(
+            new Instruction(
+                OpCode.Add));
     }
 
     private void CompileIf(BytecodeProgram program)
@@ -1318,11 +1354,27 @@ public sealed class Parser
 
             if (Check(TokenKind.LBracket))
             {
-                int index =
-                    ParseArrayIndex(program, variable);
+                if (!variable.IsArray)
+                {
+                    throw Error(
+                        $"Variable '{variable.Name}' is not an array.");
+                }
 
-                address +=
-                    index * variable.GetElementSize();
+                if (variable.Type != VariableType.Int)
+                {
+                    throw Error(
+                        "Indirect array access currently supports int arrays only.");
+                }
+
+                CompileArrayAddress(
+                    program,
+                    variable);
+
+                program.Instructions.Add(
+                    new Instruction(
+                        OpCode.LoadIndirectInt));
+
+                return variable.Type;
             }
 
             program.Instructions.Add(
