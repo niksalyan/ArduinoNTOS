@@ -17,6 +17,8 @@ public sealed class VirtualMachine
     private Stopwatch _stopwatch = new Stopwatch();
     private CancellationTokenSource? _executionCts;
 
+    public bool Initialized = false;
+
     public VirtualMachine(
         int memorySize = 4096,
         VMFunctions vmFunctions = null)
@@ -361,6 +363,19 @@ public sealed class VirtualMachine
                                 bytecode,
                                 ref instructionPointer);
 
+                        continue;
+                    }
+                case OpCode.JumpIfInitialized:
+                    {
+                        if (Initialized)
+                        {
+                            instructionPointer =
+                            ReadInt32(
+                                bytecode,
+                                ref instructionPointer);
+
+
+                        }
                         continue;
                     }
 

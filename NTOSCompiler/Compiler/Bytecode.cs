@@ -56,6 +56,7 @@ public enum OpCode : byte
     Return,
 
     Delay,
+    JumpIfInitialized,
 
     Checkpoint = 255
 }
