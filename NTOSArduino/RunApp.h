@@ -32,6 +32,7 @@ public:
     if (!loaded) {
       return;
     }
+    NTOSVM::initialized = false;
     NTOSVM::Start();
   }
 
