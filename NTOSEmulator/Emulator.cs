@@ -109,7 +109,7 @@ namespace NTOSEmulator
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
-            bytecodeOutput.Text = ToArduinoArray(app.GetBytecode(name));
+            bytecodeOutput.Text = ToComArray(app.GetBytecode(name));
 
             if (error != null)
             {
