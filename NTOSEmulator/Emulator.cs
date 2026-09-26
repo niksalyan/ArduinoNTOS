@@ -2,6 +2,7 @@ using NTOSCompiler;
 using NTOSCompiler.Compiler;
 using NTOSEmulator.Libs;
 using System.Diagnostics;
+using System.IO.Ports;
 using System.Text;
 
 namespace NTOSEmulator
@@ -17,6 +18,10 @@ namespace NTOSEmulator
         private Variable keyboardInput = new Variable("keyInput", VariableType.Byte);
 
         private string appPath;
+        private string lastBytecode;
+
+        private SerialPort serial = new SerialPort();
+        private readonly StringBuilder serialReceiveBuffer = new StringBuilder();
 
         // public Action<object> OnCompilerError;
 
@@ -26,7 +31,8 @@ namespace NTOSEmulator
 
             vmFunctions.AddFunction(0, "debug", (args) =>
             {
-                if (args.Length > 0) {
+                if (args.Length > 0)
+                {
                     DebugOutput(args[0]?.ToString() ?? "");
                 }
                 return null;
@@ -63,7 +69,20 @@ namespace NTOSEmulator
             app.Variables.Add(keyboardInput);
 
             numpadControl.KeyPressed += NumpadControl_KeyPressed;
+            serial.DataReceived += Serial_DataReceived;
 
+        }
+
+
+        private void Emulator_Load(object sender, EventArgs e)
+        {
+            string[] ports = SerialPort.GetPortNames();
+            comPortsList.Items.Clear();
+            foreach (var port in ports)
+            {
+                comPortsList.Items.Add(port);
+            }
+            UpdateConsole();
         }
 
         private void NumpadControl_KeyPressed(object? sender, char key)
@@ -77,6 +96,13 @@ namespace NTOSEmulator
             debugOutput.Text = "";
         }
 
+        public void DebugStart(string output)
+        {
+            ClearDebug();
+            tabControl.SelectTab(1);
+            debugOutput.Text = output + Environment.NewLine;
+        }
+
         public void DebugOutput(string output)
         {
             debugOutput.ForeColor = SystemColors.WindowText;
@@ -85,10 +111,44 @@ namespace NTOSEmulator
         }
         public void DebugError(string error)
         {
+            DebugStart(error);
             debugOutput.ForeColor = Color.Red;
-            debugOutput.Text = error;
-            tabControl.SelectTab(1);
+        }
 
+        public void BuildAll()
+        {
+            DebugStart("STARTS BUILDING");
+            try
+            {
+                Directory.CreateDirectory(appPath + "build");
+                string[] files = Directory.GetFiles(appPath, "*.ntos");
+                foreach (string file in files)
+                {
+                    if (File.Exists(file))
+                    {
+
+                        string name = Path.GetFileNameWithoutExtension(file);
+                        string source = File.ReadAllText(file);
+                        string error = app.CompileSource(name, source);
+                        if (error == null)
+                        {
+                            DebugOutput("Build: " + name + " OK !");
+                            byte[] bytecode = app.GetBytecode(name);
+                            File.WriteAllBytes(appPath + "build\\" + name + ".ntx", bytecode);
+                        }
+                        else
+                        {
+                            DebugOutput("Build: " + name + " : " + error);
+                        }
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
 
@@ -98,18 +158,20 @@ namespace NTOSEmulator
             string name = Path.GetFileNameWithoutExtension(file);
             string source = File.ReadAllText(file);
 
+            lastBytecode = name;
+
             ClearDebug();
             bytecodeGrid.DataSource = null;
             variablesGrid.DataSource = null;
-            bytecodeOutput.Text = "";
+            //bytecodeOutput.Text = "";
 
             string error = app.CompileSource(name, source);
 
-            
+
 
             bytecodeGrid.DataSource = app.Instructions;
             variablesGrid.DataSource = app.Variables;
-            bytecodeOutput.Text = ToComArray(app.GetBytecode(name));
+            //bytecodeOutput.Text = app.ToArduinoArray(name);
 
             if (error != null)
             {
@@ -140,60 +202,130 @@ namespace NTOSEmulator
             e.Graphics.DrawImage(screen.GetBuffer(), new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
         }
 
-       
-        public static string ToArduinoArray(byte[] bytecode, int columns = 8)
+        private void UpdateConsole()
         {
-            var sb = new StringBuilder();
-
-            for (int i = 0; i < bytecode.Length; i++)
-            {
-                if (i > 0)
-                {
-                    sb.Append(' ');
-                }
-
-                sb.Append($"0x{bytecode[i]:X2}");
-
-                if (i < bytecode.Length - 1)
-                {
-                    sb.Append(',');
-                }
-
-                if ((i + 1) % columns == 0)
-                {
-                    sb.AppendLine();
-                }
-            }
-
-            return sb.ToString();
+            uploadButton.Enabled = serial.IsOpen;
+            comPortsList.Enabled = !serial.IsOpen;
+            connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
         }
 
-        public static string ToComArray(byte[] bytecode, int columns = 8)
+        private void Serial_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            var sb = new StringBuilder();
-
-            for (int i = 0; i < bytecode.Length; i++)
+            try
             {
-                if (i > 0)
-                {
-                    //sb.Append(' ');
-                }
+                string data = serial.ReadExisting();
 
-                sb.Append($"{bytecode[i]:X2}");
-
-                if (i < bytecode.Length - 1)
+                lock (serialReceiveBuffer)
                 {
-                    //sb.Append(',');
-                }
+                    serialReceiveBuffer.Append(data);
 
-                if ((i + 1) % columns == 0)
-                {
-                    //sb.AppendLine();
+                    while (true)
+                    {
+                        string buffer = serialReceiveBuffer.ToString();
+
+                        int newlineIndex = buffer.IndexOf('\n');
+
+                        if (newlineIndex < 0)
+                            break;
+
+                        string line = buffer[..newlineIndex];
+
+                        // Remove the processed line including \n
+                        serialReceiveBuffer.Remove(0, newlineIndex + 1);
+
+                        // Handle possible \r\n
+                        line = line.TrimEnd('\r');
+
+                        BeginInvoke(() =>
+                        {
+                            DebugOutput("[SERIAL] " + line);
+                        });
+                    }
                 }
             }
-
-            return sb.ToString();
+            catch (Exception ex)
+            {
+                BeginInvoke(() =>
+                {
+                    DebugError("Serial receive error: " + ex.Message);
+                });
+            }
         }
 
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!serial.IsOpen)
+                {
+                    serial.PortName = comPortsList.Text;
+                    serial.BaudRate = 4800;
+                    serial.Open();
+                    DebugOutput("Connected to: " + comPortsList.Text);
+                } else
+                {
+                    serial.Close();
+                }
+                
+            } catch (Exception ex)
+            {
+                DebugError(ex.Message);
+            }
+            UpdateConsole();
+        }
+
+        private void showBytecode_Click(object sender, EventArgs e)
+        {
+            DebugStart(app.ToArduinoArray(lastBytecode));
+        }
+
+        private void uploadButton_Click(object sender, EventArgs e)
+        {
+            
+            try
+            {
+                string appName = new DirectoryInfo(appPath).Name;
+                string[] files = Directory.GetFiles(appPath + "build", "*.ntx");
+                DebugStart("UPLOADING: " + appName);
+                foreach (string file in files)
+                {
+                    if (File.Exists(file))
+                    {
+
+                        string name = Path.GetFileName(file);
+                        byte[] bytecode = File.ReadAllBytes(file);
+                        var sb = new StringBuilder();
+
+                        for (int i = 0; i < bytecode.Length; i++)
+                        {
+                            sb.Append($"{bytecode[i]:X2}");
+                        }
+
+                        var sbHex = sb.ToString();
+
+                        string cmd1 = "U " + appName + " " + name;
+                        serial.WriteLine(cmd1);
+
+
+                        string cmd2 = "<" + sbHex + ">";
+                        serial.WriteLine(cmd2);
+
+                        DebugOutput(cmd1);
+
+
+                    }
+                }
+
+
+            } catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            ClearDebug();
+        }
     }
 }

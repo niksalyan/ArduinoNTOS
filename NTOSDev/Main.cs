@@ -63,7 +63,7 @@ namespace NTOSDev
                 // SM.InitializeEmptyProject();
             }
 
-
+            DoAction("runEmulator");
 
 
 
@@ -135,6 +135,12 @@ namespace NTOSDev
                 case "runEmulator":
                     dEmulator.Show(dockPanel, DockState.DockRight);
                     dEmulator.InitEmulator();
+                    break;
+                case "build":
+                    dEmulator.Show(dockPanel, DockState.DockRight);
+                    dEmulator.InitEmulator();
+                    dEmulator.BuildAll();
+                    //serialManager.Show(dockPanel, DockState.DockBottom);
                     break;
                 case "exit":
                     Close();

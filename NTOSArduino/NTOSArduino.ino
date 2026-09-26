@@ -14,7 +14,10 @@ void setup() {
 }
 
 void loop() {
-  NTOSVM::Update();
+  if (!Storage::IsUploading()) {
+    NTOSVM::Update();
+  }
+  
   Terminal::update();
 
   Storage::update();

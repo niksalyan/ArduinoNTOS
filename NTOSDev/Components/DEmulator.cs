@@ -34,6 +34,11 @@ namespace NTOSDev.Components
             instance?.InitEmulator();
         }
 
+        public void BuildAll()
+        {
+            emulator.BuildAll();
+        }
+
         public void InitEmulator()
         {
             try

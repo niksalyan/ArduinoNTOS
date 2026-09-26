@@ -28,26 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Emulator));
             screenContainer = new Panel();
             tabControl = new TabControl();
             tabPage2 = new TabPage();
             numpadControl = new NTOSEmulator.Controls.NumpadControl();
             consoleTab = new TabPage();
             debugOutput = new TextBox();
+            toolStrip1 = new ToolStrip();
+            comPortsList = new ToolStripComboBox();
+            connectButton = new ToolStripButton();
+            showBytecode = new ToolStripButton();
+            uploadButton = new ToolStripButton();
+            toolStripButton1 = new ToolStripButton();
             variablesTab = new TabPage();
             variablesGrid = new DataGridView();
             tabPage1 = new TabPage();
             bytecodeGrid = new DataGridView();
-            tabPage3 = new TabPage();
-            bytecodeOutput = new TextBox();
             tabControl.SuspendLayout();
             tabPage2.SuspendLayout();
             consoleTab.SuspendLayout();
+            toolStrip1.SuspendLayout();
             variablesTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)variablesGrid).BeginInit();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).BeginInit();
-            tabPage3.SuspendLayout();
             SuspendLayout();
             // 
             // screenContainer
@@ -65,7 +70,6 @@
             tabControl.Controls.Add(consoleTab);
             tabControl.Controls.Add(variablesTab);
             tabControl.Controls.Add(tabPage1);
-            tabControl.Controls.Add(tabPage3);
             tabControl.Dock = DockStyle.Fill;
             tabControl.Location = new Point(0, 241);
             tabControl.Name = "tabControl";
@@ -104,24 +108,84 @@
             // consoleTab
             // 
             consoleTab.Controls.Add(debugOutput);
+            consoleTab.Controls.Add(toolStrip1);
             consoleTab.Location = new Point(4, 29);
             consoleTab.Name = "consoleTab";
             consoleTab.Padding = new Padding(3);
             consoleTab.Size = new Size(792, 176);
             consoleTab.TabIndex = 0;
-            consoleTab.Text = "Output";
+            consoleTab.Text = "Console";
             // 
             // debugOutput
             // 
             debugOutput.BorderStyle = BorderStyle.None;
             debugOutput.Dock = DockStyle.Fill;
-            debugOutput.Location = new Point(3, 3);
+            debugOutput.Location = new Point(3, 31);
             debugOutput.Multiline = true;
             debugOutput.Name = "debugOutput";
             debugOutput.ReadOnly = true;
             debugOutput.ScrollBars = ScrollBars.Vertical;
-            debugOutput.Size = new Size(786, 170);
+            debugOutput.Size = new Size(786, 142);
             debugOutput.TabIndex = 0;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.CanOverflow = false;
+            toolStrip1.GripStyle = ToolStripGripStyle.Hidden;
+            toolStrip1.ImageScalingSize = new Size(20, 20);
+            toolStrip1.Items.AddRange(new ToolStripItem[] { comPortsList, connectButton, showBytecode, uploadButton, toolStripButton1 });
+            toolStrip1.Location = new Point(3, 3);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.ShowItemToolTips = false;
+            toolStrip1.Size = new Size(786, 28);
+            toolStrip1.TabIndex = 1;
+            toolStrip1.Text = "toolStrip1";
+            // 
+            // comPortsList
+            // 
+            comPortsList.DropDownStyle = ComboBoxStyle.DropDownList;
+            comPortsList.Name = "comPortsList";
+            comPortsList.Size = new Size(75, 28);
+            // 
+            // connectButton
+            // 
+            connectButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            connectButton.Image = (Image)resources.GetObject("connectButton.Image");
+            connectButton.ImageTransparentColor = Color.Magenta;
+            connectButton.Name = "connectButton";
+            connectButton.Size = new Size(67, 25);
+            connectButton.Text = "Connect";
+            connectButton.Click += connectButton_Click;
+            // 
+            // showBytecode
+            // 
+            showBytecode.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            showBytecode.Image = (Image)resources.GetObject("showBytecode.Image");
+            showBytecode.ImageTransparentColor = Color.Magenta;
+            showBytecode.Name = "showBytecode";
+            showBytecode.Size = new Size(41, 25);
+            showBytecode.Text = "HEX";
+            showBytecode.Click += showBytecode_Click;
+            // 
+            // uploadButton
+            // 
+            uploadButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            uploadButton.Image = (Image)resources.GetObject("uploadButton.Image");
+            uploadButton.ImageTransparentColor = Color.Magenta;
+            uploadButton.Name = "uploadButton";
+            uploadButton.Size = new Size(62, 25);
+            uploadButton.Text = "Upload";
+            uploadButton.Click += uploadButton_Click;
+            // 
+            // toolStripButton1
+            // 
+            toolStripButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripButton1.Image = (Image)resources.GetObject("toolStripButton1.Image");
+            toolStripButton1.ImageTransparentColor = Color.Magenta;
+            toolStripButton1.Name = "toolStripButton1";
+            toolStripButton1.Size = new Size(34, 25);
+            toolStripButton1.Text = "❌";
+            toolStripButton1.Click += toolStripButton1_Click;
             // 
             // variablesTab
             // 
@@ -143,6 +207,7 @@
             variablesGrid.Location = new Point(3, 3);
             variablesGrid.Name = "variablesGrid";
             variablesGrid.ReadOnly = true;
+            variablesGrid.RowHeadersVisible = false;
             variablesGrid.RowHeadersWidth = 51;
             variablesGrid.Size = new Size(786, 170);
             variablesGrid.TabIndex = 0;
@@ -167,31 +232,10 @@
             bytecodeGrid.Location = new Point(3, 3);
             bytecodeGrid.Name = "bytecodeGrid";
             bytecodeGrid.ReadOnly = true;
+            bytecodeGrid.RowHeadersVisible = false;
             bytecodeGrid.RowHeadersWidth = 51;
             bytecodeGrid.Size = new Size(786, 170);
             bytecodeGrid.TabIndex = 1;
-            // 
-            // tabPage3
-            // 
-            tabPage3.Controls.Add(bytecodeOutput);
-            tabPage3.Location = new Point(4, 29);
-            tabPage3.Name = "tabPage3";
-            tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(792, 176);
-            tabPage3.TabIndex = 4;
-            tabPage3.Text = "Bytecode";
-            // 
-            // bytecodeOutput
-            // 
-            bytecodeOutput.BorderStyle = BorderStyle.None;
-            bytecodeOutput.Dock = DockStyle.Fill;
-            bytecodeOutput.Location = new Point(3, 3);
-            bytecodeOutput.Multiline = true;
-            bytecodeOutput.Name = "bytecodeOutput";
-            bytecodeOutput.ReadOnly = true;
-            bytecodeOutput.ScrollBars = ScrollBars.Vertical;
-            bytecodeOutput.Size = new Size(786, 170);
-            bytecodeOutput.TabIndex = 1;
             // 
             // Emulator
             // 
@@ -202,17 +246,18 @@
             DoubleBuffered = true;
             Name = "Emulator";
             Size = new Size(800, 450);
+            Load += Emulator_Load;
             Resize += Emulator_Resize;
             tabControl.ResumeLayout(false);
             tabPage2.ResumeLayout(false);
             consoleTab.ResumeLayout(false);
             consoleTab.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             variablesTab.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)variablesGrid).EndInit();
             tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)bytecodeGrid).EndInit();
-            tabPage3.ResumeLayout(false);
-            tabPage3.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -228,7 +273,11 @@
         private DataGridView bytecodeGrid;
         private TabPage tabPage2;
         private Controls.NumpadControl numpadControl;
-        private TabPage tabPage3;
-        private TextBox bytecodeOutput;
+        private ToolStrip toolStrip1;
+        private ToolStripComboBox comPortsList;
+        private ToolStripButton connectButton;
+        private ToolStripButton uploadButton;
+        private ToolStripButton showBytecode;
+        private ToolStripButton toolStripButton1;
     }
 }

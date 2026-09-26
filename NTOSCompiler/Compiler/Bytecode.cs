@@ -1,5 +1,6 @@
 using NTOSCompiler.Compiler;
 using System.ComponentModel;
+using System.Text;
 
 namespace NTOSCompiler;
 
@@ -165,7 +166,48 @@ public class BytecodeApp
 
     public byte[] GetBytecode(string name)
     {
-        return _bytecodes.ContainsKey(name) ? _bytecodes[name] : new byte[1];
+        return _bytecodes.ContainsKey(name) && _bytecodes[name].Length > 0 ? _bytecodes[name] : new byte[1];
+    }
+
+    public string ToArduinoArray(string name, int columns = 8)
+    {
+        var bytecode = GetBytecode(name);
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < bytecode.Length; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(' ');
+            }
+
+            sb.Append($"0x{bytecode[i]:X2}");
+
+            if (i < bytecode.Length - 1)
+            {
+                sb.Append(',');
+            }
+
+            if ((i + 1) % columns == 0)
+            {
+                sb.AppendLine();
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    public string ToComArray(string name)
+    {
+        var bytecode = GetBytecode(name);
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < bytecode.Length; i++)
+        {
+            sb.Append($"{bytecode[i]:X2}");
+        }
+
+        return sb.ToString();
     }
 
     public string? CompileSource(string name, string source)

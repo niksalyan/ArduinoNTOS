@@ -8,26 +8,11 @@
 // ============================================================
 // NTOS VM configuration
 // ============================================================
-
-#ifndef NTOS_BYTECODE_SIZE
 #define NTOS_BYTECODE_SIZE 2500
-#endif
-
-#ifndef NTOS_MEMORY_SIZE
 #define NTOS_MEMORY_SIZE 1500
-#endif
-
-#ifndef NTOS_STACK_SIZE
 #define NTOS_STACK_SIZE 64
-#endif
-
-#ifndef NTOS_CALL_STACK_SIZE
 #define NTOS_CALL_STACK_SIZE 32
-#endif
-
-#ifndef NTOS_DEBUG
-#define NTOS_DEBUG 1
-#endif
+#define NTOS_DEBUG 0
 
 
 // ============================================================
@@ -120,11 +105,6 @@ public:
       _bytecode,
       size);
 
-    if (bytesRead != size) {
-      Serial.println("[NTOS] READ SIZE MISMATCH");
-      return false;
-    }
-
     _bytecodeSize = bytesRead;
 
     ResetExecution();
@@ -132,6 +112,20 @@ public:
     return true;
   }
 
+#if NTOS_DEBUG 
+  static void DumpBytecode() {
+    Serial.println(F("HEX: "));
+
+    for (uint16_t i = 0; i < _bytecodeSize; i++) {
+      if (_bytecode[i] < 0x10)
+        Serial.print('0');
+
+      Serial.print(_bytecode[i], HEX);
+    }
+
+    Serial.println();
+  }
+#endif
 
   // ========================================================
   // Execution state
@@ -149,6 +143,9 @@ public:
     _sp = 0;
     _callSp = 0;
     _running = true;
+    #if NTOS_DEBUG 
+      DumpBytecode();
+    #endif
   }
 
   static void Stop() {
@@ -176,6 +173,10 @@ public:
   // Execute
   // ========================================================
 
+  static bool IsRunning() {
+    return _running;
+  }
+
   static void Update() {
 
     if (!_running)
@@ -186,7 +187,6 @@ public:
       return;
     }
 
-    DumpStack("BEFORE");
 
     uint16_t instructionAddress = _ip;
 
@@ -652,42 +652,18 @@ public:
 
 
       case 0x83:
-{
-  uint16_t startIP = _ip;
+        {
+          uint16_t startIP = _ip;
 
-  uint16_t functionIndex = ReadUInt16();
-  uint8_t argumentCount = ReadByte();
+          uint16_t functionIndex = ReadUInt16();
+          uint8_t argumentCount = ReadByte();
 
-  Serial.print(F(
-    "[CALL] start="));
-  Serial.print(startIP);
+          ExecuteSystemFunction(
+            functionIndex,
+            argumentCount);
 
-  Serial.print(F(
-    " function="));
-  Serial.print(functionIndex);
-
-  Serial.print(F(
-    " argc="));
-  Serial.print(argumentCount);
-
-  Serial.print(F(
-    " ipAfterHeader="));
-  Serial.println(_ip);
-
-  ExecuteSystemFunction(
-    functionIndex,
-    argumentCount);
-
-  Serial.print(F(
-    "[CALL] function="));
-  Serial.print(functionIndex);
-
-  Serial.print(F(
-    " ipAfter="));
-  Serial.println(_ip);
-
-  break;
-}
+          break;
+        }
 
 
         // ------------------------------------------------
@@ -760,7 +736,6 @@ public:
           return;
         }
     }
-    DumpStack("AFTER");
   }
 
   static void WriteByteToMemory(uint16_t address, uint8_t value) {
@@ -777,62 +752,25 @@ private:
   // ========================================================
   // Stack
   // ========================================================
-  static void DumpStack(const char* tag)
-{
-    Serial.print(F("[STACK] "));
-    Serial.print(tag);
-    Serial.print(F(" SP="));
-    Serial.println(_sp);
-
-    for (int i = 0; i < _sp; i++)
-    {
-        Serial.print(F("  ["));
-        Serial.print(i);
-        Serial.print(F("] type="));
-        Serial.print(_stack[i].type);
-        Serial.print(F(" value="));
-        Serial.println(_stack[i].value);
-    }
-}
 
   static void Push(StackValue value) {
-  if (_sp >= NTOS_STACK_SIZE) {
-    Serial.println(F("[NTOS STACK] OVERFLOW"));
-    return;
+    if (_sp >= NTOS_STACK_SIZE) {
+      return;
+    }
+    _stack[_sp++] = value;
   }
 
-  Serial.print(F("[NTOS STACK] PUSH sp="));
-  Serial.print(_sp);
-  Serial.print(F(" type="));
-  Serial.print((uint8_t)value.type);
-  Serial.print(F(" value="));
-  Serial.println(value.value);
 
-  _stack[_sp++] = value;
-}
+  static StackValue Pop() {
+    if (_sp == 0) {
+      return {
+        StackValueType::None,
+        0
+      };
+    }
 
-
-static StackValue Pop() {
-  if (_sp == 0) {
-    Serial.println(F("[NTOS STACK] UNDERFLOW"));
-
-    return {
-      StackValueType::None,
-      0
-    };
+    return _stack[--_sp];
   }
-
-  StackValue value = _stack[--_sp];
-
-  Serial.print(F("[NTOS STACK] POP  sp="));
-  Serial.print(_sp);
-  Serial.print(F(" type="));
-  Serial.print((uint8_t)value.type);
-  Serial.print(F(" value="));
-  Serial.println(value.value);
-
-  return value;
-}
 
 
   // ========================================================
@@ -840,80 +778,45 @@ static StackValue Pop() {
   // ========================================================
 
   static uint8_t ReadByte() {
-  uint16_t before = _ip;
+    uint16_t before = _ip;
 
-  if (_ip >= _bytecodeSize) {
-    Serial.print(F("[READ8] OOB ip="));
-    Serial.println(before);
-    return 0;
+    if (_ip >= _bytecodeSize) {
+      return 0;
+    }
+
+    return _bytecode[_ip++];
   }
-
-  uint8_t value = _bytecode[_ip++];
-
-  Serial.print(F("[READ8] "));
-  Serial.print(before);
-  Serial.print(F(" -> "));
-  Serial.print(_ip);
-  Serial.print(F(" value=0x"));
-  if (value < 0x10) Serial.print('0');
-  Serial.println(value, HEX);
-
-  return value;
-}
 
 
   static uint16_t ReadUInt16() {
-  uint16_t before = _ip;
+    uint16_t before = _ip;
 
-  if (_ip + 1 >= _bytecodeSize) {
-    Serial.print(F("[READ16] OOB ip="));
-    Serial.println(before);
-    return 0;
+    if (_ip + 1 >= _bytecodeSize) {
+      return 0;
+    }
+
+    uint16_t value =
+      static_cast<uint16_t>(_bytecode[_ip]) | (static_cast<uint16_t>(_bytecode[_ip + 1]) << 8);
+
+    _ip += 2;
+
+    return value;
   }
-
-  uint16_t value =
-    static_cast<uint16_t>(_bytecode[_ip]) |
-    (static_cast<uint16_t>(_bytecode[_ip + 1]) << 8);
-
-  _ip += 2;
-
-  Serial.print(F("[READ16] "));
-  Serial.print(before);
-  Serial.print(F(" -> "));
-  Serial.print(_ip);
-  Serial.print(F(" value="));
-  Serial.println(value);
-
-  return value;
-}
 
 
   static int32_t ReadInt32() {
-  uint16_t before = _ip;
+    uint16_t before = _ip;
 
-  if (_ip + 3 >= _bytecodeSize) {
-    Serial.print(F("[READ32] OOB ip="));
-    Serial.println(before);
-    return 0;
+    if (_ip + 3 >= _bytecodeSize) {
+      return 0;
+    }
+
+    int32_t value =
+      static_cast<int32_t>(_bytecode[_ip]) | (static_cast<int32_t>(_bytecode[_ip + 1]) << 8) | (static_cast<int32_t>(_bytecode[_ip + 2]) << 16) | (static_cast<int32_t>(_bytecode[_ip + 3]) << 24);
+
+    _ip += 4;
+    return value;
   }
-
-  int32_t value =
-    static_cast<int32_t>(_bytecode[_ip]) |
-    (static_cast<int32_t>(_bytecode[_ip + 1]) << 8) |
-    (static_cast<int32_t>(_bytecode[_ip + 2]) << 16) |
-    (static_cast<int32_t>(_bytecode[_ip + 3]) << 24);
-
-  _ip += 4;
-
-  Serial.print(F("[READ32] "));
-  Serial.print(before);
-  Serial.print(F(" -> "));
-  Serial.print(_ip);
-  Serial.print(F(" value="));
-  Serial.println(value);
-
-  return value;
-}
 
 
   static float ReadFloat() {
@@ -1117,39 +1020,39 @@ static StackValue Pop() {
   }
 
   static void DebugInstruction(
-  uint16_t address,
-  uint8_t opcode) {
+    uint16_t address,
+    uint8_t opcode) {
 
 #if NTOS_DEBUG
 
-  Serial.print(F("[NTOS] IP="));
-  Serial.print(address);
+    Serial.print(F("[NTOS] IP="));
+    Serial.print(address);
 
-  Serial.print(F(" OPCODE=0x"));
-  if (opcode < 0x10) Serial.print('0');
-  Serial.print(opcode, HEX);
+    Serial.print(F(" OPCODE=0x"));
+    if (opcode < 0x10) Serial.print('0');
+    Serial.print(opcode, HEX);
 
-  Serial.print(F(" SP="));
-  Serial.print(_sp);
+    Serial.print(F(" SP="));
+    Serial.print(_sp);
 
-  Serial.print(F(" BYTES="));
+    Serial.print(F(" BYTES="));
 
-  uint16_t end = address + 12;
-  if (end > _bytecodeSize)
-    end = _bytecodeSize;
+    uint16_t end = address + 12;
+    if (end > _bytecodeSize)
+      end = _bytecodeSize;
 
-  for (uint16_t i = address; i < end; i++) {
-    if (_bytecode[i] < 0x10)
-      Serial.print('0');
+    for (uint16_t i = address; i < end; i++) {
+      if (_bytecode[i] < 0x10)
+        Serial.print('0');
 
-    Serial.print(_bytecode[i], HEX);
-    Serial.print(' ');
-  }
+      Serial.print(_bytecode[i], HEX);
+      Serial.print(' ');
+    }
 
-  Serial.println();
+    Serial.println();
 
 #endif
-}
+  }
 
   static uint16_t Color332To565(uint8_t color) {
     uint8_t r = (color >> 5) & 0x07;
@@ -1233,38 +1136,21 @@ static StackValue Pop() {
         }
 
       case 11:  // fillBox
-{
-  Serial.print(F("[FILLBOX] ip="));
-  Serial.print(_ip);
-  Serial.print(F(" sp="));
-  Serial.println(_sp);
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t h = Pop().value;
+          uint32_t w = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+          tft.fastFillRect(
+            x,
+            y,
+            w,
+            h,
+            Color332To565(color));
 
-  uint8_t color = (uint8_t)Pop().value;
-  uint32_t h = Pop().value;
-  uint32_t w = Pop().value;
-  uint32_t y = Pop().value;
-  uint32_t x = Pop().value;
-
-  Serial.print(F("[FILLBOX] x="));
-  Serial.print(x);
-  Serial.print(F(" y="));
-  Serial.print(y);
-  Serial.print(F(" w="));
-  Serial.print(w);
-  Serial.print(F(" h="));
-  Serial.print(h);
-  Serial.print(F(" color="));
-  Serial.println(color);
-
-  tft.fastFillRect(
-    x,
-    y,
-    w,
-    h,
-    Color332To565(color));
-
-  break;
-}
+          break;
+        }
 
       case 12:  // pixel
         {

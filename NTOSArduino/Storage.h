@@ -6,7 +6,7 @@
 class Storage {
 private:
   static constexpr uint8_t COMMAND_SIZE = 32;
-  static constexpr uint8_t WRITE_BUFFER_SIZE = 32;
+  static constexpr uint8_t WRITE_BUFFER_SIZE = 64;
 
   inline static char commandBuffer[COMMAND_SIZE];
   inline static uint8_t commandLength = 0;
@@ -42,10 +42,14 @@ private:
 public:
 
   static void begin() {
-    Serial.begin(9600);
+    Serial.begin(4800);
     SD.begin();
 
     Serial.println("[NTOS] Storage ready");
+  }
+
+  static bool IsUploading() {
+    return isUploading;
   }
 
   static void update() {

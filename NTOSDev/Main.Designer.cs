@@ -37,9 +37,9 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             projectExplorerToolStripMenuItem = new ToolStripMenuItem();
-            buildToolStripMenuItem = new ToolStripMenuItem();
+            projectToolStripMenuItem = new ToolStripMenuItem();
             runEmulatorToolStripMenuItem = new ToolStripMenuItem();
-            buildAllFilesToolStripMenuItem = new ToolStripMenuItem();
+            buildToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             menuStrip.SuspendLayout();
             SuspendLayout();
@@ -47,7 +47,7 @@
             // menuStrip
             // 
             menuStrip.ImageScalingSize = new Size(20, 20);
-            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, buildToolStripMenuItem });
+            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, projectToolStripMenuItem });
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Size = new Size(1280, 28);
@@ -97,24 +97,24 @@
             projectExplorerToolStripMenuItem.Size = new Size(197, 26);
             projectExplorerToolStripMenuItem.Text = "Project Explorer";
             // 
-            // buildToolStripMenuItem
+            // projectToolStripMenuItem
             // 
-            buildToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildAllFilesToolStripMenuItem });
-            buildToolStripMenuItem.Name = "buildToolStripMenuItem";
-            buildToolStripMenuItem.Size = new Size(68, 24);
-            buildToolStripMenuItem.Text = "Debug";
+            projectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildToolStripMenuItem });
+            projectToolStripMenuItem.Name = "projectToolStripMenuItem";
+            projectToolStripMenuItem.Size = new Size(69, 24);
+            projectToolStripMenuItem.Text = "Project";
             // 
             // runEmulatorToolStripMenuItem
             // 
             runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
-            runEmulatorToolStripMenuItem.Size = new Size(181, 26);
+            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
             runEmulatorToolStripMenuItem.Text = "Run Emulator";
             // 
-            // buildAllFilesToolStripMenuItem
+            // buildToolStripMenuItem
             // 
-            buildAllFilesToolStripMenuItem.Name = "buildAllFilesToolStripMenuItem";
-            buildAllFilesToolStripMenuItem.Size = new Size(181, 26);
-            buildAllFilesToolStripMenuItem.Text = "Build All Files";
+            buildToolStripMenuItem.Name = "buildToolStripMenuItem";
+            buildToolStripMenuItem.Size = new Size(224, 26);
+            buildToolStripMenuItem.Text = "Build";
             // 
             // dockPanel
             // 
@@ -155,9 +155,9 @@
         private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
         private ToolStripMenuItem viewToolStripMenuItem;
         private ToolStripMenuItem projectExplorerToolStripMenuItem;
-        private ToolStripMenuItem buildToolStripMenuItem;
+        private ToolStripMenuItem projectToolStripMenuItem;
         private ToolStripMenuItem runEmulatorToolStripMenuItem;
-        private ToolStripMenuItem buildAllFilesToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem2;
+        private ToolStripMenuItem buildToolStripMenuItem;
     }
 }
