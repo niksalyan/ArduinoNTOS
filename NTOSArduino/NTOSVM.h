@@ -167,7 +167,7 @@ public:
       _bytecode,
       0,
       sizeof(_bytecode));
-      _bytecodeSize = 0;
+    _bytecodeSize = 0;
   }
 
 
@@ -1091,7 +1091,7 @@ private:
           break;
         }
 
-        case 14:  // drawCircle
+      case 14:  // drawCircle
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t r = Pop().value;
@@ -1115,16 +1115,24 @@ private:
           break;
         }
 
-        case 16:  // drawText
+      case 16:  // drawText
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t text = Pop().value; // How to get text ?
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          int16_t y = (int16_t)Pop().value;
+          int16_t x = (int16_t)Pop().value;
+          uint16_t stringOffset = (uint16_t)Pop().value;
+
+          const char* text =
+            reinterpret_cast<const char*>(
+              &_bytecode[stringOffset]);
 
           tft.setTextSize(2);
-          tft.setTextColor(color);
-          tft.setCursor(x, y);
+          tft.setTextColor(
+            Color332To565(color));
+
+          tft.setCursor(
+            x,
+            y);
 
           tft.print(text);
 

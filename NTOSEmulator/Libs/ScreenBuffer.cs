@@ -9,6 +9,8 @@ namespace NTOSEmulator.Libs
     {
         public readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 
+        private Font font = new Font("Consolas", 12f, FontStyle.Regular);
+
         public Action OnInvalidate;
 
         public readonly Dictionary<string, byte> colors = new Dictionary<string, byte>
@@ -205,16 +207,23 @@ namespace NTOSEmulator.Libs
 
                 string text = args[0]?.ToString() ?? "";
 
+                using var format = new StringFormat
+                {
+                    Alignment = StringAlignment.Near,
+                    LineAlignment = StringAlignment.Near
+                };
+
                 using var g = Graphics.FromImage(buffer);
                 using var brush = new SolidBrush(
                     GetColor332((byte)args[3]));
 
                 g.DrawString(
                     text,
-                    SystemFonts.DefaultFont,
+                    font,
                     brush,
                     (int)args[1],
-                    (int)args[2]);
+                    (int)args[2],
+                    format);
 
                 OnInvalidate?.Invoke();
                 return null;
