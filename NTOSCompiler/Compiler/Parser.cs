@@ -666,19 +666,99 @@ public sealed class Parser
 
     private void CompileSwitch(BytecodeProgram program)
     {
-        Consume(TokenKind.LParen, "Expected '(' after 'switch'.");
+        Consume(
+            TokenKind.LParen,
+            "Expected '(' after 'switch'.");
 
-        // Compile switch expression.
-        // Store its result in an internal variable.
+        Token switchVariableToken =
+            Consume(
+                TokenKind.Identifier,
+                "Expected variable after 'switch'.");
 
-        Consume(TokenKind.RParen, "Expected ')' after switch expression.");
-        Consume(TokenKind.LBrace, "Expected '{' after switch.");
+        string switchVariableName =
+            switchVariableToken.Text;
 
-        // Parse cases...
+        Variable switchVariable =
+            program.GetVariable(switchVariableName);
 
-        Consume(TokenKind.RBrace, "Expected '}' after switch.");
+        Consume(
+            TokenKind.RParen,
+            "Expected ')' after switch variable.");
 
-        // Patch jumps...
+        Consume(
+            TokenKind.LBrace,
+            "Expected '{' after switch.");
+
+        while (!Check(TokenKind.RBrace) &&
+               !Check(TokenKind.Eof))
+        {
+            Consume(
+                TokenKind.Case,
+                "Expected 'case'.");
+
+            // Load switch variable.
+            program.Instructions.Add(
+                new Instruction(
+                    GetLoadOpcode(switchVariable.Type),
+                    switchVariable.Address));
+
+            // Compile case value.
+            VariableType caseType =
+                CompileExpression(program);
+
+            if (caseType != switchVariable.Type)
+            {
+                throw Error(
+                    $"Cannot compare {switchVariable.Type} with {caseType}.");
+            }
+
+            // switchVariable == caseValue
+            program.Instructions.Add(
+                new Instruction(OpCode.Equal));
+
+            Consume(
+                TokenKind.Colon,
+                "Expected ':' after case value.");
+
+            // Skip this case if comparison was false.
+            int jumpIfFalseIndex =
+                program.Instructions.Count;
+
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.JumpIfFalse,
+                    -1));
+
+            // Compile case body.
+            while (!Check(TokenKind.Case) &&
+                   !Check(TokenKind.RBrace) &&
+                   !Check(TokenKind.Eof))
+            {
+                bool requiresSemicolon =
+                    CompileStatement(program);
+
+                if (requiresSemicolon)
+                {
+                    Consume(
+                        TokenKind.Semicolon,
+                        "Expected ';'.");
+                }
+            }
+
+            // If this case didn't match, execution continues
+            // at the next case.
+            int nextCaseIndex =
+                program.Instructions.Count;
+
+            program.Instructions[jumpIfFalseIndex] =
+                new Instruction(
+                    OpCode.JumpIfFalse,
+                    nextCaseIndex);
+        }
+
+        Consume(
+            TokenKind.RBrace,
+            "Expected '}' after switch.");
     }
 
     private VariableType CompileExpression(BytecodeProgram program)

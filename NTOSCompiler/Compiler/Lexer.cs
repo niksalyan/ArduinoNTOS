@@ -339,6 +339,7 @@ public sealed class Lexer
                 ']' => TokenKind.RBracket,
 
                 ',' => TokenKind.Comma,
+                ':' => TokenKind.Colon,
                 ';' => TokenKind.Semicolon,
 
                 _ => throw new Exception(

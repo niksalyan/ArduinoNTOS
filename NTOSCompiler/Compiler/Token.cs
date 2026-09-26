@@ -67,6 +67,8 @@ public enum TokenKind
     LBracket,
     RBracket,
     Comma,
+    
+    Colon,
     Semicolon,
 
     Call,

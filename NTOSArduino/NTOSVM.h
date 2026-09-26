@@ -75,6 +75,7 @@ private:
 
 public:
 
+  inline static bool initialized = false;
   // ========================================================
   // Program
   // ========================================================
@@ -658,6 +659,22 @@ public:
           delay(
             static_cast<unsigned long>(
               seconds * 1000.0f));
+
+          break;
+        }
+
+        // ------------------------------------------------
+        // JumpIfInitialized
+        // ------------------------------------------------
+
+      case 0x86:  // JumpIfInitialized
+        {
+          uint16_t target =
+            ReadUInt16();
+
+          if (initialized) {
+            _ip = target;
+          }
 
           break;
         }
