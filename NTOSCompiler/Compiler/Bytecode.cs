@@ -119,22 +119,27 @@ public class Variable
         MaxStringLength = maxStringLength;
     }
 
-    public int GetSize()
+    public int GetElementSize()
     {
-        switch(Type)
+        switch (Type)
         {
             case VariableType.Int:
-                return 4 * Length;
+                return 4;
             case VariableType.Float:
-                return 4 * Length;
+                return 4;
             case VariableType.Bool:
             case VariableType.Byte:
-                return 1 * Length;
+                return 1;
             case VariableType.Str:
-                return (MaxStringLength + 1) * Length; // Probably string size + ending zero
+                return (MaxStringLength + 1); // Probably string size + ending zero
             default:
                 return 0;
         }
+    }
+
+    public int GetSize()
+    {
+        return GetElementSize() * Length;
     }
 }
 
