@@ -3,6 +3,7 @@
 #define SOFTWARE_SPI_FOR_SD
 #include <SoftSD.h>
 #include <Arduino.h>
+#include "Storage.h"
 
 // ============================================================
 // NTOS VM configuration
@@ -1064,27 +1065,30 @@ private:
     uint16_t functionIndex,
     uint8_t argumentCount) {
     switch (functionIndex) {
-      case 0: // debug
-        uint16_t stringOffset = (uint16_t)Pop().value;
+      case 0:  // debug
+        {
+          uint16_t stringOffset = (uint16_t)Pop().value;
 
           const char* text =
             reinterpret_cast<const char*>(
               &_bytecode[stringOffset]);
-        Serial.print(text);
-        break;
-      case 1: // load() /// The load name need to prefix AppName/<text>.ntos // What is the best way to do it ?
-        uint16_t stringOffset = (uint16_t)Pop().value;
+          Serial.print(text);
+          break;
+        }
+      case 1:  // load() /// The load name need to prefix AppName/<text>.ntos // What is the best way to do it ?
+        {
+          uint16_t stringOffset = (uint16_t)Pop().value;
 
           const char* text =
             reinterpret_cast<const char*>(
               &_bytecode[stringOffset]);
-        
+
           Stop();
           ResetExecution();
-          
+
           File file;
 
-          if (!Storage::openAppFile(appName, text + ".ntx", file)) {
+          if (!Storage::openAppFile(appName, String(text) + ".ntx", file)) {
             return;
           }
 
@@ -1099,7 +1103,8 @@ private:
           NTOSVM::Start();
 
 
-        break;
+          break;
+        }
       case 9:  // cls
         {
           tft.fillScreenBlack();
