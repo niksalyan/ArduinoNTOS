@@ -159,14 +159,9 @@ public sealed class Parser
                         $"'{name}' of type {variable.Type}.");
                 }
 
-                int address =
-                    variable.Address +
-                    variable.GetElementSize();
-
                 program.Instructions.Add(
                     new Instruction(
-                        GetStoreOpcode(variable.Type),
-                        address));
+                        OpCode.StoreIndirectInt));
 
                 return true;
             }

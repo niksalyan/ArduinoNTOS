@@ -572,6 +572,35 @@ public:
           break;
         }
 
+      case 0x2F:
+        {
+          StackValue address = Pop();
+
+          int32_t value =
+            GetInt(
+              static_cast<uint16_t>(
+                address.value));
+
+          Push({ StackValueType::Int,
+                 static_cast<uint32_t>(value) });
+
+          break;
+        }
+
+      case 0x30:
+        {
+          StackValue value = Pop();
+          StackValue address = Pop();
+
+          SetInt(
+            static_cast<uint16_t>(
+              address.value),
+            static_cast<int32_t>(
+              value.value));
+
+          break;
+        }
+
 
         // ------------------------------------------------
         // Flow control
