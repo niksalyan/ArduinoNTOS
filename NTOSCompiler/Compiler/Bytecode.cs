@@ -46,6 +46,9 @@ public enum OpCode : byte
     Or,
     Not,
 
+    LoadIndirectInt,
+    StoreIndirectInt,
+
     Jump = 128,
     JumpIfFalse,
     CallSubroutine,
@@ -345,6 +348,8 @@ public class BytecodeProgram
                 case OpCode.Return:
                 case OpCode.End:
                 case OpCode.Checkpoint:
+                case OpCode.LoadIndirectInt:
+                case OpCode.StoreIndirectInt:
                     break;
 
                 case OpCode.PushStr:
