@@ -201,6 +201,7 @@ public:
 
       case 0x00:  // End
         {
+          Stop();
           return;
         }
 
