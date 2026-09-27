@@ -1,0 +1,10 @@
+cls();
+int scores[3];
+
+scores[0] = 100;
+scores[1] = 200;
+scores[2] = 300;
+
+int in = 1;
+cursor(10,10,3); // x, y, size
+print(scores[in + 1], WHITE);

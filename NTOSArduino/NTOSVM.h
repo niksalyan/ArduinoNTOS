@@ -1296,7 +1296,7 @@ private:
 
           UI::dialog(text);
           tft.setTextSize(2);
-          tft.setCursor(0, 25);
+          tft.setCursor(0, 26);
 
           break;
         }  
