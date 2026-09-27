@@ -213,7 +213,7 @@ private:
 
     uint16_t color =
       selected
-        ? COLOR_PRIMARY
+        ? COLOR_TEXT
         : TFT_CYAN;
 
     // Simple modern "window" icon.
@@ -224,7 +224,7 @@ private:
     //
 
     int iconX = x + TILE_WIDTH / 2 - 14;
-    int iconY = y + 10;
+    int iconY = y + 15;
 
     tft.drawRect(
       iconX,
@@ -305,7 +305,7 @@ private:
     // Card
     // ------------------------------------------------
 
-    tft.fillRect(
+    tft.fastFillRect(
       x,
       y,
       TILE_WIDTH,
@@ -326,7 +326,7 @@ private:
     if (selected) {
 
       // Small accent bar on the left.
-      tft.fillRect(
+      tft.fastFillRect(
         x,
         y,
         3,
@@ -352,11 +352,11 @@ private:
       MAX_APP_NAME);
 
 
-    if(!Storage::drawImage(displayName, "icon", x, y, 1, 1, 0)) {
+    if(!Storage::drawImage(displayName, "icon", x + TILE_WIDTH / 2, y + TILE_HEIGHT / 3, 2, 2, 0)) {
       drawIcon(
             x,
             y,
-            selected);
+            true);
     }
 
     getDisplayName(
@@ -368,9 +368,7 @@ private:
       displayName,
       x + TILE_WIDTH / 2,
       y + 58,
-      selected
-        ? COLOR_PRIMARY
-        : COLOR_TEXT);
+      COLOR_TEXT);
   }
 
   // ==================================================
@@ -389,7 +387,7 @@ private:
     int x = tileX(column);
     int y = tileY(row);
 
-    tft.fillRect(
+    tft.fastFillRect(
       x,
       y,
       TILE_WIDTH,
@@ -404,7 +402,7 @@ private:
   static void drawHeader() {
 
     // Header background
-    tft.fillRect(
+    tft.fastFillRect(
       0,
       0,
       tft.width(),
@@ -451,7 +449,7 @@ private:
       tft.height() - FOOTER_HEIGHT;
 
     // Background
-    tft.fillRect(
+    tft.fastFillRect(
       0,
       y,
       tft.width(),

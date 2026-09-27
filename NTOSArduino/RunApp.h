@@ -15,7 +15,13 @@ public:
     UI::setHandler(handler);
     Terminal::updateHandler = update;
 
-    UI::dialog(name);
+    tft.fillScreenBlack();
+    tft.setTextSize(2);
+    tft.setCursor(0, 0);
+
+    if (Storage::drawImage(name, "splash", tft.width() / 2, tft.height() / 2, 2, 2, 0)) {
+      delay(1500);
+    }
 
     NTOSVM::Stop();
     NTOSVM::ResetExecution();

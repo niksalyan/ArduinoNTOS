@@ -270,9 +270,9 @@ namespace NTOSEmulator.Libs
         // ==========================================
         // Calculate Center
         // ==========================================
-        public int CalculateCenter(string text)
+        public int GetTextWidth(string text)
         {
-            return (text.Length * 6 * textSize) / 2;
+            return text.Length * 6 * textSize;
         }
 
         // ==========================================

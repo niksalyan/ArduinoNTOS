@@ -25,7 +25,7 @@ namespace NTOSImage
         {
             try
             {
-                pictureBox.Image = new Libs.NTOSImage(input).ToBitmap();
+                pictureBox.Image = new Libs.NTOSBitmap(input).ToBitmap();
             }
             catch
             {
@@ -49,7 +49,7 @@ namespace NTOSImage
                 if (dialog.ShowDialog() != DialogResult.OK)
                     return;
 
-                byte[] data = new Libs.NTOSImage(input).ToByteArray();
+                byte[] data = new Libs.NTOSBitmap(input).ToByteArray();
 
                 File.WriteAllBytes(dialog.FileName, data);
             }

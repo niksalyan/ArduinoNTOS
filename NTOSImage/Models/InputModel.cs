@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace NTOSImage.Models
 {
-    internal class InputModel
+    public class InputModel
     {
         public Bitmap Image { get; set; }
 

@@ -224,13 +224,5 @@ while (gx < 480) {
     gx = gx + 8;
 }
 
-
-
-loop {
-    char key = read keyInput; 
-
-    if (key == '1') {
-       load("keypad");
-    }
-    delay 0.01;
-}
+delay 3;
+load("test");

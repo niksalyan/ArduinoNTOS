@@ -105,7 +105,14 @@ namespace NTOSDev
 
         public void OpenFile(string filePath)
         {
-            new CodeEditor(filePath).Show(dockPanel, DockState.Document);
+            if (Path.GetExtension(filePath)?.ToLower() == ".ntos")
+            {
+                new CodeEditor(filePath).Show(dockPanel, DockState.Document);
+            } else
+            {
+                new FileViewer(filePath).Show(dockPanel, DockState.Document);
+            }
+            
         }
 
         public void CloseAllPanels()
@@ -150,6 +157,9 @@ namespace NTOSDev
                     break;
                 case "imageConverter":
                     dImage.Show(dockPanel, DockState.Document);
+                    break;
+                case "about":
+                    new AboutForm().ShowDialog();
                     break;
                 case "exit":
                     Close();

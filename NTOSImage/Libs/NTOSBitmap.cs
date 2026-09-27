@@ -1,5 +1,4 @@
-﻿
-using NTOSImage.Models;
+﻿using NTOSImage.Models;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -8,13 +7,18 @@ using System.Drawing.Imaging.Effects;
 
 namespace NTOSImage.Libs
 {
-    internal class NTOSImage
+    public class NTOSBitmap
     {
         private readonly InputModel input;
 
         private byte[]? _bytes;
 
-        public NTOSImage(InputModel input)
+        public NTOSBitmap(string file)
+        {
+            _bytes = File.ReadAllBytes(file);
+        }
+
+        public NTOSBitmap(InputModel input)
         {
             this.input =
                 input ?? throw new ArgumentNullException(nameof(input));
@@ -31,18 +35,22 @@ namespace NTOSImage.Libs
                 throw new ArgumentOutOfRangeException(
                     nameof(input.Resize.Height));
 
+            // NTI stores dimensions in a single byte.
             if (input.Resize.Width > byte.MaxValue)
                 throw new ArgumentOutOfRangeException(
-                    nameof(input.Resize.Width));
+                    nameof(input.Resize.Width),
+                    "NTOS image width cannot exceed 255.");
 
             if (input.Resize.Height > byte.MaxValue)
                 throw new ArgumentOutOfRangeException(
-                    nameof(input.Resize.Height));
+                    nameof(input.Resize.Height),
+                    "NTOS image height cannot exceed 255.");
         }
 
         // ============================================================
         // Public API
         // ============================================================
+
 
         public byte[] ToByteArray()
         {
@@ -55,7 +63,8 @@ namespace NTOSImage.Libs
                     input.Resize,
                     input.Bicubix);
 
-            if (input.Invert) {
+            if (input.Invert)
+            {
                 resized.ApplyEffect(new InvertEffect());
             }
 
@@ -142,25 +151,26 @@ namespace NTOSImage.Libs
             int pixelCount =
                 width * height;
 
+            // --------------------------------------------------------
+            // NTI FORMAT
+            //
+            // Byte 0 = width
+            // Byte 1 = height
+            // Byte 2+ = RGB332 pixels
+            // --------------------------------------------------------
+
             byte[] result =
-                new byte[4 + pixelCount];
+                new byte[2 + pixelCount];
 
             // --------------------------------------------------------
             // Header
             // --------------------------------------------------------
 
-            // Little endian
             result[0] =
-                (byte)(width & 0xFF);
+                (byte)width;
 
             result[1] =
-                (byte)((width >> 8) & 0xFF);
-
-            result[2] =
-                (byte)(height & 0xFF);
-
-            result[3] =
-                (byte)((height >> 8) & 0xFF);
+                (byte)height;
 
             // --------------------------------------------------------
             // Read source pixels
@@ -249,7 +259,7 @@ namespace NTOSImage.Libs
 
                     for (int x = 0; x < width; x++)
                     {
-                        // Format24bppRgb is BGR
+                        // Format24bppRgb is BGR.
                         byte b =
                             row[x * 3 + 0];
 
@@ -260,8 +270,11 @@ namespace NTOSImage.Libs
                             row[x * 3 + 2];
 
                         output[
-                            4 + y * width + x] =
-                            ToRGB332(r, g, b);
+                            2 + y * width + x] =
+                            ToRGB332(
+                                r,
+                                g,
+                                b);
                     }
                 }
             }
@@ -283,10 +296,8 @@ namespace NTOSImage.Libs
             IntPtr scan0 =
                 data.Scan0;
 
-            // Error buffers.
-            //
-            // We only need the current and next row.
-            //
+            // Only keep errors for the current
+            // and next row.
             float[] errorR =
                 new float[width + 2];
 
@@ -312,9 +323,6 @@ namespace NTOSImage.Libs
 
                 for (int y = 0; y < height; y++)
                 {
-                    byte* row =
-                        basePtr + y * stride;
-
                     Array.Clear(
                         nextErrorR,
                         0,
@@ -329,6 +337,9 @@ namespace NTOSImage.Libs
                         nextErrorB,
                         0,
                         nextErrorB.Length);
+
+                    byte* row =
+                        basePtr + y * stride;
 
                     for (int x = 0; x < width; x++)
                     {
@@ -347,9 +358,20 @@ namespace NTOSImage.Libs
                             row[x * 3 + 2] +
                             errorR[errorIndex];
 
-                        r = Clamp(r, 0, 255);
-                        g = Clamp(g, 0, 255);
-                        b = Clamp(b, 0, 255);
+                        r = Clamp(
+                            r,
+                            0,
+                            255);
+
+                        g = Clamp(
+                            g,
+                            0,
+                            255);
+
+                        b = Clamp(
+                            b,
+                            0,
+                            255);
 
                         byte packed =
                             ToRGB332(
@@ -357,12 +379,13 @@ namespace NTOSImage.Libs
                                 (byte)g,
                                 (byte)b);
 
+                        // 2-byte NTI header.
                         output[
-                            4 + y * width + x] =
+                            2 + y * width + x] =
                             packed;
 
-                        // Reconstruct the quantized RGB value
-                        // so we can calculate quantization error.
+                        // Reconstruct quantized RGB
+                        // to calculate the error.
                         FromRGB332(
                             packed,
                             out int quantizedR,
@@ -485,11 +508,6 @@ namespace NTOSImage.Libs
             int bb =
                 value & 0x03;
 
-            // Expand back to 0-255.
-            //
-            // Multiplication gives a better representation than
-            // simply shifting the bits back.
-            //
             r =
                 (rr * 255) / 7;
 
@@ -511,17 +529,22 @@ namespace NTOSImage.Libs
                 throw new ArgumentNullException(
                     nameof(bytes));
 
-            if (bytes.Length < 4)
+            // --------------------------------------------------------
+            // Minimum:
+            //
+            // 1 byte width
+            // 1 byte height
+            // --------------------------------------------------------
+
+            if (bytes.Length < 2)
                 throw new ArgumentException(
                     "Invalid NTOS image.");
 
             int width =
-                bytes[0] |
-                (bytes[1] << 8);
+                bytes[0];
 
             int height =
-                bytes[2] |
-                (bytes[3] << 8);
+                bytes[1];
 
             if (width <= 0 ||
                 height <= 0)
@@ -531,7 +554,7 @@ namespace NTOSImage.Libs
             }
 
             int expectedSize =
-                4 + width * height;
+                2 + width * height;
 
             if (bytes.Length < expectedSize)
             {
@@ -577,7 +600,7 @@ namespace NTOSImage.Libs
                         {
                             byte packed =
                                 bytes[
-                                    4 +
+                                    2 +
                                     y * width +
                                     x];
 
@@ -587,6 +610,7 @@ namespace NTOSImage.Libs
                                 out int g,
                                 out int b);
 
+                            // Format24bppRgb is BGR.
                             row[x * 3 + 0] =
                                 (byte)b;
 
@@ -641,18 +665,28 @@ namespace NTOSImage.Libs
                 return;
             }
 
-            errorR[index] += r * factor;
-            errorG[index] += g * factor;
-            errorB[index] += b * factor;
+            errorR[index] +=
+                r * factor;
+
+            errorG[index] +=
+                g * factor;
+
+            errorB[index] +=
+                b * factor;
         }
 
         private static void Swap<T>(
             ref T first,
             ref T second)
         {
-            T temp = first;
-            first = second;
-            second = temp;
+            T temp =
+                first;
+
+            first =
+                second;
+
+            second =
+                temp;
         }
     }
 }

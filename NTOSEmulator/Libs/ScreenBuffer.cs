@@ -227,8 +227,41 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
+            vmFunctions.AddFunction(22, "printCentered", args =>
+            {
+                if (args.Length < 2) return null;
 
-            vmFunctions.AddFunction(22, "dialog", args =>
+                string text = args[0]?.ToString() ?? "";
+
+                using var g = Graphics.FromImage(buffer);
+
+                textRenderer.SetGraphics(g);
+                textRenderer.SetTextColor(GetColor332((byte)args[1]));
+                textRenderer.SetCursor(textRenderer.CursorX - textRenderer.GetTextWidth(text) / 2, textRenderer.CursorY);
+                textRenderer.Print(text);
+                OnInvalidate?.Invoke();
+
+                return null;
+            });
+            vmFunctions.AddFunction(23, "printRight", args =>
+            {
+                if (args.Length < 2) return null;
+
+                string text = args[0]?.ToString() ?? "";
+
+                using var g = Graphics.FromImage(buffer);
+
+                textRenderer.SetGraphics(g);
+                textRenderer.SetTextColor(GetColor332((byte)args[1]));
+                textRenderer.SetCursor(textRenderer.CursorX - textRenderer.GetTextWidth(text), textRenderer.CursorY);
+
+                textRenderer.Print(text);
+                OnInvalidate?.Invoke();
+
+                return null;
+            });
+
+            vmFunctions.AddFunction(30, "dialog", args =>
             {
                 
 
@@ -251,7 +284,14 @@ namespace NTOSEmulator.Libs
                 
                 textRenderer.SetTextSize(2);
 
-                textRenderer.SetCursor(240 - textRenderer.CalculateCenter(text), 5);
+
+                Color c = textRenderer.TextColor;
+                textRenderer.SetTextColor(Color.Black);
+                textRenderer.SetCursor(243 - textRenderer.GetTextWidth(text) / 2, 9);
+                textRenderer.Print(text);
+
+                textRenderer.SetTextColor(c);
+                textRenderer.SetCursor(240 - textRenderer.GetTextWidth(text) / 2, 5);
                 textRenderer.Print(text);
 
                 textRenderer.SetCursor(0, 26);

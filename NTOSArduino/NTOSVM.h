@@ -4,6 +4,7 @@
 #include <SoftSD.h>
 #include <Arduino.h>
 #include "UI.h"
+#include "Navigation.h"
 #include "Storage.h"
 
 // ============================================================
@@ -205,6 +206,7 @@ public:
       case 0x00:  // End
         {
           Stop();
+          Navigation::MainView();
           return;
         }
 
@@ -1068,7 +1070,11 @@ private:
     return tft.color565(r, g, b);
   }
 
-  static void print(StackValue textValue) {
+  static void print(StackValue textValue, int position = 0) {
+    int16_t bx;
+    int16_t by;
+    uint16_t w;
+    uint16_t h;
     switch (textValue.type) {
 
             case StackValueType::String:
@@ -1079,6 +1085,11 @@ private:
                 const char* text =
                   reinterpret_cast<const char*>(
                     &_bytecode[stringOffset]);
+
+                    if (position > 0) {
+                        tft.getTextBounds(text, 0, 0, &bx, &by, &w, &h);
+                        tft.setCursor(tft.getCursorX() - w / 2 * position, tft.getCursorY());
+                    }
 
                 tft.print(text);
                 break;
@@ -1178,6 +1189,13 @@ private:
 
           break;
         }
+
+      case 2:  // exit
+        {
+          Stop();
+          Navigation::MainView();
+          break;
+        }  
       case 9:  // cls
         {
           tft.setTextSize(2);
@@ -1273,19 +1291,36 @@ private:
           tft.setCursor(xValue, yValue);
           break;
         }
-      case 21:  // drawText
+      case 21:  // print
         {
           uint8_t color = (uint8_t)Pop().value;
           StackValue textValue = Pop();
           tft.setTextColor(
             Color332To565(color));
-
           print(textValue);
-
           break;
         }
 
-      case 22:  // dialog
+        case 22:  // printCentered
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          StackValue textValue = Pop();
+          tft.setTextColor(
+            Color332To565(color));
+          print(textValue, 1);
+          break;
+        }
+        case 23:  // printRight
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          StackValue textValue = Pop();
+          tft.setTextColor(
+            Color332To565(color));
+          print(textValue, 2);
+          break;
+        }
+
+      case 30:  // dialog
         {
           uint16_t stringOffset = (uint16_t)Pop().value;
 

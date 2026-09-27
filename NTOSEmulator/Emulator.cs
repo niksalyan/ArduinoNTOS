@@ -4,6 +4,7 @@ using NTOSEmulator.Libs;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using System.Xml.Linq;
 
 namespace NTOSEmulator
 {
@@ -24,6 +25,8 @@ namespace NTOSEmulator
         private readonly StringBuilder serialReceiveBuffer = new StringBuilder();
 
         // public Action<object> OnCompilerError;
+
+        private bool isUploading = false;
 
         public Emulator()
         {
@@ -46,6 +49,13 @@ namespace NTOSEmulator
                     Debug.WriteLine(file);
                     Execute(file, true);
                 }
+                return null;
+            });
+
+            vmFunctions.AddFunction(2, "exit", (args) =>
+            {
+                vm?.Stop();
+                DebugOutput("Execution finished.");
                 return null;
             });
 
@@ -92,27 +102,41 @@ namespace NTOSEmulator
 
         public void ClearDebug()
         {
-            debugOutput.ForeColor = SystemColors.WindowText;
-            debugOutput.Text = "";
+            BeginInvoke(() =>
+            {
+                debugOutput.ForeColor = SystemColors.WindowText;
+                debugOutput.Text = "";
+            });
+            
         }
 
         public void DebugStart(string output)
         {
             ClearDebug();
-            tabControl.SelectTab(1);
-            debugOutput.Text = output + Environment.NewLine;
+            BeginInvoke(() =>
+            {
+                tabControl.SelectTab(1);
+                debugOutput.Text = output + Environment.NewLine;
+            });
+            
         }
 
         public void DebugOutput(string output)
         {
-            debugOutput.ForeColor = SystemColors.WindowText;
-            debugOutput.Text += output + Environment.NewLine;
+            BeginInvoke(() => {
+                debugOutput.ForeColor = SystemColors.WindowText;
+                debugOutput.Text += output + Environment.NewLine;
+            });
+            
 
         }
         public void DebugError(string error)
         {
             DebugStart(error);
-            debugOutput.ForeColor = Color.Red;
+            BeginInvoke(() =>
+            {
+                debugOutput.ForeColor = Color.Red;
+            });
         }
 
         public void BuildAll()
@@ -235,9 +259,86 @@ namespace NTOSEmulator
 
         private void UpdateConsole()
         {
-            uploadButton.Enabled = serial.IsOpen;
-            comPortsList.Enabled = !serial.IsOpen;
-            connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
+            BeginInvoke(() =>
+            {
+                uploadButton.Enabled = serial.IsOpen;
+                comPortsList.Enabled = !serial.IsOpen;
+                connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
+                uploadButton.Enabled = !isUploading;
+            });
+            
+        }
+
+        private async Task DoUpload()
+        {
+            if (isUploading) return;
+
+            isUploading = true;
+            UpdateConsole();
+
+            try
+            {
+                BuildAll();
+                CopyNtiFiles();
+                string appName = new DirectoryInfo(appPath).Name;
+
+                string[] files =
+                    Directory.GetFiles(appPath + "build")
+                        .Where(f =>
+                            f.EndsWith(".ntx", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".nti", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
+                DebugStart("UPLOADING: " + appName);
+                foreach (string file in files)
+                {
+                    if (File.Exists(file))
+                    {
+
+                        string name = Path.GetFileName(file);
+                        byte[] bytecode = File.ReadAllBytes(file);
+                        var sb = new StringBuilder();
+
+                        for (int i = 0; i < bytecode.Length; i++)
+                        {
+                            sb.Append($"{bytecode[i]:X2}");
+                        }
+
+                        DebugOutput("-> " + name + " (" + bytecode.Length + "b)");
+
+                        var sbHex = sb.ToString();
+
+                        string cmd1 = "U " + appName + " " + name;
+                        serial.WriteLine(cmd1);
+
+                        await Task.Delay(1000);
+
+
+                        string cmd2 = "<" + sbHex + ">";
+                        serial.WriteLine(cmd2);
+
+                        await Task.Delay(2000);
+
+
+
+
+                    }
+                }
+
+                await Task.Delay(2000);
+                DebugOutput("DONE");
+
+
+            }
+            catch (Exception ex)
+            {
+                DebugOutput("Upload Error");
+            }
+            finally
+            {
+                isUploading = false;
+                UpdateConsole();
+            }
         }
 
         private void Serial_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -267,19 +368,13 @@ namespace NTOSEmulator
                         // Handle possible \r\n
                         line = line.TrimEnd('\r');
 
-                        BeginInvoke(() =>
-                        {
-                            DebugOutput("[SERIAL] " + line);
-                        });
+                        DebugOutput("[SERIAL] " + line);
                     }
                 }
             }
             catch (Exception ex)
             {
-                BeginInvoke(() =>
-                {
-                    DebugError("Serial receive error: " + ex.Message);
-                });
+                DebugError("Serial receive error: " + ex.Message);
             }
         }
 
@@ -310,59 +405,10 @@ namespace NTOSEmulator
             DebugStart(app.ToArduinoArray(lastBytecode));
         }
 
-        private void uploadButton_Click(object sender, EventArgs e)
+        private async void uploadButton_Click(object sender, EventArgs e)
         {
-            
-            try
-            {
-                BuildAll();
-                CopyNtiFiles();
-                string appName = new DirectoryInfo(appPath).Name;
-                
-                string[] files =
-                    Directory.GetFiles(appPath + "build")
-                        .Where(f =>
-                            f.EndsWith(".ntx", StringComparison.OrdinalIgnoreCase) ||
-                            f.EndsWith(".nti", StringComparison.OrdinalIgnoreCase))
-                        .ToArray();
 
-                DebugStart("UPLOADING: " + appName);
-                foreach (string file in files)
-                {
-                    if (File.Exists(file))
-                    {
-
-                        string name = Path.GetFileName(file);
-                        byte[] bytecode = File.ReadAllBytes(file);
-                        var sb = new StringBuilder();
-
-                        for (int i = 0; i < bytecode.Length; i++)
-                        {
-                            sb.Append($"{bytecode[i]:X2}");
-                        }
-
-                        DebugOutput("-> " + name + " (" + bytecode.Length + "b)");
-
-                        var sbHex = sb.ToString();
-
-                        string cmd1 = "U " + appName + " " + name;
-                        serial.WriteLine(cmd1);
-
-
-                        string cmd2 = "<" + sbHex + ">";
-                        serial.WriteLine(cmd2);
-
-                        
-
-
-                    }
-                }
-
-
-            } catch (Exception ex)
-            {
-
-            }
+            Task.Run(DoUpload);
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)

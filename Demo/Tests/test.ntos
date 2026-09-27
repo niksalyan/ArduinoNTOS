@@ -1,8 +1,7 @@
-cls();
+dialog("WORKS");
+
+cursor(240, 50, 2);
+printRight("OKaaaaaaaaa", WHITE);
 
 
-int a = 5;
-while(a < 100){
-   drawBox(a + 50,a + 50,100,100, YELLOW);
-   a = a + 10;
-}
+delay 4;
