@@ -3,6 +3,7 @@
 #define SOFTWARE_SPI_FOR_SD
 #include <SoftSD.h>
 #include <Arduino.h>
+#include "UI.h"
 #include "Storage.h"
 
 // ============================================================
@@ -112,7 +113,7 @@ public:
     return true;
   }
 
-#if NTOS_DEBUG 
+#if NTOS_DEBUG
   static void DumpBytecode() {
     Serial.println(F("HEX: "));
 
@@ -143,9 +144,9 @@ public:
     _sp = 0;
     _callSp = 0;
     _running = true;
-    #if NTOS_DEBUG 
-      DumpBytecode();
-    #endif
+#if NTOS_DEBUG
+    DumpBytecode();
+#endif
   }
 
   static void Stop() {
@@ -1067,7 +1068,69 @@ private:
     return tft.color565(r, g, b);
   }
 
+  static void print(StackValue textValue) {
+    switch (textValue.type) {
 
+            case StackValueType::String:
+              {
+                uint16_t stringOffset =
+                  (uint16_t)textValue.value;
+
+                const char* text =
+                  reinterpret_cast<const char*>(
+                    &_bytecode[stringOffset]);
+
+                tft.print(text);
+                break;
+              }
+
+            case StackValueType::Int:
+              {
+                int32_t value =
+                  (int32_t)textValue.value;
+
+                tft.print(value);
+                break;
+              }
+
+            case StackValueType::Float:
+              {
+                float value;
+
+                uint32_t bits =
+                  textValue.value;
+
+                memcpy(
+                  &value,
+                  &bits,
+                  sizeof(value));
+
+                tft.print(value);
+                break;
+              }
+
+            case StackValueType::Byte:
+              {
+                uint8_t value =
+                  (uint8_t)textValue.value;
+
+                tft.print(value);
+                break;
+              }
+
+            case StackValueType::Bool:
+              {
+                bool value =
+                  textValue.value != 0;
+
+                tft.print(value ? "true" : "false");
+                break;
+              }
+
+            default:
+              break;
+          }
+  }
 
   static void ExecuteSystemFunction(
     uint16_t functionIndex,
@@ -1118,6 +1181,8 @@ private:
         }
       case 9:  // cls
         {
+          tft.setTextSize(2);
+          tft.setCursor(0, 0);
           tft.fillScreenBlack();
           break;
         }
@@ -1199,30 +1264,42 @@ private:
 
           break;
         }
-
-      case 16:  // drawText
+      case 20: // cursor
+        {
+          int16_t  sizeValue = (int16_t)Pop().value;
+          int16_t  yValue = (int16_t)Pop().value;
+          int16_t  xValue = (int16_t)Pop().value;
+          
+          tft.setTextSize(sizeValue);
+          tft.setCursor(xValue, yValue);
+          break;
+        }
+      case 21:  // drawText
         {
           uint8_t color = (uint8_t)Pop().value;
-          int16_t y = (int16_t)Pop().value;
-          int16_t x = (int16_t)Pop().value;
+          StackValue textValue = Pop();
+          tft.setTextColor(
+            Color332To565(color));
+
+          print(textValue);
+
+          break;
+        }
+
+      case 22:  // dialog
+        {
           uint16_t stringOffset = (uint16_t)Pop().value;
 
           const char* text =
             reinterpret_cast<const char*>(
               &_bytecode[stringOffset]);
 
+          UI::dialog(text);
           tft.setTextSize(2);
-          tft.setTextColor(
-            Color332To565(color));
-
-          tft.setCursor(
-            x,
-            y);
-
-          tft.print(text);
+          tft.setCursor(0, 25);
 
           break;
-        }
+        }  
 
       default:
         Serial.print("[NTOS] Unknown system function: ");

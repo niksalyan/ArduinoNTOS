@@ -284,6 +284,7 @@ namespace NTOSEmulator
             
             try
             {
+                BuildAll();
                 string appName = new DirectoryInfo(appPath).Name;
                 string[] files = Directory.GetFiles(appPath + "build", "*.ntx");
                 DebugStart("UPLOADING: " + appName);

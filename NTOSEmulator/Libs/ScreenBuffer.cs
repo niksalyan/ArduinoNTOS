@@ -1,6 +1,7 @@
 ﻿using NTOSCompiler.Compiler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace NTOSEmulator.Libs
@@ -9,7 +10,17 @@ namespace NTOSEmulator.Libs
     {
         public readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
 
-        private Font font = new Font("Consolas", 12f, FontStyle.Regular);
+        private Font[] font = { 
+            null,
+            new Font("Consolas", 6f, FontStyle.Regular),
+            new Font("Consolas", 13f, FontStyle.Regular),
+            new Font("Consolas", 20f, FontStyle.Regular),
+            new Font("Consolas", 26f, FontStyle.Regular),
+
+        };
+
+        private int textSize = 2;
+        private Point cursor = new Point(0, 0);
 
         public Action OnInvalidate;
 
@@ -45,6 +56,7 @@ namespace NTOSEmulator.Libs
             ["OLIVE"] = 0xB0
         };
 
+
         public ScreenBuffer(VMFunctions vmFunctions)
         {
             SetupFunctions(vmFunctions);
@@ -61,6 +73,9 @@ namespace NTOSEmulator.Libs
 
             vmFunctions.AddFunction(9, "cls", args =>
             {
+                cursor.X = 0;
+                cursor.Y = 0;
+                textSize = 2;
                 using var g = Graphics.FromImage(buffer);
                 g.Clear(Color.Black);
 
@@ -200,14 +215,23 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(16, "drawText", args =>
+
+            vmFunctions.AddFunction(20, "cursor", args =>
             {
-                if (args.Length < 4)
-                    return null;
+                if (args.Length < 3) return null;
+                cursor.X = (int)args[0];
+                cursor.Y = (int)args[1];
+                textSize = (int)args[2];
+                return null;
+            });
+
+            vmFunctions.AddFunction(21, "print", args =>
+            {
+                if (args.Length < 2) return null;
 
                 string text = args[0]?.ToString() ?? "";
 
-                using var format = new StringFormat
+                using var format = new StringFormat(StringFormat.GenericTypographic)
                 {
                     Alignment = StringAlignment.Near,
                     LineAlignment = StringAlignment.Near
@@ -215,17 +239,70 @@ namespace NTOSEmulator.Libs
 
                 using var g = Graphics.FromImage(buffer);
                 using var brush = new SolidBrush(
-                    GetColor332((byte)args[3]));
+                    GetColor332((byte)args[1]));
+
+                // Measure using the exact same font and format used for drawing.
+                SizeF size = g.MeasureString(
+                    text,
+                    font[textSize],
+                    new PointF(cursor.X, cursor.Y),
+                    format);
 
                 g.DrawString(
                     text,
-                    font,
+                    font[textSize],
                     brush,
-                    (int)args[1],
-                    (int)args[2],
+                    new PointF(cursor.X, cursor.Y),
                     format);
 
+                // Actual measured width
+                cursor.X += (int)Math.Ceiling(size.Width);
+
                 OnInvalidate?.Invoke();
+
+                return null;
+            });
+
+            vmFunctions.AddFunction(22, "dialog", args =>
+            {
+                
+
+                if (args.Length < 1)
+                    return null;
+
+                string text = args[0]?.ToString() ?? "";
+
+                using var g = Graphics.FromImage(buffer);
+                using var brush = new SolidBrush(Color.White);
+
+                using var format = new StringFormat(StringFormat.GenericTypographic)
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Near
+                };
+
+                g.Clear(Color.Black);
+                g.FillRectangle(
+                    new SolidBrush(GetColor332(colors["BLUE"])),
+                    0,
+                    0,
+                    buffer.Width,
+                    25);
+
+                g.DrawString(
+                    text,
+                    font[2],
+                    brush,
+                    new PointF(buffer.Width / 2, 2),
+                    format);
+
+                cursor.X = 0;
+                cursor.Y = 25;
+                textSize = 2;
+
+                OnInvalidate?.Invoke();
+                return null;
+
                 return null;
             });
 
