@@ -408,20 +408,151 @@ public:
   static bool openAppFile(
     const char* appName,
     const char* fileName,
+    const char* extension,
     File& file) {
     char path[32];
 
     snprintf(
       path,
       sizeof(path),
-      "/%s/%s",
+      "/%s/%s.%s",
       appName,
-      fileName);
+      fileName,
+      extension);
 
     file = SD.open(path, FILE_READ);
 
     return file;
   }
+
+  static bool drawImage(
+    const char* appFile,
+    const char* imageFile,
+    int16_t x,
+    int16_t y,
+    int16_t scaleX = 1,
+    int16_t scaleY = 1,
+    int16_t transparentColor = -1)
+{
+    if (scaleX < 1 || scaleY < 1)
+        return false;
+
+    File file;
+
+    if (!Storage::openAppFile(appFile, imageFile, "nti", file))
+        return false;
+
+    // -------------------------------------------------
+    // NTI HEADER
+    // -------------------------------------------------
+    // Byte 0 = width
+    // Byte 1 = height
+    // -------------------------------------------------
+
+    int width = file.read();
+    int height = file.read();
+
+    if (width <= 0 || height <= 0)
+    {
+        file.close();
+        return false;
+    }
+
+    // Center coordinates
+    int16_t startX =
+        x - ((int16_t)width * scaleX) / 2;
+
+    int16_t startY =
+        y - ((int16_t)height * scaleY) / 2;
+
+    // -------------------------------------------------
+    // Stream one row at a time
+    // -------------------------------------------------
+
+    uint8_t row[32];
+
+    for (int srcY = 0; srcY < height; srcY++)
+    {
+        int remaining = width;
+        int srcX = 0;
+
+        while (remaining > 0)
+        {
+            int chunkSize =
+                remaining > sizeof(row)
+                    ? sizeof(row)
+                    : remaining;
+
+            int bytesRead = file.read(row, chunkSize);
+
+            if (bytesRead != chunkSize)
+            {
+                file.close();
+                return false;
+            }
+
+            for (int i = 0; i < chunkSize; i++)
+            {
+                uint8_t rgb332 = row[i];
+
+                if (transparentColor >= 0 &&
+                    rgb332 == (uint8_t)transparentColor)
+                {
+                    continue;
+                }
+
+                // -----------------------------------------
+                // RGB332 -> RGB565
+                // -----------------------------------------
+
+                uint8_t r =
+                    (rgb332 >> 5) & 0x07;
+
+                uint8_t g =
+                    (rgb332 >> 2) & 0x07;
+
+                uint8_t b =
+                    rgb332 & 0x03;
+
+                uint16_t color =
+                    ((uint16_t)(r * 255 / 7) >> 3) << 11 |
+                    ((uint16_t)(g * 255 / 7) >> 2) << 5 |
+                    ((uint16_t)(b * 255 / 3) >> 3);
+
+                int16_t px =
+                    startX + (srcX + i) * scaleX;
+
+                int16_t py =
+                    startY + srcY * scaleY;
+
+                // -----------------------------------------
+                // Draw
+                // -----------------------------------------
+
+                if (scaleX == 1 && scaleY == 1)
+                {
+                    tft.drawPixel(px, py, color);
+                }
+                else
+                {
+                    tft.fastFillRect(
+                        px,
+                        py,
+                        scaleX,
+                        scaleY,
+                        color);
+                }
+            }
+
+            srcX += chunkSize;
+            remaining -= chunkSize;
+        }
+    }
+
+    file.close();
+
+    return true;
+}
 
   static void listApps(void (*callback)(const char* name)) {
 

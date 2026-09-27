@@ -8,19 +8,8 @@ namespace NTOSEmulator.Libs
 {
     internal class ScreenBuffer
     {
-        public readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-
-        private Font[] font = { 
-            null,
-            new Font("Consolas", 6f, FontStyle.Regular),
-            new Font("Consolas", 13f, FontStyle.Regular),
-            new Font("Consolas", 20f, FontStyle.Regular),
-            new Font("Consolas", 26f, FontStyle.Regular),
-
-        };
-
-        private int textSize = 2;
-        private Point cursor = new Point(0, 0);
+        private readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+        private TextRenderer textRenderer = new TextRenderer();
 
         public Action OnInvalidate;
 
@@ -73,9 +62,8 @@ namespace NTOSEmulator.Libs
 
             vmFunctions.AddFunction(9, "cls", args =>
             {
-                cursor.X = 0;
-                cursor.Y = 0;
-                textSize = 2;
+                textRenderer.SetCursor(0, 0);
+                textRenderer.SetTextSize(2);
                 using var g = Graphics.FromImage(buffer);
                 g.Clear(Color.Black);
 
@@ -219,9 +207,8 @@ namespace NTOSEmulator.Libs
             vmFunctions.AddFunction(20, "cursor", args =>
             {
                 if (args.Length < 3) return null;
-                cursor.X = (int)args[0];
-                cursor.Y = (int)args[1];
-                textSize = (int)args[2];
+                textRenderer.SetCursor((int)args[0], (int)args[1]);
+                textRenderer.SetTextSize((int)args[2]);
                 return null;
             });
 
@@ -231,33 +218,11 @@ namespace NTOSEmulator.Libs
 
                 string text = args[0]?.ToString() ?? "";
 
-                using var format = new StringFormat(StringFormat.GenericTypographic)
-                {
-                    Alignment = StringAlignment.Near,
-                    LineAlignment = StringAlignment.Near
-                };
-
                 using var g = Graphics.FromImage(buffer);
-                using var brush = new SolidBrush(
-                    GetColor332((byte)args[1]));
-
-                // Measure using the exact same font and format used for drawing.
-                SizeF size = g.MeasureString(
-                    text,
-                    font[textSize],
-                    new PointF(cursor.X, cursor.Y),
-                    format);
-
-                g.DrawString(
-                    text,
-                    font[textSize],
-                    brush,
-                    new PointF(cursor.X, cursor.Y),
-                    format);
-
-                // Actual measured width
-                cursor.X += (int)Math.Ceiling(size.Width);
-
+                
+                textRenderer.SetGraphics(g);
+                textRenderer.SetTextColor(GetColor332((byte)args[1]));
+                textRenderer.Print(text);
                 OnInvalidate?.Invoke();
 
                 return null;
@@ -273,14 +238,7 @@ namespace NTOSEmulator.Libs
                 string text = args[0]?.ToString() ?? "";
 
                 using var g = Graphics.FromImage(buffer);
-                using var brush = new SolidBrush(Color.White);
-
-                using var format = new StringFormat(StringFormat.GenericTypographic)
-                {
-                    Alignment = StringAlignment.Center,
-                    LineAlignment = StringAlignment.Near
-                };
-
+                
                 g.Clear(Color.Black);
                 g.FillRectangle(
                     new SolidBrush(GetColor332(colors["BLUE"])),
@@ -289,20 +247,17 @@ namespace NTOSEmulator.Libs
                     buffer.Width,
                     25);
 
-                g.DrawString(
-                    text,
-                    font[2],
-                    brush,
-                    new PointF(buffer.Width / 2, 2),
-                    format);
+                textRenderer.SetGraphics(g);
+                
+                textRenderer.SetTextSize(2);
 
-                cursor.X = 0;
-                cursor.Y = 25;
-                textSize = 2;
+                textRenderer.SetCursor(240 - textRenderer.CalculateCenter(text), 5);
+                textRenderer.Print(text);
+
+                textRenderer.SetCursor(0, 26);
+                textRenderer.SetTextSize(2);
 
                 OnInvalidate?.Invoke();
-                return null;
-
                 return null;
             });
 

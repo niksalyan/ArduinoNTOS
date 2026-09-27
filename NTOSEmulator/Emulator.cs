@@ -132,9 +132,9 @@ namespace NTOSEmulator
                         string error = app.CompileSource(name, source);
                         if (error == null)
                         {
-                            DebugOutput("Build: " + name + " OK !");
                             byte[] bytecode = app.GetBytecode(name);
                             File.WriteAllBytes(appPath + "build\\" + name + ".ntx", bytecode);
+                            DebugOutput("Build: " + name + " OK (" + bytecode.Length + "b) !");
                         }
                         else
                         {
@@ -148,6 +148,37 @@ namespace NTOSEmulator
             catch (Exception ex)
             {
 
+            }
+        }
+
+        public void CopyNtiFiles()
+        {
+            DebugStart("COPYING IMAGES");
+
+            try
+            {
+                string buildPath = Path.Combine(appPath, "build");
+
+                Directory.CreateDirectory(buildPath);
+
+                string[] files = Directory.GetFiles(appPath, "*.nti");
+
+                foreach (string file in files)
+                {
+                    if (File.Exists(file))
+                    {
+                        string name = Path.GetFileName(file);
+                        string destination = Path.Combine(buildPath, name);
+
+                        File.Copy(file, destination, true);
+
+                        DebugOutput("Copy: " + name + " OK !");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugOutput("Copy NTI: " + ex.Message);
             }
         }
 
@@ -285,8 +316,16 @@ namespace NTOSEmulator
             try
             {
                 BuildAll();
+                CopyNtiFiles();
                 string appName = new DirectoryInfo(appPath).Name;
-                string[] files = Directory.GetFiles(appPath + "build", "*.ntx");
+                
+                string[] files =
+                    Directory.GetFiles(appPath + "build")
+                        .Where(f =>
+                            f.EndsWith(".ntx", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".nti", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
                 DebugStart("UPLOADING: " + appName);
                 foreach (string file in files)
                 {
@@ -302,6 +341,8 @@ namespace NTOSEmulator
                             sb.Append($"{bytecode[i]:X2}");
                         }
 
+                        DebugOutput("-> " + name + " (" + bytecode.Length + "b)");
+
                         var sbHex = sb.ToString();
 
                         string cmd1 = "U " + appName + " " + name;
@@ -311,7 +352,7 @@ namespace NTOSEmulator
                         string cmd2 = "<" + sbHex + ">";
                         serial.WriteLine(cmd2);
 
-                        DebugOutput(cmd1);
+                        
 
 
                     }

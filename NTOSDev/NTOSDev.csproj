@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NTOSCompiler\NTOSCompiler.csproj" />
     <ProjectReference Include="..\NTOSEmulator\NTOSEmulator.csproj" />
+    <ProjectReference Include="..\NTOSImage\NTOSImage.csproj" />
   </ItemGroup>
 
 </Project>

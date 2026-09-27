@@ -1161,8 +1161,7 @@ private:
 
           File file;
 
-          String fileName = String(text) + ".ntx";
-          if (!Storage::openAppFile(appName, fileName.c_str(), file)) {
+          if (!Storage::openAppFile(appName, text, "ntx", file)) {
             return;
           }
 

@@ -1,6 +1,7 @@
 ﻿using NTOSDev.Components;
 using NTOSDev.Controls;
 using NTOSDev.Libs;
+using NTOSImage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +22,11 @@ namespace NTOSDev
         };
 
         public DEmulator dEmulator = new DEmulator()
+        {
+            HideOnClose = true
+        };
+
+        public DImage dImage = new DImage()
         {
             HideOnClose = true
         };
@@ -141,6 +147,9 @@ namespace NTOSDev
                     dEmulator.InitEmulator();
                     dEmulator.BuildAll();
                     //serialManager.Show(dockPanel, DockState.DockBottom);
+                    break;
+                case "imageConverter":
+                    dImage.Show(dockPanel, DockState.Document);
                     break;
                 case "exit":
                     Close();

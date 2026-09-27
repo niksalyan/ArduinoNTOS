@@ -1,3 +1,406 @@
-dialog("CALC");
+// ========================================
+// NTOS CALCULATOR
+//
+// Keypad:
+//
+//   1 2 3 A
+//   4 5 6 B
+//   7 8 9 C
+//   * 0 # D
+//
+// A = +
+// B = -
+// C = *
+// D = /
+// # = =
+// * = Clear
+// ========================================
 
-print("CALC", RED);
+
+init {
+    int current = 0;
+    int left = 0;
+    int operator = 0;
+    int newInput = 1;
+}
+
+
+// ========================================
+// DRAW CALCULATOR
+// ========================================
+
+draw {
+
+    cls();
+
+    // Background
+    fillBox(0, 0, 480, 320, BLUE);
+
+
+    call update;
+
+
+    // ====================================
+    // BUTTONS
+    // ====================================
+
+    // Row 1
+    drawBox(20, 95, 100, 45, WHITE);
+    drawBox(130, 95, 100, 45, WHITE);
+    drawBox(240, 95, 100, 45, WHITE);
+    drawBox(350, 95, 110, 45, YELLOW);
+
+    cursor(60, 110, 2);
+    print("1", WHITE);
+
+    cursor(170, 110, 2);
+    print("2", WHITE);
+
+    cursor(280, 110, 2);
+    print("3", WHITE);
+
+    cursor(395, 110, 2);
+    print("+", WHITE);
+
+
+    // Row 2
+    drawBox(20, 150, 100, 45, WHITE);
+    drawBox(130, 150, 100, 45, WHITE);
+    drawBox(240, 150, 100, 45, WHITE);
+    drawBox(350, 150, 110, 45, YELLOW);
+
+    cursor(60, 165, 2);
+    print("4", WHITE);
+
+    cursor(170, 165, 2);
+    print("5", WHITE);
+
+    cursor(280, 165, 2);
+    print("6", WHITE);
+
+    cursor(395, 165, 2);
+    print("-", WHITE);
+
+
+    // Row 3
+    drawBox(20, 205, 100, 45, WHITE);
+    drawBox(130, 205, 100, 45, WHITE);
+    drawBox(240, 205, 100, 45, WHITE);
+    drawBox(350, 205, 110, 45, YELLOW);
+
+    cursor(60, 220, 2);
+    print("7", WHITE);
+
+    cursor(170, 220, 2);
+    print("8", WHITE);
+
+    cursor(280, 220, 2);
+    print("9", WHITE);
+
+    cursor(395, 220, 2);
+    print("*", WHITE);
+
+
+    // Row 4
+    drawBox(20, 260, 100, 45, YELLOW);
+    drawBox(130, 260, 100, 45, WHITE);
+    drawBox(240, 260, 100, 45, GREEN);
+    drawBox(350, 260, 110, 45, YELLOW);
+
+    cursor(60, 275, 2);
+    print("C", WHITE);
+
+    cursor(170, 275, 2);
+    print("0", WHITE);
+
+    cursor(280, 275, 2);
+    print("=", WHITE);
+
+    cursor(395, 275, 2);
+    print("/", WHITE);
+}
+
+update {
+	// ====================================
+    // DISPLAY
+    // ====================================
+
+    fillBox(20, 15, 440, 65, GREEN);
+    drawBox(20, 15, 440, 65, WHITE);
+
+    cursor(40, 35, 4);
+    print(current, WHITE);
+}
+
+
+// Draw the initial calculator
+call draw;
+
+
+// ========================================
+// KEYPAD LOOP
+// ========================================
+
+loop {
+
+    char key = read keyInput;
+
+
+    switch(key) {
+
+        // =================================
+        // NUMBER 0
+        // =================================
+
+        case '0':
+
+			if (newInput == 1) {
+				current = 0;
+				newInput = 0;
+			}
+
+			current = current * 10;
+			call update;
+
+
+        // =================================
+        // NUMBER 1
+        // =================================
+
+        case '1':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 1;
+            call update;
+
+
+        // =================================
+        // NUMBER 2
+        // =================================
+
+        case '2':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 2;
+            call update;
+
+
+        // =================================
+        // NUMBER 3
+        // =================================
+
+        case '3':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 3;
+            call update;
+
+
+        // =================================
+        // NUMBER 4
+        // =================================
+
+        case '4':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 4;
+            call update;
+
+
+        // =================================
+        // NUMBER 5
+        // =================================
+
+        case '5':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 5;
+            call update;
+
+
+        // =================================
+        // NUMBER 6
+        // =================================
+
+        case '6':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 6;
+            call update;
+
+
+        // =================================
+        // NUMBER 7
+        // =================================
+
+        case '7':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 7;
+            call update;
+
+
+        // =================================
+        // NUMBER 8
+        // =================================
+
+        case '8':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 8;
+            call update;
+
+
+        // =================================
+        // NUMBER 9
+        // =================================
+
+        case '9':
+
+            if (newInput == 1) {
+                current = 0;
+                newInput = 0;
+            }
+
+            current = current * 10 + 9;
+            call update;
+
+
+        // =================================
+        // ADD
+        // A = +
+        // =================================
+
+        case 'A':
+
+            left = current;
+            operator = 1;
+            newInput = 1;
+
+            call update;
+
+
+        // =================================
+        // SUBTRACT
+        // B = -
+        // =================================
+
+        case 'B':
+
+            left = current;
+            operator = 2;
+            newInput = 1;
+
+            call update;
+
+
+        // =================================
+        // MULTIPLY
+        // C = *
+        // =================================
+
+        case 'C':
+
+            left = current;
+            operator = 3;
+            newInput = 1;
+
+            call update;
+
+
+        // =================================
+        // DIVIDE
+        // D = /
+        // =================================
+
+        case 'D':
+
+            left = current;
+            operator = 4;
+            newInput = 1;
+
+            call update;
+
+
+        // =================================
+        // CLEAR
+        // * = C
+        // =================================
+
+        case '*':
+
+            current = 0;
+            left = 0;
+            operator = 0;
+            newInput = 1;
+
+            call update;
+
+
+        // =================================
+        // EQUALS
+        // # = =
+        // =================================
+
+        case '#':
+
+            if (operator == 1) {
+                current = left + current;
+            }
+
+            if (operator == 2) {
+                current = left - current;
+            }
+
+            if (operator == 3) {
+                current = left * current;
+            }
+
+            if (operator == 4) {
+                if (current != 0) {
+                    current = left / current;
+                }
+            }
+
+            left = current;
+            operator = 0;
+            newInput = 1;
+
+            call update;
+    }
+
+
+    delay 0.01;
+}

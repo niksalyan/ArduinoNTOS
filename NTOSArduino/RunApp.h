@@ -2,6 +2,7 @@
 #include "progmem_far.h"
 #include "NTOSVM.h"
 #include "UI.h"
+#include "Terminal.h"
 
 class RunApp {
 private:
@@ -12,6 +13,7 @@ public:
   static void open(char* name) {
 
     UI::setHandler(handler);
+    Terminal::updateHandler = update;
 
     UI::dialog(name);
 
@@ -21,7 +23,7 @@ public:
 
     File file;
 
-    if (!Storage::openAppFile(name, "main.ntx", file)) {
+    if (!Storage::openAppFile(name, "main", "ntx", file)) {
       return;
     }
 
@@ -36,35 +38,18 @@ public:
     NTOSVM::Start();
   }
 
-  static void update() {
-
-    // Eventually:
-    //
-    // - check SD card
-    // - detect new applications
-    // - update status information
-    //
-    // Nothing should be redrawn unless something changed.
-  }
-
 private:
 
-
+  static void update() {
+    if (Terminal::isPressed('*')  && Terminal::isPressed('#')) {
+      NTOSVM::Stop();
+      Navigation::MainView();
+    }
+  }
 
   static void handler(char key) {
-
-    switch (key) {
-
-      case '*':
-        NTOSVM::Stop();
-        Navigation::MainView();
-        break;
-
-      default:
-        if (key != 0) {
+    if (key != 0) {
           NTOSVM::WriteByteToMemory(0, key);
-        }
-        break;
     }
   }
 };

@@ -541,8 +541,11 @@ public:
     return keypad.getKey();
   }
 
-  static void update() {
+  static bool isPressed(char key) {
+    return keypad.isPressed(key);
+  }
 
+  static void update() {
     char sk = getKey();
     if (sk > 0 && keyHandler) {
         keyHandler(sk);
