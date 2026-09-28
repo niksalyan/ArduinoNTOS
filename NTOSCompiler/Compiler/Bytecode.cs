@@ -86,9 +86,7 @@ public enum VariableType {
 
     Byte,
     Bool,
-    Str,
-
-    Char
+    Str
 }
 
 public class Variable

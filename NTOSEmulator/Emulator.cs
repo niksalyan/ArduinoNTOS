@@ -26,7 +26,7 @@ namespace NTOSEmulator
         // public Action<object> OnCompilerError;
 
         private bool isUploading = false;
-        private char currentKey = (char)0; // What is the right way ?
+        private byte currentKey = 0; // What is the right way ?
 
         public Emulator()
         {
@@ -69,10 +69,10 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(4, "getKey", VariableType.Char, async (args) =>
+            vmFunctions.AddFunction(4, "getKey", VariableType.Byte, async (args) =>
             {
-                char key = currentKey;
-                currentKey = (char)0;
+                byte key = currentKey;
+                currentKey = 0;
                 return key;
             });
 
@@ -118,7 +118,7 @@ namespace NTOSEmulator
 
         private void NumpadControl_KeyPressed(object? sender, char key)
         {
-            currentKey = key;
+            currentKey = (byte)key;
         }
 
         public void ClearMemory()

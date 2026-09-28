@@ -470,7 +470,7 @@ public sealed class VirtualMachine
                                 index,
                                 args);
 
-                        // _stack.Push(result);
+                        _stack.Push(result ?? 0);
 
                         break;
                     }

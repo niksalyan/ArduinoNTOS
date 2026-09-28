@@ -1448,7 +1448,6 @@ public sealed class Parser
                     (ushort)_vmFunctions.GetIndex(functionName),
                     (byte)argumentCount)));
 
-        // VM function return types are not represented yet.
         return _vmFunctions.GetReturnType(functionName);
     }
 
