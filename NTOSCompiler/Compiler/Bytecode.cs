@@ -50,6 +50,17 @@ public enum OpCode : byte
     LoadIndirectInt,
     StoreIndirectInt,
 
+    LoadIndirectFloat,
+    StoreIndirectFloat,
+
+    LoadIndirectStr,
+    StoreIndirectStr,
+
+    LoadIndirectByte,
+    StoreIndirectByte,
+
+
+
     Jump = 128,
     JumpIfFalse,
     CallSubroutine,

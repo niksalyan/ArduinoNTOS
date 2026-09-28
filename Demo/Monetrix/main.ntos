@@ -2,7 +2,11 @@ init{
     int playerBalance[6];
 	str[6] playerName[6];
 
-	playerName[0] = "P1";
+
+	float tests[6];
+
+	tests[0] = 0.5;
+	//playerName[0] = "P1";
 }
 
-dialog(playerName[0]);
+dialog(tests[0]);

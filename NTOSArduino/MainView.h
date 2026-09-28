@@ -329,7 +329,7 @@ private:
       tft.fastFillRect(
         x,
         y,
-        3,
+        5,
         TILE_HEIGHT,
         COLOR_PRIMARY);
     }

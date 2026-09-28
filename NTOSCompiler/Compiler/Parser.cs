@@ -1426,6 +1426,34 @@ public sealed class Parser
         };
     }
 
+    private OpCode GetIndirectLoadOpcode(VariableType type)
+    {
+        return type switch
+        {
+            VariableType.Int => OpCode.LoadIndirectInt,
+            VariableType.Float => OpCode.LoadIndirectFloat,
+            VariableType.Str => OpCode.LoadIndirectStr,
+            VariableType.Byte => OpCode.LoadIndirectByte,
+
+            _ => throw Error(
+                $"Indirect array access is not supported for {type}.")
+        };
+    }
+
+    private OpCode GetIndirectStoreOpcode(VariableType type)
+    {
+        return type switch
+        {
+            VariableType.Int => OpCode.StoreIndirectInt,
+            VariableType.Float => OpCode.StoreIndirectFloat,
+            VariableType.Str => OpCode.StoreIndirectStr,
+            VariableType.Byte => OpCode.StoreIndirectByte,
+
+            _ => throw Error(
+                $"Indirect array assignment is not supported for {type}.")
+        };
+    }
+
     private static OpCode GetStoreOpcode(
     VariableType type)
     {
