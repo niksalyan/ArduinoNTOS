@@ -11,15 +11,16 @@ cls();
 // SKY
 // ================================
 
-fillBox(0, 0, 480, 320, BLUE);
+dialog("DRAW TEST");
+fillBox(0, 25, 480, 320 - 25, BLUE);
 
 
 // ================================
 // MOON
 // ================================
 
-fillCircle(380, 70, 45, YELLOW);
-drawCircle(380, 70, 47, WHITE);
+fillCircle(380, 80, 45, YELLOW);
+drawCircle(380, 80, 47, WHITE);
 
 // Moon craters
 fillCircle(360, 55, 6, WHITE);
@@ -225,4 +226,4 @@ while (gx < 480) {
 }
 
 delay(4000);
-load("test");
+load("test2");

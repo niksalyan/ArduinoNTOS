@@ -143,7 +143,7 @@ call draw;
 
 loop {
 
-    char key = read keyInput;
+    char key = getKey();
 
 
     switch(key) {
@@ -402,5 +402,5 @@ loop {
     }
 
 
-    delay 0.01;
+    delay(1);
 }
