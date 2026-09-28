@@ -57,7 +57,7 @@ private:
   inline static uint8_t _callSp = 0;
 
   inline static bool _running = false;
-  inline static uint32_t _delay = 0;
+  inline static int32_t _delay = 0;
   inline static char* appName = "";
 
 
@@ -1191,7 +1191,7 @@ private:
 
       case 3:  // delay
         {
-          _delay = (uint32_t)Pop().value;
+          _delay = (int32_t)Pop().value;
           break;
         }    
 

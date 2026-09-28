@@ -63,7 +63,7 @@ namespace NTOSEmulator
 
             vmFunctions.AddFunction(3, "delay", async (args) =>
             {
-                uint d = (uint)args[0];
+                int d = (int)args[0];
                 await Task.Delay((int)d);
                 vm?.ResetStopwatch();
                 return 0;
@@ -228,7 +228,7 @@ namespace NTOSEmulator
         }
 
 
-        public void Execute(string file, bool initialized = false)
+        public async void Execute(string file, bool initialized = false)
         {
             appPath = Path.GetDirectoryName(file) + "\\";
             string name = Path.GetFileNameWithoutExtension(file);

@@ -212,7 +212,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(21, "print", args =>
+            vmFunctions.AddFunction(21, "print", async args =>
             {
                 if (args.Length < 2) return null;
 
