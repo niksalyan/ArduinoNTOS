@@ -16,7 +16,6 @@ namespace NTOSEmulator
 
         private ScreenBuffer screen;
 
-        private Variable keyboardInput = new Variable("keyInput", VariableType.Byte);
 
         private string appPath;
         private string lastBytecode;
@@ -27,6 +26,7 @@ namespace NTOSEmulator
         // public Action<object> OnCompilerError;
 
         private bool isUploading = false;
+        private char currentKey = (char)0; // What is the right way ?
 
         public Emulator()
         {
@@ -67,6 +67,13 @@ namespace NTOSEmulator
                 await Task.Delay((int)d);
                 vm?.ResetStopwatch();
                 return null;
+            });
+
+            vmFunctions.AddFunction(4, "getKey", VariableType.Char, async (args) =>
+            {
+                char key = currentKey;
+                currentKey = (char)0;
+                return key;
             });
 
             screen = new ScreenBuffer(vmFunctions);
@@ -111,13 +118,12 @@ namespace NTOSEmulator
 
         private void NumpadControl_KeyPressed(object? sender, char key)
         {
-            vm.WriteByteToMemory(keyboardInput.Address, (byte)key);
+            currentKey = key;
         }
 
         public void ClearMemory()
         {
             app.Reset();
-            app.Variables.Add(keyboardInput);
         }
 
         public void ClearDebug()
