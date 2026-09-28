@@ -224,5 +224,5 @@ while (gx < 480) {
     gx = gx + 8;
 }
 
-delay 3;
+delay(4000);
 load("test");

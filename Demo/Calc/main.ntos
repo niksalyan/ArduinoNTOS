@@ -31,10 +31,10 @@ init {
 
 draw {
 
-    cls();
+    dialog("CALCULATOR");
 
     // Background
-    fillBox(0, 0, 480, 320, BLUE);
+    fillBox(0, 26, 480, 320, DARKBLUE);
 
 
     call update;
@@ -125,10 +125,10 @@ update {
     // DISPLAY
     // ====================================
 
-    fillBox(20, 15, 440, 65, GREEN);
-    drawBox(20, 15, 440, 65, WHITE);
+    fillBox(20, 35, 440, 50, DARKGREEN);
+    drawBox(20, 35, 440, 50, WHITE);
 
-    cursor(40, 35, 4);
+    cursor(40, 50,3);
     print(current, WHITE);
 }
 

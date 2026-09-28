@@ -8,18 +8,24 @@ namespace NTOSCompiler.Compiler
     public class VMFunctions
     {
         private Dictionary<string, int> _indexes = new Dictionary<string, int>();
-        private Dictionary<int, Func<object[], object>> _functions = new Dictionary<int, Func<object[], object>>();
+        private readonly Dictionary<int, Func<object[], Task<object>>> _functions = new();
 
-
-        public void AddFunction(int index, string name, Func<object[], object> func)
+        public void AddFunction(int index, string name, Func<object[], Task<object>> func)
         {
             _indexes[name] = index;
             _functions[index] = func;
         }
 
-        public object Invoke(int index, object[] args)
+        public async Task<object> InvokeAsync(int index, object[] args)
         {
-            return _functions[index](args);
+            try
+            {
+                return await _functions[index](args);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public int GetIndex(string name)

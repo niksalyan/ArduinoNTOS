@@ -10,8 +10,8 @@
 // ============================================================
 // NTOS VM configuration
 // ============================================================
-#define NTOS_BYTECODE_SIZE 2500
-#define NTOS_MEMORY_SIZE 1500
+#define NTOS_BYTECODE_SIZE 2560
+#define NTOS_MEMORY_SIZE 1536
 #define NTOS_STACK_SIZE 64
 #define NTOS_CALL_STACK_SIZE 32
 #define NTOS_DEBUG 0
@@ -57,6 +57,7 @@ private:
   inline static uint8_t _callSp = 0;
 
   inline static bool _running = false;
+  inline static uint32_t _delay = 0;
   inline static char* appName = "";
 
 
@@ -138,6 +139,7 @@ public:
     _sp = 0;
     _callSp = 0;
     _running = false;
+    _delay = 0;
   }
 
   static void Start() {
@@ -145,6 +147,7 @@ public:
     _sp = 0;
     _callSp = 0;
     _running = true;
+    _delay = 0;
 #if NTOS_DEBUG
     DumpBytecode();
 #endif
@@ -152,6 +155,7 @@ public:
 
   static void Stop() {
     _running = false;
+    _delay = 0;
   }
 
 
@@ -181,8 +185,14 @@ public:
 
   static void Update() {
 
-    if (!_running)
+    if (!_running) {
       return;
+    }
+
+    if (_delay > 0) {
+      delay(1);
+      _delay--;
+    }
 
     if (_ip >= _bytecodeSize) {
       _running = false;
@@ -654,7 +664,7 @@ public:
         }
 
 
-      case 0x83:
+      case 0x83: // Call Function
         {
           uint16_t startIP = _ip;
 
@@ -683,24 +693,6 @@ public:
 
           break;
         }
-
-
-        // ------------------------------------------------
-        // Delay
-        // ------------------------------------------------
-
-      case 0x85:  // Delay
-        {
-          float seconds =
-            ReadFloat();
-
-          delay(
-            static_cast<unsigned long>(
-              seconds * 1000.0f));
-
-          break;
-        }
-
         // ------------------------------------------------
         // JumpIfInitialized
         // ------------------------------------------------
@@ -1196,6 +1188,13 @@ private:
           Navigation::MainView();
           break;
         }  
+
+      case 3:  // delay
+        {
+          _delay = (uint32_t)Pop().value;
+          break;
+        }    
+
       case 9:  // cls
         {
           tft.setTextSize(2);
@@ -1224,13 +1223,11 @@ private:
           uint32_t w = Pop().value;
           uint32_t y = Pop().value;
           uint32_t x = Pop().value;
-          tft.fastFillRect(
-            x,
-            y,
-            w,
-            h,
-            Color332To565(color));
-
+          if (color == 0) {
+            tft.fastFillRectBlack(x, y, w, h);
+          } else {
+            tft.fastFillRect(x, y, w, h, Color332To565(color));
+          }
           break;
         }
 

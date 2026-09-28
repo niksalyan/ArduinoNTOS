@@ -75,8 +75,6 @@ public enum TokenKind
 
     Call,
 
-    Delay,
-
 
 
 }

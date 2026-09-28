@@ -13,7 +13,6 @@ public:
   static void open(char* name) {
 
     UI::setHandler(handler);
-    Terminal::updateHandler = update;
 
     tft.fillScreenBlack();
     tft.setTextSize(2);
@@ -46,14 +45,13 @@ public:
 
 private:
 
-  static void update() {
-    if (Terminal::isPressed('*')  && Terminal::isPressed('#')) {
-      NTOSVM::Stop();
-      Navigation::MainView();
-    }
-  }
 
   static void handler(char key) {
+    if (key == 27) { // Exit
+      NTOSVM::Stop();
+      Navigation::MainView();
+      return;
+    }
     if (key != 0) {
           NTOSVM::WriteByteToMemory(0, key);
     }

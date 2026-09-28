@@ -1,6 +1,7 @@
 ﻿using NTOSCompiler;
 using NTOSCompiler.Compiler;
 using NTOSDev.Controls;
+using ScintillaNet.Abstractions.Classes.Lexers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

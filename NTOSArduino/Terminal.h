@@ -546,7 +546,10 @@ public:
   }
 
   static void update() {
-    char sk = getKey();
+    char sk = keypad.getKey();
+    if(keypad.isPressed('*') && keypad.isPressed('#')) {
+        sk = 27;
+    }
     if (sk > 0 && keyHandler) {
         keyHandler(sk);
     }

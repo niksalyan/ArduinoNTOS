@@ -59,7 +59,7 @@ public enum OpCode : byte
 
     Return,
 
-    Delay,
+    Empty1, // delay removed
     JumpIfInitialized,
 
     Checkpoint = 255
@@ -95,7 +95,7 @@ public class Variable
     public string Name { get; }
 
     [DisplayName("Type")]
-    public string DisplayType => Type.ToString();
+    public string DisplayType => Type.ToString() + (IsArray ? "[" + Length + "]" : "");
 
     [Browsable(false)]
     public VariableType Type { get; }
@@ -366,12 +366,6 @@ public class BytecodeProgram
 
                         break;
                     }
-                case OpCode.Delay:
-                    WriteFloat(
-                        stream,
-                        Convert.ToSingle(instruction.Operand));
-                    break;
-
                 case OpCode.Add:
                 case OpCode.Subtract:
                 case OpCode.Multiply:

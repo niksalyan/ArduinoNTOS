@@ -4,4 +4,4 @@ cursor(240, 50, 2);
 printRight("OKaaaaaaaaa", WHITE);
 
 
-delay 4;
+delay(4000);

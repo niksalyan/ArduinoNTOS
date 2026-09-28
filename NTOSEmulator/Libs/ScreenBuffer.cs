@@ -60,7 +60,7 @@ namespace NTOSEmulator.Libs
         {
             
 
-            vmFunctions.AddFunction(9, "cls", args =>
+            vmFunctions.AddFunction(9, "cls", async args =>
             {
                 textRenderer.SetCursor(0, 0);
                 textRenderer.SetTextSize(2);
@@ -75,7 +75,7 @@ namespace NTOSEmulator.Libs
             // GRAPHICS: 10 - 49
             // ============================================================
 
-            vmFunctions.AddFunction(10, "drawBox", args =>
+            vmFunctions.AddFunction(10, "drawBox", async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -96,7 +96,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(11, "fillBox", args =>
+            vmFunctions.AddFunction(11, "fillBox", async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -117,7 +117,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(12, "drawPixel", args =>
+            vmFunctions.AddFunction(12, "drawPixel", async args =>
             {
                 if (args.Length < 3)
                     return null;
@@ -135,7 +135,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(13, "drawLine", args =>
+            vmFunctions.AddFunction(13, "drawLine", async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -155,7 +155,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(15, "fillCircle", args =>
+            vmFunctions.AddFunction(15, "fillCircle", async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -179,7 +179,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(14, "drawCircle", args =>
+            vmFunctions.AddFunction(14, "drawCircle", async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -204,7 +204,7 @@ namespace NTOSEmulator.Libs
             });
 
 
-            vmFunctions.AddFunction(20, "cursor", args =>
+            vmFunctions.AddFunction(20, "cursor", async args =>
             {
                 if (args.Length < 3) return null;
                 textRenderer.SetCursor((int)args[0], (int)args[1]);
@@ -227,7 +227,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(22, "printCentered", args =>
+            vmFunctions.AddFunction(22, "printCentered", async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -243,7 +243,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(23, "printRight", args =>
+            vmFunctions.AddFunction(23, "printRight", async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -261,7 +261,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(30, "dialog", args =>
+            vmFunctions.AddFunction(30, "dialog", async args =>
             {
                 
 

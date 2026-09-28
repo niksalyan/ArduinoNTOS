@@ -59,7 +59,6 @@ public sealed class Lexer
                     "case" => TokenKind.Case,
                     "init" => TokenKind.Init,
                     "call" => TokenKind.Call,
-                    "delay" => TokenKind.Delay,
 
 
                     _ => TokenKind.Identifier

@@ -58,7 +58,10 @@ public sealed class VirtualMachine
         }
     }
 
-
+    public void ResetStopwatch()
+    {
+        _stopwatch.Restart();
+    }
 
     private async Task ExecuteAsync(byte[] bytecode, CancellationToken cancellationToken)
     {
@@ -463,7 +466,7 @@ public sealed class VirtualMachine
                         }
 
                         object? result =
-                            _vmFunctions?.Invoke(
+                            await _vmFunctions.InvokeAsync(
                                 index,
                                 args);
 
@@ -471,19 +474,6 @@ public sealed class VirtualMachine
 
                         break;
                     }
-                case OpCode.Delay:
-                    {
-                        float seconds = ReadFloat(
-                            bytecode,
-                            ref instructionPointer);
-
-                        await Task.Delay(
-                            TimeSpan.FromSeconds(seconds),
-                            _executionCts.Token);
-                        _stopwatch.Restart();
-                        break;
-                    }
-
                 case OpCode.Pop:
                     _stack.Pop();
                     break;

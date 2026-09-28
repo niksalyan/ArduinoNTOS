@@ -32,7 +32,7 @@ namespace NTOSEmulator
         {
             InitializeComponent();
 
-            vmFunctions.AddFunction(0, "debug", (args) =>
+            vmFunctions.AddFunction(0, "debug", async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -41,7 +41,7 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(1, "load", (args) =>
+            vmFunctions.AddFunction(1, "load", async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -52,11 +52,21 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(2, "exit", (args) =>
+            
+
+            vmFunctions.AddFunction(2, "exit", async (args) =>
             {
                 vm?.Stop();
-                DebugOutput("Execution finished.");
+                DebugOutput("Execution finished.");               
                 return null;
+            });
+
+            vmFunctions.AddFunction(3, "delay", async (args) =>
+            {
+                uint d = (uint)args[0];
+                await Task.Delay((int)d);
+                vm?.ResetStopwatch();
+                return 0;
             });
 
             screen = new ScreenBuffer(vmFunctions);
@@ -76,12 +86,16 @@ namespace NTOSEmulator
                 System.Reflection.BindingFlags.NonPublic)
             ?.SetValue(screenContainer, true);
 
-            app.Variables.Add(keyboardInput);
+            
 
             numpadControl.KeyPressed += NumpadControl_KeyPressed;
             serial.DataReceived += Serial_DataReceived;
 
+            ClearMemory();
+
         }
+
+
 
 
         private void Emulator_Load(object sender, EventArgs e)
@@ -98,6 +112,12 @@ namespace NTOSEmulator
         private void NumpadControl_KeyPressed(object? sender, char key)
         {
             vm.WriteByteToMemory(keyboardInput.Address, (byte)key);
+        }
+
+        public void ClearMemory()
+        {
+            app.Reset();
+            app.Variables.Add(keyboardInput);
         }
 
         public void ClearDebug()
@@ -142,6 +162,7 @@ namespace NTOSEmulator
         public void BuildAll()
         {
             DebugStart("STARTS BUILDING");
+            ClearMemory();
             try
             {
                 Directory.CreateDirectory(appPath + "build");
