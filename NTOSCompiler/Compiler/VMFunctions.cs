@@ -18,14 +18,7 @@ namespace NTOSCompiler.Compiler
 
         public async Task<object> InvokeAsync(int index, object[] args)
         {
-            try
-            {
-                return await _functions[index](args);
-            }
-            catch
-            {
-                return null;
-            }
+            return await _functions[index](args);
         }
 
         public int GetIndex(string name)
