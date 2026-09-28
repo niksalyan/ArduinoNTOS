@@ -667,16 +667,20 @@ public:
         }
 
 
-      case 0x83: // Call Function
+      case 0x83:  // Call Function
         {
-          uint16_t startIP = _ip;
-
           uint16_t functionIndex = ReadUInt16();
           uint8_t argumentCount = ReadByte();
 
-          ExecuteSystemFunction(
-            functionIndex,
-            argumentCount);
+          bool hasReturnValue =
+            ExecuteSystemFunction(
+              functionIndex,
+              argumentCount);
+
+          if (!hasReturnValue) {
+            Push({ StackValueType::Int,
+                 0 });
+          }
 
           break;
         }
@@ -1064,73 +1068,73 @@ private:
     uint16_t h;
     switch (textValue.type) {
 
-            case StackValueType::String:
-              {
-                uint16_t stringOffset =
-                  (uint16_t)textValue.value;
+      case StackValueType::String:
+        {
+          uint16_t stringOffset =
+            (uint16_t)textValue.value;
 
-                const char* text =
-                  reinterpret_cast<const char*>(
-                    &_bytecode[stringOffset]);
+          const char* text =
+            reinterpret_cast<const char*>(
+              &_bytecode[stringOffset]);
 
-                    if (position > 0) {
-                        tft.getTextBounds(text, 0, 0, &bx, &by, &w, &h);
-                        tft.setCursor(tft.getCursorX() - w / 2 * position, tft.getCursorY());
-                    }
-
-                tft.print(text);
-                break;
-              }
-
-            case StackValueType::Int:
-              {
-                int32_t value =
-                  (int32_t)textValue.value;
-
-                tft.print(value);
-                break;
-              }
-
-            case StackValueType::Float:
-              {
-                float value;
-
-                uint32_t bits =
-                  textValue.value;
-
-                memcpy(
-                  &value,
-                  &bits,
-                  sizeof(value));
-
-                tft.print(value);
-                break;
-              }
-
-            case StackValueType::Byte:
-              {
-                uint8_t value =
-                  (uint8_t)textValue.value;
-
-                tft.print(value);
-                break;
-              }
-
-            case StackValueType::Bool:
-              {
-                bool value =
-                  textValue.value != 0;
-
-                tft.print(value ? "true" : "false");
-                break;
-              }
-
-            default:
-              break;
+          if (position > 0) {
+            tft.getTextBounds(text, 0, 0, &bx, &by, &w, &h);
+            tft.setCursor(tft.getCursorX() - w / 2 * position, tft.getCursorY());
           }
+
+          tft.print(text);
+          break;
+        }
+
+      case StackValueType::Int:
+        {
+          int32_t value =
+            (int32_t)textValue.value;
+
+          tft.print(value);
+          break;
+        }
+
+      case StackValueType::Float:
+        {
+          float value;
+
+          uint32_t bits =
+            textValue.value;
+
+          memcpy(
+            &value,
+            &bits,
+            sizeof(value));
+
+          tft.print(value);
+          break;
+        }
+
+      case StackValueType::Byte:
+        {
+          uint8_t value =
+            (uint8_t)textValue.value;
+
+          tft.print(value);
+          break;
+        }
+
+      case StackValueType::Bool:
+        {
+          bool value =
+            textValue.value != 0;
+
+          tft.print(value ? "true" : "false");
+          break;
+        }
+
+      default:
+        break;
+    }
   }
 
-  static void ExecuteSystemFunction(
+  static bool ExecuteSystemFunction(
     uint16_t functionIndex,
     uint8_t argumentCount) {
     switch (functionIndex) {
@@ -1182,20 +1186,23 @@ private:
           Stop();
           Navigation::MainView();
           break;
-        }  
+        }
 
       case 3:  // delay
         {
           _delay = (int32_t)Pop().value;
           break;
-        }   
-      case 4: // getKey()
-      {
-        char key = currentKey;
-        currentKey = 0;
-        // PUsh key here ? Also how to handle the push for the rest of the functions ?
-        break;
-      } 
+        }
+      case 4:  // getKey()
+        {
+          uint8_t key = currentKey;
+          currentKey = 0;
+
+          Push({ StackValueType::Byte,
+                 key });
+
+          return true;
+        }
 
       case 9:  // cls
         {
@@ -1280,12 +1287,12 @@ private:
 
           break;
         }
-      case 20: // cursor
+      case 20:  // cursor
         {
-          int16_t  sizeValue = (int16_t)Pop().value;
-          int16_t  yValue = (int16_t)Pop().value;
-          int16_t  xValue = (int16_t)Pop().value;
-          
+          int16_t sizeValue = (int16_t)Pop().value;
+          int16_t yValue = (int16_t)Pop().value;
+          int16_t xValue = (int16_t)Pop().value;
+
           tft.setTextSize(sizeValue);
           tft.setCursor(xValue, yValue);
           break;
@@ -1300,7 +1307,7 @@ private:
           break;
         }
 
-        case 22:  // printCentered
+      case 22:  // printCentered
         {
           uint8_t color = (uint8_t)Pop().value;
           StackValue textValue = Pop();
@@ -1309,7 +1316,7 @@ private:
           print(textValue, 1);
           break;
         }
-        case 23:  // printRight
+      case 23:  // printRight
         {
           uint8_t color = (uint8_t)Pop().value;
           StackValue textValue = Pop();
@@ -1332,7 +1339,7 @@ private:
           tft.setCursor(0, 26);
 
           break;
-        }  
+        }
 
       default:
         Serial.print("[NTOS] Unknown system function: ");
@@ -1343,5 +1350,6 @@ private:
         }
         break;
     }
+    return false;
   }
 };
