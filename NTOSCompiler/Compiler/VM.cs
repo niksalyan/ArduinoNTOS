@@ -664,9 +664,4 @@ public sealed class VirtualMachine
 
         return value;
     }
-
-    public void WriteByteToMemory(int address, byte value)
-    {
-        _memory[address] = value;
-    }
 }

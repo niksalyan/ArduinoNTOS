@@ -53,7 +53,7 @@ private:
       return;
     }
     if (key != 0) {
-          NTOSVM::WriteByteToMemory(0, key);
+          NTOSVM::currentKey = key;
     }
   }
 };

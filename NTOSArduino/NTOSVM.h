@@ -65,6 +65,8 @@ private:
 public:
 
   inline static bool initialized = false;
+  inline static char currentKey = 0;
+
   // ========================================================
   // Program
   // ========================================================
@@ -734,14 +736,6 @@ public:
     }
   }
 
-  static void WriteByteToMemory(uint16_t address, uint8_t value) {
-    if (address >= NTOS_MEMORY_SIZE)
-      return;
-
-    _memory[address] = value;
-  }
-
-
 
 private:
 
@@ -1194,7 +1188,14 @@ private:
         {
           _delay = (int32_t)Pop().value;
           break;
-        }    
+        }   
+      case 4: // getKey()
+      {
+        char key = currentKey;
+        currentKey = 0;
+        // PUsh key here ? Also how to handle the push for the rest of the functions ?
+        break;
+      } 
 
       case 9:  // cls
         {
