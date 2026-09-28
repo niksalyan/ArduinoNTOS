@@ -119,12 +119,12 @@ public sealed class Parser
         {
             string name = Peek(0).Text;
 
-            Variable variable =
-                program.GetVariable(name);
-
             // x[index] = expression
             if (Peek(1).Kind == TokenKind.LBracket)
             {
+                Variable variable =
+                    program.GetVariable(name);
+
                 Advance(); // identifier
 
                 CompileArrayAddress(
@@ -155,6 +155,9 @@ public sealed class Parser
             // x = expression
             if (Peek(1).Kind == TokenKind.Assign)
             {
+                Variable variable =
+                    program.GetVariable(name);
+
                 Advance(); // identifier
                 Advance(); // '='
 
@@ -176,7 +179,6 @@ public sealed class Parser
                 return true;
             }
         }
-
 
         // expression
         CompileExpression(program);
@@ -1283,11 +1285,6 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
-        if (Match(TokenKind.Read))
-        {
-            return CompileRead(program);
-        }
-
         if (Match(TokenKind.Identifier))
         {
             string name = Previous().Text;
@@ -1353,60 +1350,6 @@ public sealed class Parser
 
         throw Error(
             $"Unexpected token '{Current().Text}'.");
-    }
-
-    private VariableType CompileRead(BytecodeProgram program)
-    {
-        Token variableToken = Consume(
-            TokenKind.Identifier,
-            "Expected variable name after 'read'.");
-
-        string name = variableToken.Text;
-
-        Variable variable = program.GetVariable(name);
-
-        // Load the value
-        program.Instructions.Add(
-            new Instruction(
-                GetLoadOpcode(variable.Type),
-                variable.Address));
-
-        // Clear the source variable
-        switch (variable.Type)
-        {
-            case VariableType.Int:
-                program.Instructions.Add(
-                    new Instruction(
-                        OpCode.PushInt,
-                        0));
-                break;
-
-            case VariableType.Float:
-                program.Instructions.Add(
-                    new Instruction(
-                        OpCode.PushFloat,
-                        0f));
-                break;
-
-            case VariableType.Byte:
-            case VariableType.Bool:
-                program.Instructions.Add(
-                    new Instruction(
-                        OpCode.PushByte,
-                        0));
-                break;
-
-            default:
-                throw new InvalidOperationException(
-                    $"Cannot read variable of type {variable.Type}.");
-        }
-
-        program.Instructions.Add(
-            new Instruction(
-                GetStoreOpcode(variable.Type),
-                variable.Address));
-
-        return variable.Type;
     }
 
     private VariableType CompileFunctionCall(

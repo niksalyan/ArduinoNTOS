@@ -202,7 +202,7 @@ loop {
     // continues moving.
     // ====================================
 
-    char key = read keyInput;
+    char key = getKey();
 
 
     // ====================================

@@ -31,8 +31,6 @@ public enum TokenKind
     Slash,
     Percent,
 
-    Read,
-
     If,
     Else,
 
