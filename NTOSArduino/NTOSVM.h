@@ -192,6 +192,7 @@ public:
     if (_delay > 0) {
       delay(1);
       _delay--;
+      return;
     }
 
     if (_ip >= _bytecodeSize) {
@@ -697,7 +698,7 @@ public:
         // JumpIfInitialized
         // ------------------------------------------------
 
-      case 0x86:  // JumpIfInitialized
+      case 0x85:  // JumpIfInitialized
         {
           uint16_t target =
             ReadUInt16();
