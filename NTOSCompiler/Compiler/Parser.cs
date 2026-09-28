@@ -1311,11 +1311,6 @@ public sealed class Parser
                         $"Variable '{variable.Name}' is not an array.");
                 }
 
-                if (variable.Type != VariableType.Int)
-                {
-                    throw Error(
-                        "Indirect array access currently supports int arrays only.");
-                }
 
                 CompileArrayAddress(
                     program,
@@ -1323,7 +1318,7 @@ public sealed class Parser
 
                 program.Instructions.Add(
                     new Instruction(
-                        OpCode.LoadIndirectInt));
+                        GetIndirectLoadOpcode(variable.Type)));
 
                 return variable.Type;
             }
@@ -1430,10 +1425,17 @@ public sealed class Parser
     {
         return type switch
         {
-            VariableType.Int => OpCode.LoadIndirectInt,
-            VariableType.Float => OpCode.LoadIndirectFloat,
-            VariableType.Str => OpCode.LoadIndirectStr,
-            VariableType.Byte => OpCode.LoadIndirectByte,
+            VariableType.Int =>
+                OpCode.LoadIndirectInt,
+
+            VariableType.Float =>
+                OpCode.LoadIndirectFloat,
+
+            VariableType.Str =>
+                OpCode.LoadIndirectStr,
+
+            VariableType.Byte =>
+                OpCode.LoadIndirectByte,
 
             _ => throw Error(
                 $"Indirect array access is not supported for {type}.")
@@ -1444,10 +1446,17 @@ public sealed class Parser
     {
         return type switch
         {
-            VariableType.Int => OpCode.StoreIndirectInt,
-            VariableType.Float => OpCode.StoreIndirectFloat,
-            VariableType.Str => OpCode.StoreIndirectStr,
-            VariableType.Byte => OpCode.StoreIndirectByte,
+            VariableType.Int =>
+                OpCode.StoreIndirectInt,
+
+            VariableType.Float =>
+                OpCode.StoreIndirectFloat,
+
+            VariableType.Str =>
+                OpCode.StoreIndirectStr,
+
+            VariableType.Byte =>
+                OpCode.StoreIndirectByte,
 
             _ => throw Error(
                 $"Indirect array assignment is not supported for {type}.")

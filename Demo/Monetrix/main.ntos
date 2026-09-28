@@ -9,4 +9,8 @@ init{
 	//playerName[0] = "P1";
 }
 
-dialog(tests[0]);
+
+str[1] mehe = "12sdfsdfsdffs";
+
+
+dialog(mehe);

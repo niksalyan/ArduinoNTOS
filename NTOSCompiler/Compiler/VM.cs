@@ -226,12 +226,32 @@ public sealed class VirtualMachine
                     }
 
                 case OpCode.LoadStr:
-                    throw new NotSupportedException(
-                        "String variables are not implemented yet.");
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        _stack.Push(
+                            GetString(address));
+
+                        break;
+                    }
 
                 case OpCode.StoreStr:
-                    throw new NotSupportedException(
-                        "String variables are not implemented yet.");
+                    {
+                        ushort address =
+                            ReadAddress(
+                                bytecode,
+                                ref instructionPointer);
+
+                        string value =
+                            Convert.ToString(_stack.Pop()) ?? string.Empty;
+
+                        SetString(address, value);
+
+                        break;
+                    }
 
                 case OpCode.Add:
                     BinaryNumeric(
@@ -378,6 +398,31 @@ public sealed class VirtualMachine
                             Convert.ToUInt16(_stack.Pop());
 
                         SetInt(address, value);
+
+                        break;
+                    }
+                case OpCode.LoadIndirectFloat:
+                    {
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        _stack.Push(
+                            GetFloat(address));
+
+                        break;
+                    }
+
+                case OpCode.StoreIndirectFloat:
+                    {
+                        float value =
+                            Convert.ToSingle(_stack.Pop());
+
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        SetFloat(
+                            address,
+                            value);
 
                         break;
                     }
@@ -649,6 +694,46 @@ public sealed class VirtualMachine
         pc += 4;
 
         return value;
+    }
+
+    private string GetString(
+    ushort address)
+    {
+        EnsureMemory(address, 1);
+
+        int end = address;
+
+        while (end < _memory.Length &&
+               _memory[end] != 0)
+        {
+            end++;
+        }
+
+        return System.Text.Encoding.ASCII.GetString(
+            _memory,
+            address,
+            end - address);
+    }
+
+    private void SetString(
+    ushort address,
+    string value)
+    {
+        byte[] bytes =
+            System.Text.Encoding.ASCII.GetBytes(value);
+
+        EnsureMemory(
+            address,
+            bytes.Length + 1);
+
+        Buffer.BlockCopy(
+            bytes,
+            0,
+            _memory,
+            address,
+            bytes.Length);
+
+        _memory[address + bytes.Length] = 0;
     }
 
     private static ushort ReadAddress(
