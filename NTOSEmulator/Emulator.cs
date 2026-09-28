@@ -32,7 +32,7 @@ namespace NTOSEmulator
         {
             InitializeComponent();
 
-            vmFunctions.AddFunction(0, "debug", async (args) =>
+            vmFunctions.AddFunction(0, "debug", VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -41,7 +41,7 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(1, "load", async (args) =>
+            vmFunctions.AddFunction(1, "load", VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -54,19 +54,19 @@ namespace NTOSEmulator
 
             
 
-            vmFunctions.AddFunction(2, "exit", async (args) =>
+            vmFunctions.AddFunction(2, "exit", VariableType.None, async (args) =>
             {
                 vm?.Stop();
                 DebugOutput("Execution finished.");               
                 return null;
             });
 
-            vmFunctions.AddFunction(3, "delay", async (args) =>
+            vmFunctions.AddFunction(3, "delay", VariableType.None, async (args) =>
             {
                 int d = (int)args[0];
                 await Task.Delay((int)d);
                 vm?.ResetStopwatch();
-                return 0;
+                return null;
             });
 
             screen = new ScreenBuffer(vmFunctions);

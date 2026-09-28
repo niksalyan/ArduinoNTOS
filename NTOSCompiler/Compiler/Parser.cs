@@ -113,14 +113,6 @@ public sealed class Parser
             return false;
         }
 
-        // function call
-        if (Check(TokenKind.Identifier) &&
-            Peek(1).Kind == TokenKind.LParen)
-        {
-            CompileFunctionCall(program);
-            return true;
-        }
-
         // x = expression
         // x[index] = expression
         if (Check(TokenKind.Identifier))
@@ -1457,7 +1449,7 @@ public sealed class Parser
                     (byte)argumentCount)));
 
         // VM function return types are not represented yet.
-        return VariableType.None;
+        return _vmFunctions.GetReturnType(functionName);
     }
 
     private static bool IsNumeric(

@@ -1,4 +1,5 @@
-﻿using NTOSCompiler.Compiler;
+﻿using NTOSCompiler;
+using NTOSCompiler.Compiler;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,7 +61,7 @@ namespace NTOSEmulator.Libs
         {
             
 
-            vmFunctions.AddFunction(9, "cls", async args =>
+            vmFunctions.AddFunction(9, "cls", VariableType.None, async args =>
             {
                 textRenderer.SetCursor(0, 0);
                 textRenderer.SetTextSize(2);
@@ -75,7 +76,7 @@ namespace NTOSEmulator.Libs
             // GRAPHICS: 10 - 49
             // ============================================================
 
-            vmFunctions.AddFunction(10, "drawBox", async args =>
+            vmFunctions.AddFunction(10, "drawBox", VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -96,7 +97,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(11, "fillBox", async args =>
+            vmFunctions.AddFunction(11, "fillBox", VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -117,7 +118,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(12, "drawPixel", async args =>
+            vmFunctions.AddFunction(12, "drawPixel", VariableType.None, async args =>
             {
                 if (args.Length < 3)
                     return null;
@@ -135,7 +136,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(13, "drawLine", async args =>
+            vmFunctions.AddFunction(13, "drawLine", VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -155,7 +156,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(15, "fillCircle", async args =>
+            vmFunctions.AddFunction(15, "fillCircle", VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -179,7 +180,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(14, "drawCircle", async args =>
+            vmFunctions.AddFunction(14, "drawCircle", VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -204,7 +205,7 @@ namespace NTOSEmulator.Libs
             });
 
 
-            vmFunctions.AddFunction(20, "cursor", async args =>
+            vmFunctions.AddFunction(20, "cursor", VariableType.None, async args =>
             {
                 if (args.Length < 3) return null;
                 textRenderer.SetCursor((int)args[0], (int)args[1]);
@@ -212,7 +213,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(21, "print", async args =>
+            vmFunctions.AddFunction(21, "print", VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -227,7 +228,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(22, "printCentered", async args =>
+            vmFunctions.AddFunction(22, "printCentered", VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -243,7 +244,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(23, "printRight", async args =>
+            vmFunctions.AddFunction(23, "printRight", VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -261,7 +262,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(30, "dialog", async args =>
+            vmFunctions.AddFunction(30, "dialog", VariableType.None, async args =>
             {
                 
 

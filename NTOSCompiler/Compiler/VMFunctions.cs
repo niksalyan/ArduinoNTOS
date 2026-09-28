@@ -8,11 +8,13 @@ namespace NTOSCompiler.Compiler
     public class VMFunctions
     {
         private Dictionary<string, int> _indexes = new Dictionary<string, int>();
+        private Dictionary<string, VariableType> _returnTypes = new Dictionary<string, VariableType>();
         private readonly Dictionary<int, Func<object[], Task<object>>> _functions = new();
 
-        public void AddFunction(int index, string name, Func<object[], Task<object>> func)
+        public void AddFunction(int index, string name, VariableType returnType, Func<object[], Task<object>> func)
         {
             _indexes[name] = index;
+            _returnTypes[name] = returnType;
             _functions[index] = func;
         }
 
@@ -24,6 +26,11 @@ namespace NTOSCompiler.Compiler
         public int GetIndex(string name)
         {
             return _indexes[name];
+        }
+
+        public VariableType GetReturnType(string name)
+        {
+            return _returnTypes[name];
         }
 
     }
