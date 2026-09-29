@@ -54,6 +54,7 @@ private:
     }
     if (key != 0) {
           NTOSVM::currentKey = key;
+          NTOSVM::currentNumber = key - '0';
     }
   }
 };

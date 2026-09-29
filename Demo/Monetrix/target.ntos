@@ -1,0 +1,42 @@
+dialog("TRANSFER TO");
+
+cursor(20, 50, 3);
+print("FROM: ", WHITE);
+print(playerName[sourceAccount], WHITE);
+
+cursor(20, 90, 3);
+print("TO:   ", WHITE);
+
+
+for(int y = 0; y <= 1; y = y + 1) {
+	for(int x = 0; x <= 2; x = x + 1) {
+		int i = x + y * 3 + 1;
+		if (i <= playersCount) {
+			cursor(50 + x * 120, 150 + y * 30, 2);
+			print(i, GRAY);
+			print(":", GRAY);
+			print(playerName[i], WHITE); 
+
+		}
+		
+	}
+}
+
+cursor(20, 290, 2);
+print("* = BACK", CYAN);
+
+loop{
+	int selected = getNumericKey();
+	char key = getKey();
+
+	if (key == '*') {
+		load("main");
+	}
+
+	if (selected >= 0 && selected <= playersCount) {
+		targetAccount = selected;
+		load("amount");
+	}
+
+    delay(1);
+}

@@ -1,58 +1,85 @@
+
+
 init{
-    int playerBalance[6];
-	str[6] playerName[6];
+	int playersCount = 4;
+    int playerBalance[7];
+	str[6] playerName[7];
 
-	playerBalance[0] = 2500;
-    playerBalance[1] = -500;
-    playerBalance[2] = -200;
-    playerBalance[3] = -0;
-    playerBalance[4] = 200;
-    playerBalance[5] = 15;
-	
-	playerName[0] = "TIGRAN";
-	playerName[1] = "P2";
-	playerName[2] = "AMELIA";
-	playerName[3] = "P4";
-	playerName[4] = "P5";
-	playerName[5] = "P6";
-
-}
-
-
-
-dialog("MONETRIX BANK"); 
-
-
-
-for(int y = 0; y <= 1; y = y + 1) {
-	for(int x = 0; x <= 2; x = x + 1) {
-		int i = x + y * 3;
-		cursor(12 + x * 155, 40 + y * 80, 3);
-		print(i, GRAY);
-		print(":", GRAY);
-		print(playerName[i], WHITE); 
-
-		byte color = YELLOW;
-		if (playerBalance[i] < 0) {
-			color = RED;
-		}
-		if (playerBalance[i] > 200) {
-			color = GREEN;
-		}
-
-		cursor(12 + x * 155, 70 + y * 80, 4);
-		print("$", color);
-		print(playerBalance[i], color);
+	for(int i = 1; i <= 6; i = i + 1) {
+		playerBalance[i] = loadInt(1500 + i * 5, 2500);
 	}
+	
+	playerName[0] = "[BANK]";
+	playerName[1] = "TIGRAN";
+	playerName[2] = "P2";
+	playerName[3] = "AMELIA";
+	playerName[4] = "P4";
+	playerName[5] = "P5";
+	playerName[6] = "P6";
+
+
 }
 
-drawRoundBox(10,190,460,120,20, GRAY);
 
-cursor(240, 200, 2);
-printCentered("SELECT PLAYER 1-6", CYAN);
+
+int sourceAccount = -1;
+int targetAccount = -1;
+
+draw{
+	dialog("MONETRIX BANK"); 
+
+	for(int y = 0; y <= 1; y = y + 1) {
+		for(int x = 0; x <= 2; x = x + 1) {
+			int i = x + y * 3 + 1;
+			if (i <= playersCount) {
+				cursor(12 + x * 155, 40 + y * 80, 3);
+				print(i, GRAY);
+				print(":", GRAY);
+				print(playerName[i], WHITE); 
+
+				byte color = YELLOW;
+				if (playerBalance[i] < 0) {
+					color = RED;
+				}
+				if (playerBalance[i] > 200) {
+					color = GREEN;
+				}
+
+				cursor(12 + x * 155, 70 + y * 80, 4);
+				print("$", color);
+				print(playerBalance[i], color);
+			}
+			
+		}
+	}
+
+	// drawRoundBox(10,190,460,120,20, GRAY);
+
+	cursor(20, 290, 2);
+	print("SELECT PLAYER 1-", CYAN);
+	print(playersCount, CYAN);
+
+	cursor(460, 290, 2);
+	printRight("0 = BANK", CYAN);
+}
+
+
+call draw;
 
 loop{
+    char key = getKey();
+	int selected = getNumericKey();
 
+	if (key == 'C') {
+		int pc = confirmNumber("PLAYESR COUNT", "2 - 6", 2, 6);
+		if (pc >= 0) {playersCount = pc;}
+		call draw;
+	}
 
-    delay(100);
+	if (selected >= 0 && selected <= playersCount) {
+		sourceAccount = selected;
+		load("target");
+	}
+
+    delay(1);
 }

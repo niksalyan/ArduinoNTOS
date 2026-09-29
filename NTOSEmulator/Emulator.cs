@@ -23,10 +23,11 @@ namespace NTOSEmulator
         private SerialPort serial = new SerialPort();
         private readonly StringBuilder serialReceiveBuffer = new StringBuilder();
 
-        // public Action<object> OnCompilerError;
-
         private bool isUploading = false;
-        private byte currentKey = 0; // What is the right way ?
+        private byte currentKey = 0;
+        private int currentNumber = -1;
+
+        private Dictionary<int, object> EEPROM = new Dictionary<int, object>();
 
         public Emulator()
         {
@@ -76,6 +77,71 @@ namespace NTOSEmulator
                 return key;
             });
 
+            vmFunctions.AddFunction(5, "getNumericKey", VariableType.Int, async (args) =>
+            {
+                int number = currentNumber;
+                currentNumber = -1;
+                return number >= 0 && number <= 9 ? number : -1;
+            });
+
+            vmFunctions.AddFunction(31, "alert", VariableType.Bool, async args =>
+            {
+                Dialogs.Alert(args[0].ToString() ?? "", args[1].ToString() ?? "");
+                vm?.ResetStopwatch();
+                return null;
+            });
+
+            vmFunctions.AddFunction(32, "confirm", VariableType.Bool, async args =>
+            {
+                var r =  Dialogs.Confirm(args[0].ToString() ?? "");
+                vm?.ResetStopwatch();
+                return r;
+            });
+
+            vmFunctions.AddFunction(33, "confirmNumber", VariableType.Int, async args =>
+            {
+                var r = Dialogs.ConfirmNumber(args[0].ToString() ?? "", args[1].ToString() ?? "", (int)args[2], (int)args[3]);
+                vm?.ResetStopwatch();
+                return r;
+            });
+
+            vmFunctions.AddFunction(40, "loadInt", VariableType.Int, async args =>
+            {
+                int addr = (int)args[0];
+                return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
+            });
+
+            vmFunctions.AddFunction(41, "saveInt", VariableType.None, async args =>
+            {
+                EEPROM[(int)args[0]] = (int)args[1];
+                return null;
+            });
+
+            vmFunctions.AddFunction(42, "loadFloat", VariableType.Float, async args =>
+            {
+                int addr = (int)args[0];
+                return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
+            });
+
+            vmFunctions.AddFunction(43, "saveFloat", VariableType.None, async args =>
+            {
+                EEPROM[(int)args[0]] = (int)args[1];
+                return null;
+            });
+
+            vmFunctions.AddFunction(44, "loadStr", VariableType.Str, async args =>
+            {
+                int addr = (int)args[0];
+                return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
+            });
+
+            vmFunctions.AddFunction(45, "saveStr", VariableType.None, async args =>
+            {
+                EEPROM[(int)args[0]] = (int)args[1];
+                return null;
+            });
+
+
             screen = new ScreenBuffer(vmFunctions);
 
             app = new BytecodeApp(vmFunctions, screen.colors);
@@ -100,6 +166,8 @@ namespace NTOSEmulator
 
             ClearMemory();
 
+            
+
         }
 
 
@@ -119,6 +187,7 @@ namespace NTOSEmulator
         private void NumpadControl_KeyPressed(object? sender, char key)
         {
             currentKey = (byte)key;
+            currentNumber = currentKey - '0';
         }
 
         public void ClearMemory()
@@ -172,7 +241,9 @@ namespace NTOSEmulator
             try
             {
                 PrepareDirectory(appPath + "build");
-                string[] files = Directory.GetFiles(appPath, "*.ntos");
+                string[] files = Directory.GetFiles(appPath, "*.ntos")
+                    .OrderBy(f => Path.GetFileName(f).Equals("main.ntos", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                    .ToArray();
                 foreach (string file in files)
                 {
                     if (File.Exists(file))
@@ -263,6 +334,8 @@ namespace NTOSEmulator
 
             try
             {
+                currentKey = 0;
+                currentNumber = -1;
                 vm.Initialized = initialized;
                 vm.Execute(app.GetBytecode(name));
             }

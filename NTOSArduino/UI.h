@@ -292,7 +292,7 @@ public:
   }
 
   static int confirmNumber(const char* line1, const char* line2, const char* line3, int from, int to) {
-    drawPopupMessage(line1, line2, line3);
+    drawPopupMessage(line1, line2, line3, true);
     while (true) {
       char key = Terminal::getKey();
       if (key) {
@@ -313,7 +313,9 @@ public:
   static void drawPopupMessage(
     const char* line1,
     const char* line2,
-    const char* line3) {
+    const char* line3,
+    bool joinLines = false
+    ) {
     tft.fastFillRectBlack(
       30,
       85,
@@ -336,7 +338,20 @@ public:
       TFT_YELLOW);
 
     tft.setTextSize(2);
-    printCentered(
+    if (joinLines) {
+      print(
+      line2,
+      100,
+      145,
+      TFT_WHITE);
+
+    printRight(
+      line3,
+      tft.width() - 100,
+      145,
+      TFT_WHITE);
+    } else {
+      printCentered(
       line2,
       tft.width() / 2,
       145,
@@ -345,8 +360,10 @@ public:
     printCentered(
       line3,
       tft.width() / 2,
-      165,
+      145,
       TFT_WHITE);
+    }
+    
   }
 
   static void setText(

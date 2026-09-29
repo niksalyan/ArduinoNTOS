@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.Diagnostics;
-using System.Text;
 
 namespace NTOSCompiler.Compiler
 {
@@ -13,6 +11,11 @@ namespace NTOSCompiler.Compiler
 
         public void AddFunction(int index, string name, VariableType returnType, Func<object[], Task<object>> func)
         {
+            if (_functions.ContainsKey(index))
+            {
+                Debug.WriteLine("Duplicate function definintion");
+                return;
+            }
             _indexes[name] = index;
             _returnTypes[name] = returnType;
             _functions[index] = func;

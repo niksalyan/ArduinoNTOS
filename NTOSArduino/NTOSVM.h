@@ -6,6 +6,7 @@
 #include "UI.h"
 #include "Navigation.h"
 #include "Storage.h"
+#include "EEPROMStorage.h"
 
 // ============================================================
 // NTOS VM configuration
@@ -67,6 +68,7 @@ public:
 
   inline static bool initialized = false;
   inline static char currentKey = 0;
+  inline static int32_t currentNumber = -1;
 
   // ========================================================
   // Program
@@ -151,6 +153,8 @@ public:
     _callSp = 0;
     _running = true;
     _delay = 0;
+    currentKey = 0;
+    currentNumber = -1;
 #if NTOS_DEBUG
     DumpBytecode();
 #endif
@@ -1299,6 +1303,18 @@ private:
           return true;
         }
 
+      case 5:  // getNumbericKey()
+        {
+          uint32_t num = currentNumber;
+          currentNumber = -1;
+
+          Push({ StackValueType::Int,
+                 num });
+
+          return true;
+        }
+
+
       case 9:  // cls
         {
           tft.setTextSize(2);
@@ -1335,7 +1351,7 @@ private:
           break;
         }
 
-        case 12:  // drawRoundBox
+      case 12:  // drawRoundBox
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t r = Pop().value;
@@ -1454,6 +1470,44 @@ private:
           UI::dialog(text);
           tft.setTextSize(2);
           tft.setCursor(0, 26);
+
+          break;
+        }
+
+        case 31:  // alert
+        {
+          const char* line2 = GetStringPointer(Pop());
+          const char* line1 = GetStringPointer(Pop());
+          UI::alert(line1, line2);
+
+          break;
+        }
+
+        case 32:  // confirm
+        {
+          const char* text = GetStringPointer(Pop());
+          
+
+          Push({ StackValueType::Bool,
+                 UI::confirm(text) });
+
+          return true;
+
+          break;
+        }
+
+        case 33:  // confirm number
+        {
+          int16_t to = (int16_t)Pop().value;
+          int16_t from = (int16_t)Pop().value;
+          const char* line2 = GetStringPointer(Pop());
+          const char* line1 = GetStringPointer(Pop());
+          
+
+          Push({ StackValueType::Int,
+                 UI::confirmNumber(line1, "* CANCEL", line2, from, to) });
+
+          return true;
 
           break;
         }
