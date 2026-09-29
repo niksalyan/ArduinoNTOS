@@ -1217,21 +1217,37 @@ public sealed class Parser
 
         if (Match(TokenKind.Minus))
         {
+            int zeroIndex =
+                program.Instructions.Count;
+
+            // Placeholder. The type is determined after
+            // compiling the operand.
             program.Instructions.Add(
-                new Instruction(OpCode.PushInt, 0));
+                new Instruction(
+                    OpCode.PushInt,
+                    0));
 
-            VariableType type = CompileFactor(program);
+            VariableType type =
+                CompileFactor(program);
 
-            if (type != VariableType.Int)
+            if (!IsNumeric(type))
             {
                 throw Error(
-                    "Unary '-' requires an integer operand.");
+                    "Operator '-' requires a numeric operand.");
+            }
+
+            if (type == VariableType.Float)
+            {
+                program.Instructions[zeroIndex] =
+                    new Instruction(
+                        OpCode.PushFloat,
+                        0.0f);
             }
 
             program.Instructions.Add(
                 new Instruction(OpCode.Subtract));
 
-            return VariableType.Int;
+            return type;
         }
 
 
