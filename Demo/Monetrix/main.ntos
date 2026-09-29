@@ -10,7 +10,8 @@ init{
 }
 
 
-str[1] mehe = "12sdfsdfsdffs";
+str[16] mehe = "12sdfsdfsdffs";
 
+int a = 15;
 
-dialog(mehe);
+dialog(mehe); 

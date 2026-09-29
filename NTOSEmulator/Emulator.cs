@@ -171,7 +171,7 @@ namespace NTOSEmulator
             ClearMemory();
             try
             {
-                Directory.CreateDirectory(appPath + "build");
+                PrepareDirectory(appPath + "build");
                 string[] files = Directory.GetFiles(appPath, "*.ntos");
                 foreach (string file in files)
                 {
@@ -441,6 +441,17 @@ namespace NTOSEmulator
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             ClearDebug();
+        }
+
+        static void PrepareDirectory(string path)
+        {
+            Directory.CreateDirectory(path);
+
+            foreach (string file in Directory.GetFiles(path))
+                File.Delete(file);
+
+            foreach (string directory in Directory.GetDirectories(path))
+                Directory.Delete(directory, recursive: true);
         }
     }
 }

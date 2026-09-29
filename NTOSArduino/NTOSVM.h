@@ -407,13 +407,10 @@ public:
 
       case 0x0B:  // LoadStr
         {
-          uint16_t address =
-            ReadUInt16();
+          uint16_t address = ReadUInt16();
 
-          // TODO:
-          // Load string from variable memory.
-
-          (void)address;
+          Push({ StackValueType::String,
+                 address });
 
           break;
         }
@@ -421,21 +418,16 @@ public:
 
       case 0x0C:  // StoreStr
         {
-          uint16_t address =
-            ReadUInt16();
+          uint16_t address = ReadUInt16();
 
-          StackValue value =
-            Pop();
+          StackValue value = Pop();
 
-          // TODO:
-          // Store string into variable memory.
-
-          (void)address;
-          (void)value;
+          SetString(
+            address,
+            static_cast<uint16_t>(value.value));
 
           break;
         }
-
 
         // ------------------------------------------------
         // Arithmetic
@@ -679,7 +671,7 @@ public:
 
           if (!hasReturnValue) {
             Push({ StackValueType::Int,
-                 0 });
+                   0 });
           }
 
           break;
@@ -1048,6 +1040,21 @@ private:
 #endif
   }
 
+  static void SetString(
+    uint16_t address,
+    uint16_t stringAddress) {
+    uint16_t source = stringAddress;
+    uint16_t destination = address;
+
+    while (source < _bytecodeSize && destination < sizeof(_memory)) {
+      uint8_t value = _bytecode[source++];
+
+      _memory[destination++] = value;
+
+      if (value == 0)
+        break;
+    }
+  }
   static uint16_t Color332To565(uint8_t color) {
     uint8_t r = (color >> 5) & 0x07;
     uint8_t g = (color >> 2) & 0x07;
