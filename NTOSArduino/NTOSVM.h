@@ -1474,7 +1474,7 @@ private:
           break;
         }
 
-        case 31:  // alert
+      case 31:  // alert
         {
           const char* line2 = GetStringPointer(Pop());
           const char* line1 = GetStringPointer(Pop());
@@ -1483,10 +1483,10 @@ private:
           break;
         }
 
-        case 32:  // confirm
+      case 32:  // confirm
         {
           const char* text = GetStringPointer(Pop());
-          
+
 
           Push({ StackValueType::Bool,
                  UI::confirm(text) });
@@ -1496,13 +1496,13 @@ private:
           break;
         }
 
-        case 33:  // confirm number
+      case 33:  // confirm number
         {
           int16_t to = (int16_t)Pop().value;
           int16_t from = (int16_t)Pop().value;
           const char* line2 = GetStringPointer(Pop());
           const char* line1 = GetStringPointer(Pop());
-          
+
 
           Push({ StackValueType::Int,
                  UI::confirmNumber(line1, "* CANCEL", line2, from, to) });
@@ -1511,46 +1511,63 @@ private:
 
           break;
         }
-        case 40: // loadInt
+      case 40:  // loadInt
         {
           uint32_t def = (int16_t)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          Push({ StackValueType::Int, EEPROMStorage::LoadInt(addr, def) });
+          uint16_t eepromAddr = (int)Pop().value;
+          Push({ StackValueType::Int, EEPROMStorage::LoadInt(eepromAddr, def) });
           return true;
         }
-        case 41: // saveInt
+      case 41:  // saveInt
         {
           uint32_t val = (int16_t)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          EEPROMStorage::SaveInt(addr, val);
+          uint16_t eepromAddr = (int)Pop().value;
+          EEPROMStorage::SaveInt(eepromAddr, val);
         }
-        case 43: // loadFloat
+      case 43:  // loadFloat
         {
           float def = (float)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          Push({ StackValueType::Float, EEPROMStorage::LoadFloat(addr, def) });
+          uint16_t eepromAddr = (int)Pop().value;
+          Push({ StackValueType::Float, EEPROMStorage::LoadFloat(eepromAddr, def) });
           return true;
         }
-        case 44: // saveFloat
+      case 44:  // saveFloat
         {
           float val = (float)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          EEPROMStorage::SaveFloat(addr, val);
+          uint16_t eepromAddr = (int)Pop().value;
+          EEPROMStorage::SaveFloat(eepromAddr, val);
         }
-        case 45: // loadStr
+      case 45:  // loadStr
         {
-          uint16_t max = (int)Pop().value;
-          char* def = (char*)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          //EEPROMStorage::LoadStr(addr, buffer?,  def, max);
+          uint16_t max = (uint16_t)Pop().value;
+          char* def = GetStringPointer(Pop());
+          uint16_t eepromAddr = (uint16_t)Pop().value;
+
+          if (max == 0)
+            return true;
+
+          char buffer[max];
+
+          EEPROMStorage::LoadStr(
+            eepromAddr,
+            buffer,
+            max,
+            def);
+
+          // StoreString(sholdNotBeEEpromaddr, buffer);
+
           return true;
         }
-        case 46: // saveStr
+      case 46:  // saveStr
         {
-          uint16_t max = (int)Pop().value;
-          char* val = (char*)Pop().value;
-          uint16_t addr = (int)Pop().value;
-          EEPROMStorage::SaveStr(addr, val, max);
+          uint16_t max = (uint16_t)Pop().value;
+          char* value = GetStringPointer(Pop());
+          uint16_t eepromAddr = (uint16_t)Pop().value;
+
+          if (value != nullptr && max > 0)
+            EEPROMStorage::SaveStr(eepromAddr, value, max);
+
+          return true;
         }
 
       default:

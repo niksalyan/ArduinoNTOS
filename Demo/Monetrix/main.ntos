@@ -10,13 +10,12 @@ init{
 	}
 	
 	playerName[0] = "[BANK]";
-	playerName[1] = "TIGRAN";
+	playerName[1] = "";// loadStr(1540, "TIGRA2"); 
 	playerName[2] = "P2";
 	playerName[3] = "AMELIA";
 	playerName[4] = "P4";
 	playerName[5] = "P5";
-	playerName[6] = "P6";
-
+	playerName[6] = "P6"; 
 
 }
 
