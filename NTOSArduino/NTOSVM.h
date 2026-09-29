@@ -1335,7 +1335,33 @@ private:
           break;
         }
 
-      case 12:  // pixel
+        case 12:  // drawRoundBox
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t r = Pop().value;
+          uint32_t h = Pop().value;
+          uint32_t w = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.drawRoundRect(x, y, w, h, r, Color332To565(color));
+
+          break;
+        }
+
+      case 13:  // fillRoundBox
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t r = Pop().value;
+          uint32_t h = Pop().value;
+          uint32_t w = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+          tft.fillRoundRect(x, y, w, h, r, Color332To565(color));
+          break;
+        }
+
+      case 14:  // pixel
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t y = Pop().value;
@@ -1346,7 +1372,7 @@ private:
           break;
         }
 
-      case 13:  // line
+      case 15:  // line
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t y2 = Pop().value;
@@ -1359,7 +1385,7 @@ private:
           break;
         }
 
-      case 14:  // drawCircle
+      case 16:  // drawCircle
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t r = Pop().value;
@@ -1368,10 +1394,11 @@ private:
 
           tft.drawCircle(x, y, r, Color332To565(color));
 
+
           break;
         }
 
-      case 15:  // fillCircle
+      case 17:  // fillCircle
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t r = Pop().value;

@@ -118,7 +118,52 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(12, "drawPixel", VariableType.None, async args =>
+            vmFunctions.AddFunction(12, "drawRoundBox", VariableType.None, async args =>
+            {
+                if (args.Length < 5)
+                    return null;
+
+                using var g = Graphics.FromImage(buffer);
+                using var pen = new Pen(
+                    GetColor332((byte)args[5]));
+
+                g.DrawRoundedRectangle(
+                    pen,
+                    new Rectangle(
+                        (int)args[0],
+                        (int)args[1],
+                        (int)args[2],
+                        (int)args[3]),
+                    new Size((int)args[4], (int)args[4])
+                    );
+
+                OnInvalidate?.Invoke();
+                return null;
+            });
+
+            vmFunctions.AddFunction(13, "fillRoundBox", VariableType.None, async args =>
+            {
+                if (args.Length < 5)
+                    return null;
+
+                using var g = Graphics.FromImage(buffer);
+                using var brush = new SolidBrush(
+                    GetColor332((byte)args[5]));
+
+                g.FillRoundedRectangle(
+                    brush,
+                    new Rectangle(
+                        (int)args[0],
+                        (int)args[1],
+                        (int)args[2],
+                        (int)args[3]),
+                    new Size((int)args[4], (int)args[4]));
+
+                OnInvalidate?.Invoke();
+                return null;
+            });
+
+            vmFunctions.AddFunction(14, "drawPixel", VariableType.None, async args =>
             {
                 if (args.Length < 3)
                     return null;
@@ -136,7 +181,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(13, "drawLine", VariableType.None, async args =>
+            vmFunctions.AddFunction(15, "drawLine", VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -156,7 +201,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(15, "fillCircle", VariableType.None, async args =>
+            vmFunctions.AddFunction(16, "fillCircle", VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -180,7 +225,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(14, "drawCircle", VariableType.None, async args =>
+            vmFunctions.AddFunction(17, "drawCircle", VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
