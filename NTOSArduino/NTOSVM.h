@@ -27,7 +27,8 @@ enum class StackValueType : uint8_t {
   Float,
   Byte,
   Bool,
-  String
+  String,
+  MemoryString
 };
 
 
@@ -409,12 +410,11 @@ public:
         {
           uint16_t address = ReadUInt16();
 
-          Push({ StackValueType::String,
+          Push({ StackValueType::MemoryString,
                  address });
 
           break;
         }
-
 
       case 0x0C:  // StoreStr
         {
@@ -422,13 +422,27 @@ public:
 
           StackValue value = Pop();
 
-          SetString(
-            address,
-            static_cast<uint16_t>(value.value));
+          const char* source;
+
+          if (value.type == StackValueType::String) {
+            source =
+              reinterpret_cast<const char*>(
+                &_bytecode[value.value]);
+          } else {
+            source =
+              reinterpret_cast<const char*>(
+                &_memory[value.value]);
+          }
+
+          while (*source != '\0') {
+            _memory[address++] =
+              static_cast<uint8_t>(*source++);
+          }
+
+          _memory[address] = 0;
 
           break;
         }
-
         // ------------------------------------------------
         // Arithmetic
         // ------------------------------------------------
