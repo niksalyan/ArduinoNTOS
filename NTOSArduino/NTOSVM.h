@@ -581,7 +581,7 @@ public:
           break;
         }
 
-      case 0x2F:
+      case 0x2F:  // LoadIndirectInt
         {
           StackValue address = Pop();
 
@@ -596,7 +596,7 @@ public:
           break;
         }
 
-      case 0x30:
+      case 0x30:  // StoreIndirectInt
         {
           StackValue value = Pop();
           StackValue address = Pop();
@@ -610,7 +610,52 @@ public:
           break;
         }
 
-      case 0x31:  // LoadIndirectStr
+      case 0x31:  // LoadIndirectFloat
+        {
+          StackValue address = Pop();
+
+          float value =
+            GetFloat(
+              static_cast<uint16_t>(
+                address.value));
+
+          uint32_t bits;
+
+          memcpy(
+            &bits,
+            &value,
+            sizeof(bits));
+
+          Push({ StackValueType::Float,
+                 bits });
+
+          break;
+        }
+
+      case 0x32:  // StoreIndirectFloat
+        {
+          StackValue value = Pop();
+          StackValue address = Pop();
+
+          float number;
+
+          uint32_t bits =
+            value.value;
+
+          memcpy(
+            &number,
+            &bits,
+            sizeof(number));
+
+          SetFloat(
+            static_cast<uint16_t>(
+              address.value),
+            number);
+
+          break;
+        }
+
+      case 0x33:  // LoadIndirectStr
         {
           StackValue address = Pop();
 
@@ -620,13 +665,14 @@ public:
           break;
         }
 
-      case 0x32:  // StoreIndirectStr
+      case 0x34:  // StoreIndirectStr
         {
           StackValue value = Pop();
           StackValue address = Pop();
 
           StoreString(
-            static_cast<uint16_t>(address.value),
+            static_cast<uint16_t>(
+              address.value),
             value);
 
           break;
