@@ -1215,6 +1215,26 @@ public sealed class Parser
             return VariableType.Bool;
         }
 
+        if (Match(TokenKind.Minus))
+        {
+            program.Instructions.Add(
+                new Instruction(OpCode.PushInt, 0));
+
+            VariableType type = CompileFactor(program);
+
+            if (type != VariableType.Int)
+            {
+                throw Error(
+                    "Unary '-' requires an integer operand.");
+            }
+
+            program.Instructions.Add(
+                new Instruction(OpCode.Subtract));
+
+            return VariableType.Int;
+        }
+
+
         if (Check(TokenKind.Identifier) &&
             Peek(1).Kind == TokenKind.LParen)
         {

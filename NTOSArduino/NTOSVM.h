@@ -422,24 +422,7 @@ public:
 
           StackValue value = Pop();
 
-          const char* source;
-
-          if (value.type == StackValueType::String) {
-            source =
-              reinterpret_cast<const char*>(
-                &_bytecode[value.value]);
-          } else {
-            source =
-              reinterpret_cast<const char*>(
-                &_memory[value.value]);
-          }
-
-          while (*source != '\0') {
-            _memory[address++] =
-              static_cast<uint8_t>(*source++);
-          }
-
-          _memory[address] = 0;
+          StoreString(address, value);
 
           break;
         }
@@ -631,11 +614,8 @@ public:
         {
           StackValue address = Pop();
 
-          uint16_t stringAddress =
-            static_cast<uint16_t>(address.value);
-
-          Push({ StackValueType::String,
-                 stringAddress });
+          Push({ StackValueType::MemoryString,
+                 address.value });
 
           break;
         }
@@ -645,13 +625,12 @@ public:
           StackValue value = Pop();
           StackValue address = Pop();
 
-          SetString(
+          StoreString(
             static_cast<uint16_t>(address.value),
-            static_cast<uint16_t>(value.value));
+            value);
 
           break;
         }
-
 
         // ------------------------------------------------
         // Flow control
@@ -1077,6 +1056,24 @@ private:
     Serial.println();
 
 #endif
+  }
+
+  static void StoreString(
+    uint16_t address,
+    const StackValue& value) {
+
+    const char* source =
+      GetStringPointer(value);
+
+    while (*source != '\0') {
+      if (address >= NTOS_MEMORY_SIZE - 1)
+        break;
+
+      _memory[address++] =
+        static_cast<uint8_t>(*source++);
+    }
+
+    _memory[address] = 0;
   }
 
   static const char* GetStringPointer(

@@ -2,7 +2,7 @@ init{
     int playerBalance[6];
 	str[6] playerName[6];
 
-	playerBalance[2] = 2500;
+	playerBalance[2] = -2500;
 	
 	playerName[0] = "TIGRAN";
 	playerName[1] = "P2";
@@ -17,18 +17,25 @@ init{
 
 dialog("MONETRIX BANK"); 
 
+float a = -20.0;
+
 
 for(int y = 0; y <= 1; y = y + 1) {
 	for(int x = 0; x <= 2; x = x + 1) {
 		int i = x + y * 3;
-		cursor(12 + x * 155, 40 + y * 100, 2);
+		cursor(12 + x * 155, 40 + y * 80, 3);
 		print(i, GRAY);
 		print(":", GRAY);
 		print(playerName[i], WHITE); 
 
-		cursor(12 + x * 155, 60 + y * 100, 3);
+		cursor(12 + x * 155, 70 + y * 80, 4);
 		print("$", GREEN);
 		print(playerBalance[i], GREEN);
 	}
 }
 
+loop{
+
+
+    delay(100);
+}
