@@ -113,6 +113,18 @@ public sealed class Parser
             return false;
         }
 
+        if (Match(TokenKind.Pointer))
+        {
+            string name = Consume(TokenKind.Identifier, "Expected variable name.").Text;
+
+            Variable variable = program.GetVariable(name);
+
+            program.Instructions.Add(
+                new Instruction(OpCode.PushInt, variable.Address));
+
+            return false;
+        }
+
         // x = expression
         // x[index] = expression
         if (Check(TokenKind.Identifier))
@@ -473,6 +485,30 @@ public sealed class Parser
             new Instruction(
                 OpCode.Add));
     }
+
+    private VariableType CompileUnary(BytecodeProgram program)
+    {
+        if (Match(TokenKind.Pointer))
+        {
+            string name = Consume(
+                TokenKind.Identifier,
+                "Expected variable after '&'.").Text;
+
+            Variable variable = program.GetVariable(name);
+
+            program.Instructions.Add(
+                new Instruction(
+                    OpCode.PushInt,
+                    variable.Address));
+
+            return VariableType.Int;
+        }
+
+        return VariableType.None; // check is this is correct
+
+        // existing lowest-level expression parsing
+    }
+
 
     private void CompileIf(BytecodeProgram program)
     {

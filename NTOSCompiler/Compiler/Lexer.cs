@@ -191,8 +191,12 @@ public sealed class Lexer
                     continue;
                 }
 
-                throw new Exception(
-                    $"Unexpected character '&' at position {start}.");
+                tokens.Add(new Token(
+                    TokenKind.Pointer,
+                    "&",
+                    start));
+
+                continue;
             }
 
             if (c == '|')
@@ -340,7 +344,6 @@ public sealed class Lexer
                 ',' => TokenKind.Comma,
                 ':' => TokenKind.Colon,
                 ';' => TokenKind.Semicolon,
-                '&' => TokenKind.Pointer,
 
                 _ => throw new Exception(
                     $"Unexpected character '{c}' at position {start}.")
