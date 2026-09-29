@@ -426,6 +426,31 @@ public sealed class VirtualMachine
 
                         break;
                     }
+                case OpCode.LoadIndirectStr:
+                    {
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        _stack.Push(
+                            GetString(address));
+
+                        break;
+                    }
+
+                case OpCode.StoreIndirectStr:
+                    {
+                        string value =
+                            Convert.ToString(_stack.Pop()) ?? string.Empty;
+
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        SetString(
+                            address,
+                            value);
+
+                        break;
+                    }
                 case OpCode.Jump:
                     {
                         instructionPointer =

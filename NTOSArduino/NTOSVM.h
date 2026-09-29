@@ -627,6 +627,31 @@ public:
           break;
         }
 
+      case 0x31:  // LoadIndirectStr
+        {
+          StackValue address = Pop();
+
+          uint16_t stringAddress =
+            static_cast<uint16_t>(address.value);
+
+          Push({ StackValueType::String,
+                 stringAddress });
+
+          break;
+        }
+
+      case 0x32:  // StoreIndirectStr
+        {
+          StackValue value = Pop();
+          StackValue address = Pop();
+
+          SetString(
+            static_cast<uint16_t>(address.value),
+            static_cast<uint16_t>(value.value));
+
+          break;
+        }
+
 
         // ------------------------------------------------
         // Flow control

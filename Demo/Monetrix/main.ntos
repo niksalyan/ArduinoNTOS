@@ -2,18 +2,33 @@ init{
     int playerBalance[6];
 	str[6] playerName[6];
 
+	playerBalance[2] = 2500;
+	
+	playerName[0] = "TIGRAN";
+	playerName[1] = "P2";
+	playerName[2] = "AMELIA";
+	playerName[3] = "P4";
+	playerName[4] = "P5";
+	playerName[5] = "P6";
 
-	float tests[6];
-
-	tests[0] = 0.5;
-	//playerName[0] = "P1";
 }
 
 
-str[16] mehe = "12sdfsdfsdffs";
 
-int a = 15;
+dialog("MONETRIX BANK"); 
 
-dialog("WORKS"); 
 
-delay(3000);
+for(int y = 0; y <= 1; y = y + 1) {
+	for(int x = 0; x <= 2; x = x + 1) {
+		int i = x + y * 3;
+		cursor(12 + x * 155, 40 + y * 100, 2);
+		print(i, GRAY);
+		print(":", GRAY);
+		print(playerName[i], WHITE); 
+
+		cursor(12 + x * 155, 60 + y * 100, 3);
+		print("$", GREEN);
+		print(playerBalance[i], GREEN);
+	}
+}
+

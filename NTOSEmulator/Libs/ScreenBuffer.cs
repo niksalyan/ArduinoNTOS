@@ -291,12 +291,14 @@ namespace NTOSEmulator.Libs
                 textRenderer.SetCursor(243 - textRenderer.GetTextWidth(text) / 2, 9);
                 textRenderer.Print(text);
 
-                textRenderer.SetTextColor(c);
+                textRenderer.SetTextColor(Color.White);
                 textRenderer.SetCursor(240 - textRenderer.GetTextWidth(text) / 2, 5);
                 textRenderer.Print(text);
 
                 textRenderer.SetCursor(0, 26);
                 textRenderer.SetTextSize(2);
+
+                textRenderer.SetTextColor(c);
 
                 OnInvalidate?.Invoke();
                 return null;
