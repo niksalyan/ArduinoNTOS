@@ -761,6 +761,11 @@ public sealed class VirtualMachine
         _memory[address + bytes.Length] = 0;
     }
 
+    public void SetMemoryString(ushort address, string value)
+    {
+        SetString(address, value);
+    }
+
     private static ushort ReadAddress(
         byte[] bytecode,
         ref int pc)
