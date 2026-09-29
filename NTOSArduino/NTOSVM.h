@@ -1054,21 +1054,21 @@ private:
 #endif
   }
 
-  static void SetString(
-    uint16_t address,
-    uint16_t stringAddress) {
-    uint16_t source = stringAddress;
-    uint16_t destination = address;
-
-    while (source < _bytecodeSize && destination < sizeof(_memory)) {
-      uint8_t value = _bytecode[source++];
-
-      _memory[destination++] = value;
-
-      if (value == 0)
-        break;
+  static const char* GetStringPointer(
+    const StackValue& value) {
+    if (value.type == StackValueType::String) {
+      return reinterpret_cast<const char*>(
+        &_bytecode[value.value]);
     }
+
+    if (value.type == StackValueType::MemoryString) {
+      return reinterpret_cast<const char*>(
+        &_memory[value.value]);
+    }
+
+    return "";
   }
+
   static uint16_t Color332To565(uint8_t color) {
     uint8_t r = (color >> 5) & 0x07;
     uint8_t g = (color >> 2) & 0x07;
@@ -1090,23 +1090,29 @@ private:
     switch (textValue.type) {
 
       case StackValueType::String:
+      case StackValueType::MemoryString:
         {
-          uint16_t stringOffset =
-            (uint16_t)textValue.value;
-
           const char* text =
-            reinterpret_cast<const char*>(
-              &_bytecode[stringOffset]);
+            GetStringPointer(textValue);
 
           if (position > 0) {
-            tft.getTextBounds(text, 0, 0, &bx, &by, &w, &h);
-            tft.setCursor(tft.getCursorX() - w / 2 * position, tft.getCursorY());
+            tft.getTextBounds(
+              text,
+              0,
+              0,
+              &bx,
+              &by,
+              &w,
+              &h);
+
+            tft.setCursor(
+              tft.getCursorX() - w / 2 * position,
+              tft.getCursorY());
           }
 
           tft.print(text);
           break;
         }
-
       case StackValueType::Int:
         {
           int32_t value =
