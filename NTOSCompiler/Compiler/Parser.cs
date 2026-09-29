@@ -113,18 +113,6 @@ public sealed class Parser
             return false;
         }
 
-        if (Match(TokenKind.Pointer))
-        {
-            string name = Consume(TokenKind.Identifier, "Expected variable name.").Text;
-
-            Variable variable = program.GetVariable(name);
-
-            program.Instructions.Add(
-                new Instruction(OpCode.PushInt, variable.Address));
-
-            return false;
-        }
-
         // x = expression
         // x[index] = expression
         if (Check(TokenKind.Identifier))
@@ -486,15 +474,17 @@ public sealed class Parser
                 OpCode.Add));
     }
 
-    private VariableType CompileUnary(BytecodeProgram program)
+    private VariableType CompileUnary(
+    BytecodeProgram program)
     {
         if (Match(TokenKind.Pointer))
         {
             string name = Consume(
                 TokenKind.Identifier,
-                "Expected variable after '&'.").Text;
+                "Expected variable name after '&'.").Text;
 
-            Variable variable = program.GetVariable(name);
+            Variable variable =
+                program.GetVariable(name);
 
             program.Instructions.Add(
                 new Instruction(
@@ -504,9 +494,7 @@ public sealed class Parser
             return VariableType.Int;
         }
 
-        return VariableType.None; // check is this is correct
-
-        // existing lowest-level expression parsing
+        return CompileFactor(program);
     }
 
 
@@ -1182,10 +1170,10 @@ public sealed class Parser
     }
 
     private VariableType CompileTerm(
-        BytecodeProgram program)
+    BytecodeProgram program)
     {
         VariableType type =
-            CompileFactor(program);
+            CompileUnary(program);
 
         while (Check(TokenKind.Star) ||
                Check(TokenKind.Slash) ||
@@ -1195,7 +1183,7 @@ public sealed class Parser
                 Advance().Kind;
 
             VariableType rightType =
-                CompileFactor(program);
+                CompileUnary(program);
 
             if (!IsNumeric(type) ||
                 !IsNumeric(rightType))
