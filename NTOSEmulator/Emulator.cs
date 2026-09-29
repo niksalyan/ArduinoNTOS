@@ -131,8 +131,12 @@ namespace NTOSEmulator
 
             vmFunctions.AddFunction(44, "loadStr", VariableType.Str, async args =>
             {
-                int addr = (int)args[0];
-                return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
+                int eepromAddr = (int)args[0];
+                int memAddr = (int)args[1];
+                string defaultValue = (string)args[2];
+                int maxStringSize = (int)args[3];
+                // we need
+                return EEPROM.ContainsKey(eepromAddr) ? EEPROM[eepromAddr] : (int)args[1];
             });
 
             vmFunctions.AddFunction(45, "saveStr", VariableType.None, async args =>
