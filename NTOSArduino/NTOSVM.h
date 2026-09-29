@@ -1554,7 +1554,11 @@ private:
             max,
             def);
 
-          // StoreString(sholdNotBeEEpromaddr, buffer);
+          // Store loaded string in VM memory and push its VM address.
+          uint16_t vmAddr = AllocateString(buffer);
+
+          Push({ StackValueType::MemoryString,
+                 vmAddr });
 
           return true;
         }
@@ -1564,12 +1568,13 @@ private:
           char* value = GetStringPointer(Pop());
           uint16_t eepromAddr = (uint16_t)Pop().value;
 
-          if (value != nullptr && max > 0)
-            EEPROMStorage::SaveStr(eepromAddr, value, max);
-
-          return true;
+          if (value != nullptr && max > 0) {
+            EEPROMStorage::SaveStr(
+              eepromAddr,
+              value,
+              max);
+          }
         }
-
       default:
         Serial.print("[NTOS] Unknown system function: ");
         Serial.println(functionIndex);

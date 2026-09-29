@@ -340,6 +340,7 @@ public sealed class Lexer
                 ',' => TokenKind.Comma,
                 ':' => TokenKind.Colon,
                 ';' => TokenKind.Semicolon,
+                '&' => TokenKind.Pointer,
 
                 _ => throw new Exception(
                     $"Unexpected character '{c}' at position {start}.")
