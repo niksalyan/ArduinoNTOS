@@ -396,6 +396,12 @@ public class BytecodeProgram
                 case OpCode.Checkpoint:
                 case OpCode.LoadIndirectInt:
                 case OpCode.StoreIndirectInt:
+                case OpCode.LoadIndirectFloat:
+                case OpCode.StoreIndirectFloat:
+                case OpCode.LoadIndirectStr:
+                case OpCode.StoreIndirectStr:
+                case OpCode.LoadIndirectByte:
+                case OpCode.StoreIndirectByte:
                     break;
 
                 case OpCode.PushStr:

@@ -147,7 +147,7 @@ public sealed class Parser
 
                 program.Instructions.Add(
                     new Instruction(
-                        OpCode.StoreIndirectInt));
+                        GetIndirectStoreOpcode(variable.Type)));
 
                 return true;
             }

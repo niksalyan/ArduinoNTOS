@@ -1355,12 +1355,7 @@ private:
 
       case 30:  // dialog
         {
-          uint16_t stringOffset = (uint16_t)Pop().value;
-
-          const char* text =
-            reinterpret_cast<const char*>(
-              &_bytecode[stringOffset]);
-
+          const char* text = GetStringPointer(Pop());
           UI::dialog(text);
           tft.setTextSize(2);
           tft.setCursor(0, 26);
