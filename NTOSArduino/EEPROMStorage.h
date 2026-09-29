@@ -6,114 +6,154 @@
 class EEPROMStorage
 {
 private:
-    static constexpr byte VALID_MARKER = 0xA5;
+    static constexpr uint8_t VALID_MARKER = 0xA5;
 
-    static bool IsValid(int address)
+    static bool IsValid(uint16_t address)
     {
         return EEPROM.read(address) == VALID_MARKER;
     }
 
-    static void SetValid(int address)
+    static void SetValid(uint16_t address)
     {
         EEPROM.update(address, VALID_MARKER);
     }
 
 public:
 
-    // =========================
-    // INT
-    // =========================
+    // =========================================================
+    // UINT32
+    // =========================================================
 
-    static void SaveInt(int address, int value)
+    static void SaveInt(
+        uint16_t address,
+        uint32_t value)
     {
         EEPROM.put(address + 1, value);
 
-        // Write marker last
+        // Valid marker is written last.
         SetValid(address);
     }
 
-    static int LoadInt(int address, int defaultValue)
+    static uint32_t LoadInt(
+        uint16_t address,
+        uint32_t defaultValue)
     {
         if (!IsValid(address))
             return defaultValue;
 
-        int value;
+        uint32_t value;
+
         EEPROM.get(address + 1, value);
 
         return value;
     }
 
 
-    // =========================
+    // =========================================================
     // FLOAT
-    // =========================
+    // =========================================================
 
-    static void SaveFloat(int address, float value)
+    static void SaveFloat(
+        uint16_t address,
+        float value)
     {
         EEPROM.put(address + 1, value);
 
-        // Write marker last
         SetValid(address);
     }
 
-    static float LoadFloat(int address, float defaultValue)
+    static float LoadFloat(
+        uint16_t address,
+        float defaultValue)
     {
         if (!IsValid(address))
             return defaultValue;
 
         float value;
+
         EEPROM.get(address + 1, value);
 
         return value;
     }
 
 
-    // =========================
+    // =========================================================
     // STRING
-    // =========================
+    // =========================================================
 
-    static void SaveStr(int address, const char* value, int maxSize)
+    static void SaveStr(
+        uint16_t address,
+        const char* value,
+        uint16_t maxSize)
     {
-        // Clear the entire string area
-        for (int i = 0; i < maxSize; i++)
-            EEPROM.update(address + 1 + i, 0);
+        if (value == nullptr || maxSize == 0)
+            return;
 
-        // Write string
-        int length = strlen(value);
+        uint16_t length = strlen(value);
 
         if (length >= maxSize)
             length = maxSize - 1;
 
-        for (int i = 0; i < length; i++)
-            EEPROM.update(address + 1 + i, value[i]);
+        for (uint16_t i = 0; i < length; i++)
+        {
+            EEPROM.update(
+                address + 1 + i,
+                value[i]);
+        }
 
         // Null terminator
-        EEPROM.update(address + 1 + length, '\0');
+        EEPROM.update(
+            address + 1 + length,
+            '\0');
 
-        // Write marker last
+        // Clear remaining string storage
+        for (uint16_t i = length + 1; i < maxSize; i++)
+        {
+            EEPROM.update(
+                address + 1 + i,
+                '\0');
+        }
+
+        // Valid marker LAST.
         SetValid(address);
     }
 
+
     static void LoadStr(
-        int address,
+        uint16_t address,
         char* buffer,
-        int maxSize,
+        uint16_t maxSize,
         const char* defaultValue)
     {
+        if (buffer == nullptr || maxSize == 0)
+            return;
+
         if (!IsValid(address))
         {
-            strncpy(buffer, defaultValue, maxSize - 1);
+            if (defaultValue == nullptr)
+            {
+                buffer[0] = '\0';
+                return;
+            }
+
+            strncpy(
+                buffer,
+                defaultValue,
+                maxSize - 1);
+
             buffer[maxSize - 1] = '\0';
+
             return;
         }
 
-        for (int i = 0; i < maxSize - 1; i++)
+        for (uint16_t i = 0; i < maxSize - 1; i++)
         {
-            char c = EEPROM.read(address + 1 + i);
+            char value = EEPROM.read(
+                address + 1 + i);
 
-            buffer[i] = c;
+            buffer[i] = value;
 
-            if (c == '\0')
+            if (value == '\0')
                 return;
         }
 

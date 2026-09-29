@@ -1511,6 +1511,47 @@ private:
 
           break;
         }
+        case 40: // loadInt
+        {
+          uint32_t def = (int16_t)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          Push({ StackValueType::Int, EEPROMStorage::LoadInt(addr, def) });
+          return true;
+        }
+        case 41: // saveInt
+        {
+          uint32_t val = (int16_t)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          EEPROMStorage::SaveInt(addr, val);
+        }
+        case 43: // loadFloat
+        {
+          float def = (float)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          Push({ StackValueType::Float, EEPROMStorage::LoadFloat(addr, def) });
+          return true;
+        }
+        case 44: // saveFloat
+        {
+          float val = (float)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          EEPROMStorage::SaveFloat(addr, val);
+        }
+        case 45: // loadStr
+        {
+          uint16_t max = (int)Pop().value;
+          char* def = (char*)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          //EEPROMStorage::LoadStr(addr, buffer?,  def, max);
+          return true;
+        }
+        case 46: // saveStr
+        {
+          uint16_t max = (int)Pop().value;
+          char* val = (char*)Pop().value;
+          uint16_t addr = (int)Pop().value;
+          EEPROMStorage::SaveStr(addr, val, max);
+        }
 
       default:
         Serial.print("[NTOS] Unknown system function: ");
