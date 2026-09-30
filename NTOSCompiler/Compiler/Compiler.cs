@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using System.Diagnostics;
 
 
 namespace NTOSCompiler.Compiler
@@ -124,6 +125,52 @@ namespace NTOSCompiler.Compiler
             return null;
         }
 
+        protected override object? VisitForStatement(
+    ForStatement forStatement)
+        {
+            // for (INIT; TEST; UPDATE)
+
+            // 1. Initialization
+            if (forStatement.Init != null)
+                Visit(forStatement.Init);
+
+            // 2. Loop condition
+            int loopStartIndex = _instructions.Count;
+
+            int jumpIfFalseIndex = -1;
+
+            if (forStatement.Test != null)
+            {
+                Visit(forStatement.Test);
+
+                jumpIfFalseIndex = _instructions.Count;
+                Add(OpCode.JumpIfFalse, 0);
+            }
+
+            // 3. Loop body
+            Visit(forStatement.Body);
+
+            // 4. Update
+            if (forStatement.Update != null)
+                Visit(forStatement.Update);
+
+            // 5. Go back to the condition
+            Add(OpCode.Jump, loopStartIndex);
+
+            // 6. Exit target
+            int endIndex = _instructions.Count;
+
+            if (jumpIfFalseIndex >= 0)
+            {
+                _instructions[jumpIfFalseIndex] =
+                    new Instruction(
+                        OpCode.JumpIfFalse,
+                        endIndex);
+            }
+
+            return null;
+        }
+
         protected override object? VisitCallExpression(
     CallExpression callExpression)
         {
@@ -146,6 +193,7 @@ namespace NTOSCompiler.Compiler
                 Visit(argument);
                 argumentCount++;
             }
+
 
             int functionIndex =
                 _vmFunctions.GetIndex(functionName);
@@ -419,9 +467,12 @@ namespace NTOSCompiler.Compiler
                 Add(OpCode.PushByte, _constants[name]);
                 return null;
             }
-            else if (name.Length > 1 &&
-                name[0] == 'b' &&
-                byte.TryParse(name.AsSpan(1), out byte byteValue))
+            else if (name.Length > 1 && name[0] == '$')
+            {
+                Add(OpCode.PushInt, GetVariable(name.AsSpan(1).ToString()).Address);
+                return null;
+            }
+            else if (name.Length > 1 && name[0] == 'b' && byte.TryParse(name.AsSpan(1), out byte byteValue))
             {
                 Add(OpCode.PushByte, byteValue);
                 return null;

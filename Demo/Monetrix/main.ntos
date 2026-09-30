@@ -1,59 +1,22 @@
-dialog("aaa");
-var i = 1;
-
-// While works
-i = 200;
-while(i < 400) {
-	fillCircle(i,100,50, RED); 
-    i = i + 10;
-}
+var a = 5;
+var b = 6;
 
 
-// This doesnt
-for (i = 64; i < 200; i = i + 10) {
-	fillCircle(i,100,50, GREEN); 
-} 
+debug($b); // Variable address is properly logged
 
 /* VARS
-i	Int	0	4
+a	Int	0	4
+b	Int	4	4
 */
 
 /* INSTRUCTIONS
-PushStr	aaa	0
-CallFunction	FunctionCall { Index = 30, ArgumentCount = 1 }	5
-PushInt	1	9
-StoreInt	0	14
-PushInt	200	17
-StoreInt	0	22
-LoadInt	0	25
-PushInt	400	28
-Less		33
-JumpIfFalse	20	34
-LoadInt	0	37
-PushInt	100	40
-PushInt	50	45
-PushByte	224	50
-CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	52
-LoadInt	0	56
-PushInt	10	59
-Add		64
-StoreInt	0	65
-Jump	6	68
-PushInt	64	71
-StoreInt	0	76
-LoadInt	0	79
-PushInt	200	82
-Less		87
-LoadInt	0	88
-PushInt	10	91
-Add		96
-StoreInt	0	97
-LoadInt	0	100
-PushInt	100	103
-PushInt	50	108
-PushByte	28	113
-CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	115
-End		119
+PushInt	5	0
+StoreInt	0	5
+PushInt	6	8
+StoreInt	4	13
+PushInt	4	16
+CallFunction	FunctionCall { Index = 0, ArgumentCount = 1 }	21
+End		25
 */
 
 /* ERROR:

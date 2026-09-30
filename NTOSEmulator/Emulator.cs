@@ -33,7 +33,7 @@ namespace NTOSEmulator
         {
             InitializeComponent();
 
-            vmFunctions.AddFunction(0, "debug", 0, VariableType.None, async (args) =>
+            vmFunctions.AddFunction(0, "debug", 1, VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
