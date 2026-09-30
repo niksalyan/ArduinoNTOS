@@ -1,117 +1,59 @@
 dialog("aaa");
-var i = 0;
-while (i < 200) {
-	fillCircle(i,i,50, GREEN);
-	i = i + 10;
+var i = 1;
+
+// While works
+i = 200;
+while(i < 400) {
+	fillCircle(i,100,50, RED); 
+    i = i + 10;
 }
 
+
+// This doesnt
+for (i = 64; i < 200; i = i + 10) {
+	fillCircle(i,100,50, GREEN); 
+} 
+
 /* VARS
-total	Int	0	4
-i	Int	4	4
-j	Int	8	4
+i	Int	0	4
 */
 
 /* INSTRUCTIONS
-PushInt	0	0
-StoreInt	0	5
-PushInt	0	8
-StoreInt	4	13
-PushInt	0	16
-StoreInt	4	21
-LoadInt	4	24
-PushInt	3	27
-Less		32
-JumpIfFalse	70	33
-LoadInt	4	36
-PushInt	0	39
-Greater		44
-JumpIfFalse	52	45
-LoadInt	0	48
-PushInt	10	51
-Add		56
-StoreInt	0	57
-PushInt	0	60
-StoreInt	8	65
-LoadInt	8	68
-PushInt	2	71
-Less		76
-JumpIfFalse	51	77
-LoadInt	8	80
-PushInt	0	83
-Equal		88
-JumpIfFalse	33	89
-LoadInt	0	92
-PushInt	1	95
-Add		100
-StoreInt	0	101
-Jump	46	104
-LoadInt	8	107
-PushInt	1	110
-Equal		115
-JumpIfFalse	42	116
-LoadInt	0	119
-PushInt	2	122
-Add		127
-StoreInt	0	128
-Jump	46	131
-LoadInt	0	134
-PushInt	100	137
-Add		142
-StoreInt	0	143
-LoadInt	8	146
-PushInt	1	149
-Add		154
-StoreInt	8	155
-Jump	20	158
-Jump	65	161
-LoadInt	0	164
-PushInt	5	167
-Add		172
-StoreInt	0	173
-LoadInt	4	176
-PushInt	1	179
-Add		184
-StoreInt	4	185
-LoadInt	4	188
-PushInt	2	191
-Less		196
-JumpIfFalse	65	197
-Jump	52	200
-LoadInt	4	203
-PushInt	1	206
-Add		211
-StoreInt	4	212
-Jump	6	215
-LoadInt	0	218
-PushInt	20	221
-Greater		226
-JumpIfFalse	79	227
-LoadInt	0	230
-PushInt	100	233
-Add		238
-StoreInt	0	239
-Jump	99	242
-LoadInt	0	245
-PushInt	10	248
-Greater		253
-JumpIfFalse	88	254
-LoadInt	0	257
-PushInt	50	260
-Add		265
-StoreInt	0	266
-Jump	99	269
-LoadInt	0	272
-PushInt	5	275
-Greater		280
-JumpIfFalse	97	281
-LoadInt	0	284
-PushInt	25	287
-Add		292
-StoreInt	0	293
-Jump	99	296
-PushInt	0	299
-StoreInt	0	304
-End		307
+PushStr	aaa	0
+CallFunction	FunctionCall { Index = 30, ArgumentCount = 1 }	5
+PushInt	1	9
+StoreInt	0	14
+PushInt	200	17
+StoreInt	0	22
+LoadInt	0	25
+PushInt	400	28
+Less		33
+JumpIfFalse	20	34
+LoadInt	0	37
+PushInt	100	40
+PushInt	50	45
+PushByte	224	50
+CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	52
+LoadInt	0	56
+PushInt	10	59
+Add		64
+StoreInt	0	65
+Jump	6	68
+PushInt	64	71
+StoreInt	0	76
+LoadInt	0	79
+PushInt	200	82
+Less		87
+LoadInt	0	88
+PushInt	10	91
+Add		96
+StoreInt	0	97
+LoadInt	0	100
+PushInt	100	103
+PushInt	50	108
+PushByte	28	113
+CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	115
+End		119
 */
 
 /* ERROR:
