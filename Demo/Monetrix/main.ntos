@@ -1,7 +1,6 @@
-var b = "niksalyan";
-var a = "tigran";
+var playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
+var playerNames   = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"];
 
-debug(b);
 
 
 /* VARS

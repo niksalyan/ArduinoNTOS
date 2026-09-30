@@ -403,11 +403,33 @@ namespace NTOSCompiler.Compiler
             }
 
             // New variable.
+            bool isArray = false;
+            int length = 1;
             int maxStringLength = 0;
 
-            if (type == VariableType.Str &&
-                variableDeclarator.Init is Literal literal &&
-                literal.Value is string value)
+            if (variableDeclarator.Init is ArrayExpression array)
+            {
+                isArray = true;
+                length = array.Elements.Count;
+
+                if (type == VariableType.Str)
+                {
+                    foreach (var element in array.Elements)
+                    {
+                        if (element is Literal literal &&
+                            literal.Value is string value)
+                        {
+                            maxStringLength =
+                                Math.Max(
+                                    maxStringLength,
+                                    value.Length);
+                        }
+                    }
+                }
+            }
+            else if (type == VariableType.Str &&
+                     variableDeclarator.Init is Literal literal &&
+                     literal.Value is string value)
             {
                 maxStringLength = value.Length;
             }
@@ -416,13 +438,71 @@ namespace NTOSCompiler.Compiler
                 DeclareVariable(
                     name,
                     type,
-                    false,
-                    1,
+                    isArray,
+                    length,
                     maxStringLength);
 
-            CompileExpression(variableDeclarator.Init);
-            Store(variable);
+            if (isArray)
+            {
+                CompileArrayInitializer(
+                    variable,
+                    (ArrayExpression)variableDeclarator.Init);
+            }
+            else
+            {
+                CompileExpression(
+                    variableDeclarator.Init);
+
+                Store(variable);
+            }
         }
+
+        private void CompileArrayInitializer(
+    Variable variable,
+    ArrayExpression array)
+        {
+            int elementSize =
+                variable.GetElementSize();
+
+            for (int i = 0; i < array.Elements.Count; i++)
+            {
+                int address =
+                    variable.Address + (i * elementSize);
+
+                // address
+                Add(
+                    OpCode.PushInt,
+                    address);
+
+                // value
+                CompileExpression(
+                    array.Elements[i]);
+
+                // store
+                Add(
+                    variable.Type switch
+                    {
+                        VariableType.Int =>
+                            OpCode.StoreIndirectInt,
+
+                        VariableType.Float =>
+                            OpCode.StoreIndirectFloat,
+
+                        VariableType.Byte =>
+                            OpCode.StoreIndirectByte,
+
+                        VariableType.Bool =>
+                            OpCode.StoreIndirectByte,
+
+                        VariableType.Str =>
+                            OpCode.StoreIndirectStr,
+
+                        _ => throw new InvalidOperationException(
+                            $"Unsupported array type: {variable.Type}")
+                    });
+            }
+        }
+
         private VariableType GetExpressionType(Expression expression)
         {
             if (expression is Literal literal)
@@ -433,6 +513,31 @@ namespace NTOSCompiler.Compiler
 
             if (expression is BinaryExpression binary)
                 return GetBinaryExpressionType(binary);
+
+            if (expression is ArrayExpression array)
+            {
+                if (array.Elements.Count == 0)
+                    throw new InvalidOperationException(
+                        "Array cannot be empty.");
+
+                VariableType elementType =
+                    GetExpressionType(array.Elements[0]);
+
+                for (int i = 1; i < array.Elements.Count; i++)
+                {
+                    VariableType currentType =
+                        GetExpressionType(array.Elements[i]);
+
+                    if (currentType != elementType)
+                    {
+                        throw new InvalidOperationException(
+                            $"Array element {i} is {currentType}, " +
+                            $"but expected {elementType}.");
+                    }
+                }
+
+                return elementType;
+            }
 
             if (expression is CallExpression call)
             {
