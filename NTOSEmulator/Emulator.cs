@@ -4,6 +4,7 @@ using NTOSEmulator.Libs;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace NTOSEmulator
@@ -198,7 +199,7 @@ namespace NTOSEmulator
             numpadControl.KeyPressed += NumpadControl_KeyPressed;
             serial.DataReceived += Serial_DataReceived;
 
-            ClearMemory();
+            compiler.ClearVariables();
 
             
 
@@ -224,10 +225,6 @@ namespace NTOSEmulator
             currentNumber = currentKey - '0';
         }
 
-        public void ClearMemory()
-        {
-            // compiler.ClearMemory();// TODO
-        }
 
         public void ClearDebug()
         {
@@ -271,7 +268,7 @@ namespace NTOSEmulator
         public void BuildAll()
         {
             DebugStart("STARTS BUILDING");
-            ClearMemory();
+            compiler.ClearVariables();
             try
             {
                 PrepareDirectory(appPath + "build");
@@ -285,18 +282,18 @@ namespace NTOSEmulator
 
                         string name = Path.GetFileNameWithoutExtension(file);
                         string source = File.ReadAllText(file);
-                        byte[] bytecode = compiler.Compile(source);
-                        /*if (error == null)
+                        byte[] bytecode;
+                        try
                         {
-                            byte[] bytecode = app.GetBytecode(name);
+                            bytecode = compiler.Compile(source);
                             File.WriteAllBytes(appPath + "build\\" + name + ".ntx", bytecode);
                             DebugOutput("Build: " + name + " OK (" + bytecode.Length + "b) !");
-                        }
-                        else
+                        } catch (Exception ex)
                         {
-                            DebugOutput("Build: " + name + " : " + error);
-                        }*/
-
+                            bytecode = null;
+                            DebugOutput("Build: " + name + " : " + ex.Message);
+                        }
+                        
 
                     }
                 }
@@ -352,7 +349,7 @@ namespace NTOSEmulator
             variablesGrid.DataSource = null;
             //bytecodeOutput.Text = "";
 
-            compiler.ClearVariables();
+            
             byte[] bytecode = null;
             try
             {

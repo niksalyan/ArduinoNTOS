@@ -655,19 +655,26 @@ namespace NTOSCompiler.Compiler
 
         private VariableType GetLiteralType(Literal literal)
         {
-            if (literal is StringLiteral)
-            {
-                string value = (string)literal.Value!;
+            if (literal.Value is bool)
+                return VariableType.Bool;
 
-                // In NTOS, a character is a byte.
-                if (value.Length == 1)
+            if (literal.Value is string value)
+            {
+                string text = GetText(literal.Range);
+
+                if (text.Length >= 2 &&
+                    text[0] == '\'' &&
+                    text[^1] == '\'')
+                {
+                    if (value.Length != 1)
+                        throw new InvalidOperationException(
+                            "Character literal must contain exactly one character.");
+
                     return VariableType.Byte;
+                }
 
                 return VariableType.Str;
             }
-
-            if (literal.Value is bool)
-                return VariableType.Bool;
 
             if (literal.Value is int ||
                 literal.Value is long)
@@ -731,17 +738,27 @@ namespace NTOSCompiler.Compiler
             switch (GetLiteralType(literal))
             {
                 case VariableType.Int:
-                    Add(OpCode.PushInt, Convert.ToInt32(literal.Value));
+                    Add(
+                        OpCode.PushInt,
+                        Convert.ToInt32(literal.Value));
                     break;
 
                 case VariableType.Float:
-                    Add(OpCode.PushFloat, Convert.ToSingle(literal.Value));
+                    Add(
+                        OpCode.PushFloat,
+                        Convert.ToSingle(literal.Value));
                     break;
 
                 case VariableType.Bool:
                     Add(
                         OpCode.PushByte,
                         (bool)literal.Value ? 1 : 0);
+                    break;
+
+                case VariableType.Byte:
+                    Add(
+                        OpCode.PushByte,
+                        (byte)((string)literal.Value!)[0]);
                     break;
 
                 case VariableType.Str:

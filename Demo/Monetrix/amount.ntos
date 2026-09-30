@@ -1,4 +1,4 @@
-int amount = 0;
+var amount = 0;
 
 dialog("INPUT AMOUNT");
 
@@ -10,25 +10,25 @@ cursor(20, 90, 3);
 print("TO:   ", WHITE);
 print(playerNames[targetAccount], WHITE);
 
-update {
+function update() {
 	fillBox(100, 200, 250, 30, BLACK);
 	cursor(100, 200, 4);
 	print("$", WHITE); 
 	print(amount, WHITE);
 }
 
-call update;
+update();
 cursor(20, 290, 2);
 print("* = BACK", CYAN);
 
-loop{
-	int num = getNumericKey();
-	char key = getKey();
+function loop(){
+	var num = getNumericKey();
+	var key = getKey();
 
 	if (key == '*') {
 		if (amount > 0) {
 			amount = amount / 10;
-			call update;
+			update();
 		} else {
 			load("main");
 		}
@@ -48,7 +48,7 @@ loop{
 
 	if (num >= 0) {
 		amount = amount * 10 + num;
-		call update;
+		update();
 	}
 
     delay(1);

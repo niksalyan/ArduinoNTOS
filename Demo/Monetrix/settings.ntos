@@ -8,8 +8,8 @@ cursor(50, 200, 2);
 print("* BACK", WHITE);
 
 
-loop{
-	char key = getKey();
+function loop(){
+	var key = getKey();
 
 	if (key == '*') {
 		load("main");
