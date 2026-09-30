@@ -7,20 +7,14 @@ init{
 
 	for(int i = 1; i <= 6; i = i + 1) {
 		playerBalance[i] = loadInt(1500 + i * 5, 2500);
-		
+		loadStr(addr(1540, i, 8), addr(&playerNames, i, 7), "PLAYER", 6); 
 	}
 	
 	playerNames[0] = "[BANK]";
 	
 
-	loadStr(1540 + 1 * 8, &playerNames + 1 * 7, "P1", 6); 
-	loadStr(1540 + 2 * 8, &playerNames + 2 * 7, "P2", 6); 
-	loadStr(1540 + 3 * 8, &playerNames + 3 * 7, "P3", 6); 
-	loadStr(1540 + 4 * 8, &playerNames + 4 * 7, "P4", 6); 
-	loadStr(1540 + 5 * 8, &playerNames + 5 * 7, "P5", 6); 
-	loadStr(1540 + 6 * 8, &playerNames + 6 * 7, "P6", 6); 
-
-	//saveStr(1540 + 3 * 8, "TIGRAN", 6);
+	
+	saveStr(addr(1540, 3, 8), "TIGRAN", 6);
 
 }
 
@@ -67,6 +61,8 @@ draw{
 
 	cursor(460, 290, 2);
 	printRight("0 = BANK", CYAN);
+
+	// editText(addr(&playerNames, 1, 7), "EDIT PLAYER NAME", 6);
 }
 
 
@@ -80,6 +76,10 @@ loop{
 		int pc = confirmNumber("PLAYESR COUNT", "2 - 6", 2, 6);
 		if (pc >= 0) {playersCount = pc;}
 		call draw;
+	}
+
+	if (key == 'A') {
+		load("settings");
 	}
 
 	if (selected >= 0 && selected <= playersCount) {

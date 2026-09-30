@@ -45,8 +45,9 @@ namespace NTOSDev.Controls
             ReloadEmulator();
         }
 
-        private void ReloadEmulator()
+        private void ReloadEmulator(bool force = false)
         {
+            if (currentFile == filePath && !force) return;
             currentFile = filePath;
             DEmulator.RefreshEmulator();
         }
@@ -125,7 +126,7 @@ namespace NTOSDev.Controls
                 File.WriteAllText(filePath, scintillaEditor.Text);
                 fileSaved = true;
                 UpdateFileName();
-                ReloadEmulator();
+                ReloadEmulator(true);
             }
             catch (Exception ex)
             {

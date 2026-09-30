@@ -1,0 +1,18 @@
+dialog("SETTINGS");
+
+cursor(50, 80, 2);
+print("1 EDIT PLAYER NAMES", WHITE);
+
+
+cursor(50, 200, 2);
+print("* BACK", WHITE);
+
+
+loop{
+	char key = getKey();
+
+	if (key == '*') {
+		load("main");
+	}
+    delay(1);
+}

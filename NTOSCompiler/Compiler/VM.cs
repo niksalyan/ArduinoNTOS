@@ -766,6 +766,11 @@ public sealed class VirtualMachine
         SetString(address, value);
     }
 
+    public string GetMemoryString(ushort address)
+    {
+        return GetString(address);
+    }
+
     private static ushort ReadAddress(
         byte[] bytecode,
         ref int pc)
