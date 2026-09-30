@@ -33,7 +33,7 @@ namespace NTOSEmulator
         {
             InitializeComponent();
 
-            vmFunctions.AddFunction(0, "debug", VariableType.None, async (args) =>
+            vmFunctions.AddFunction(0, "debug", 0, VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -42,7 +42,7 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(1, "load", VariableType.None, async (args) =>
+            vmFunctions.AddFunction(1, "load", 1, VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
@@ -55,14 +55,14 @@ namespace NTOSEmulator
 
             
 
-            vmFunctions.AddFunction(2, "exit", VariableType.None, async (args) =>
+            vmFunctions.AddFunction(2, "exit", 0, VariableType.None, async (args) =>
             {
                 vm?.Stop();
                 DebugOutput("Execution finished.");               
                 return null;
             });
 
-            vmFunctions.AddFunction(3, "delay", VariableType.None, async (args) =>
+            vmFunctions.AddFunction(3, "delay", 1, VariableType.None, async (args) =>
             {
                 int d = (int)args[0];
                 await Task.Delay((int)d);
@@ -70,82 +70,84 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(4, "getKey", VariableType.Byte, async (args) =>
+            vmFunctions.AddFunction(4, "getKey", 0, VariableType.Byte, async (args) =>
             {
                 byte key = currentKey;
                 currentKey = 0;
                 return key;
             });
 
-            vmFunctions.AddFunction(5, "getNumericKey", VariableType.Int, async (args) =>
+            vmFunctions.AddFunction(5, "getNumericKey", 0, VariableType.Int, async (args) =>
             {
                 int number = currentNumber;
                 currentNumber = -1;
                 return number >= 0 && number <= 9 ? number : -1;
             });
 
-            vmFunctions.AddFunction(31, "alert", VariableType.Bool, async args =>
+            vmFunctions.AddFunction(31, "alert", 2, VariableType.Bool, async args =>
             {
                 Dialogs.Alert(args[0].ToString() ?? "", args[1].ToString() ?? "");
                 vm?.ResetStopwatch();
                 return null;
             });
 
-            vmFunctions.AddFunction(32, "confirm", VariableType.Bool, async args =>
+            vmFunctions.AddFunction(32, "confirm", 1, VariableType.Bool, async args =>
             {
                 var r =  Dialogs.Confirm(args[0].ToString() ?? "");
                 vm?.ResetStopwatch();
                 return r;
             });
 
-            vmFunctions.AddFunction(33, "confirmNumber", VariableType.Int, async args =>
+            vmFunctions.AddFunction(33, "confirmNumber", 4, VariableType.Int, async args =>
             {
                 var r = Dialogs.ConfirmNumber(args[0].ToString() ?? "", args[1].ToString() ?? "", (int)args[2], (int)args[3]);
                 vm?.ResetStopwatch();
                 return r;
             });
 
-            vmFunctions.AddFunction(34, "editText", VariableType.Bool, async args =>
+            vmFunctions.AddFunction(34, "editText", 3, VariableType.Bool, async args =>
             {
                 int memAddr = (int)args[1];
                 int maxStringSize = (int)args[2];
                 var text = vm.GetMemoryString((ushort)memAddr);
                 var r = Dialogs.EditText(args[0].ToString() ?? "", text, maxStringSize);
-                vm.SetMemoryString((ushort)memAddr, r);
+                if (r != null) {
+                    vm.SetMemoryString((ushort)memAddr, r);
+                }
                 vm?.ResetStopwatch();
                 return r != null;
             });
 
-            vmFunctions.AddFunction(39, "addr", VariableType.Int, async args =>
+            vmFunctions.AddFunction(39, "addr", 3, VariableType.Int, async args =>
             {
                 return (int)args[0] + (int)args[1] * (int)args[2];
             });
 
-            vmFunctions.AddFunction(40, "loadInt", VariableType.Int, async args =>
+            vmFunctions.AddFunction(40, "loadInt", 2, VariableType.Int, async args =>
             {
                 int addr = (int)args[0];
                 return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
             });
 
-            vmFunctions.AddFunction(41, "saveInt", VariableType.None, async args =>
+            vmFunctions.AddFunction(41, "saveInt", 2, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (int)args[1];
                 return null;
             });
 
-            vmFunctions.AddFunction(42, "loadFloat", VariableType.Float, async args =>
+            vmFunctions.AddFunction(42, "loadFloat", 2, VariableType.Float, async args =>
             {
                 int addr = (int)args[0];
                 return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
             });
 
-            vmFunctions.AddFunction(43, "saveFloat", VariableType.None, async args =>
+            vmFunctions.AddFunction(43, "saveFloat", 2, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (int)args[1];
                 return null;
             });
 
-            vmFunctions.AddFunction(44, "loadStr", VariableType.None, async args =>
+            vmFunctions.AddFunction(44, "loadStr", 4, VariableType.None, async args =>
             {
                 Debug.WriteLine("loadStr");
                 int eepromAddr = (int)args[0];
@@ -167,7 +169,7 @@ namespace NTOSEmulator
                 return null;
             });
 
-            vmFunctions.AddFunction(45, "saveStr", VariableType.None, async args =>
+            vmFunctions.AddFunction(45, "saveStr", 3, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (string)args[1];
                 return null;
@@ -301,7 +303,7 @@ namespace NTOSEmulator
             }
             catch (Exception ex)
             {
-
+                DebugError(ex.Message);
             }
         }
 
@@ -369,7 +371,7 @@ namespace NTOSEmulator
                 currentKey = 0;
                 currentNumber = -1;
                 vm.Initialized = initialized;
-                vm.Execute(app.GetBytecode(name));
+                await vm.Execute(app.GetBytecode(name));
             }
             catch (Exception ex)
             {

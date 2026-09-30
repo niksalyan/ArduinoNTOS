@@ -57,7 +57,7 @@ namespace NTOSEmulator.Libs
         {
             
 
-            vmFunctions.AddFunction(9, "cls", VariableType.None, async args =>
+            vmFunctions.AddFunction(9, "cls", 0, VariableType.None, async args =>
             {
                 textRenderer.SetCursor(0, 0);
                 textRenderer.SetTextSize(2);
@@ -72,7 +72,7 @@ namespace NTOSEmulator.Libs
             // GRAPHICS: 10 - 49
             // ============================================================
 
-            vmFunctions.AddFunction(10, "drawBox", VariableType.None, async args =>
+            vmFunctions.AddFunction(10, "drawBox", 5, VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -93,7 +93,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(11, "fillBox", VariableType.None, async args =>
+            vmFunctions.AddFunction(11, "fillBox", 5, VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -114,7 +114,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(12, "drawRoundBox", VariableType.None, async args =>
+            vmFunctions.AddFunction(12, "drawRoundBox", 6, VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -137,7 +137,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(13, "fillRoundBox", VariableType.None, async args =>
+            vmFunctions.AddFunction(13, "fillRoundBox", 6, VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -159,7 +159,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(14, "drawPixel", VariableType.None, async args =>
+            vmFunctions.AddFunction(14, "drawPixel", 3, VariableType.None, async args =>
             {
                 if (args.Length < 3)
                     return null;
@@ -177,7 +177,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(15, "drawLine", VariableType.None, async args =>
+            vmFunctions.AddFunction(15, "drawLine", 5, VariableType.None, async args =>
             {
                 if (args.Length < 5)
                     return null;
@@ -197,7 +197,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(16, "fillCircle", VariableType.None, async args =>
+            vmFunctions.AddFunction(16, "fillCircle", 4, VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -221,7 +221,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(17, "drawCircle", VariableType.None, async args =>
+            vmFunctions.AddFunction(17, "drawCircle", 4, VariableType.None, async args =>
             {
                 if (args.Length < 4)
                     return null;
@@ -246,7 +246,7 @@ namespace NTOSEmulator.Libs
             });
 
 
-            vmFunctions.AddFunction(20, "cursor", VariableType.None, async args =>
+            vmFunctions.AddFunction(20, "cursor", 3, VariableType.None, async args =>
             {
                 if (args.Length < 3) return null;
                 textRenderer.SetCursor((int)args[0], (int)args[1]);
@@ -254,7 +254,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(21, "print", VariableType.None, async args =>
+            vmFunctions.AddFunction(21, "print", 2, VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -269,7 +269,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(22, "printCentered", VariableType.None, async args =>
+            vmFunctions.AddFunction(22, "printCentered", 2, VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -285,7 +285,7 @@ namespace NTOSEmulator.Libs
 
                 return null;
             });
-            vmFunctions.AddFunction(23, "printRight", VariableType.None, async args =>
+            vmFunctions.AddFunction(23, "printRight", 2, VariableType.None, async args =>
             {
                 if (args.Length < 2) return null;
 
@@ -303,13 +303,9 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(30, "dialog", VariableType.None, async args =>
+            vmFunctions.AddFunction(30, "dialog", 1, VariableType.None, async args =>
             {
                 
-
-                if (args.Length < 1)
-                    return null;
-
                 string text = args[0]?.ToString() ?? "";
 
                 using var g = Graphics.FromImage(buffer);
