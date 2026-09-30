@@ -375,7 +375,6 @@ namespace NTOSCompiler.Compiler
             Variable? existing = _variables
                 .FirstOrDefault(x => x.Name == name);
 
-
             // No initializer.
             if (variableDeclarator.Init == null)
                 return;
@@ -383,7 +382,6 @@ namespace NTOSCompiler.Compiler
             VariableType type =
                 GetExpressionType(variableDeclarator.Init);
 
-            // var + existing variable:
             // Existing variable.
             if (existing != null)
             {
@@ -462,6 +460,17 @@ namespace NTOSCompiler.Compiler
                     length,
                     maxStringLength);
 
+            // let: declare the variable normally,
+            // but skip its initializer once initialized.
+            int letJumpIndex = -1;
+
+            if (isLet)
+            {
+                letJumpIndex = _instructions.Count;
+
+                Add(OpCode.JumpIfInitialized, 0);
+            }
+
             if (isArray)
             {
                 CompileArrayInitializer(
@@ -474,6 +483,16 @@ namespace NTOSCompiler.Compiler
                     variableDeclarator.Init);
 
                 Store(variable);
+            }
+
+            if (letJumpIndex >= 0)
+            {
+                int endIndex = _instructions.Count;
+
+                _instructions[letJumpIndex] =
+                    new Instruction(
+                        OpCode.JumpIfInitialized,
+                        endIndex);
             }
         }
 
