@@ -105,15 +105,15 @@ namespace NTOSEmulator
                 return r;
             });
 
-            vmFunctions.AddFunction(34, "editText", VariableType.None, async args =>
+            vmFunctions.AddFunction(34, "editText", VariableType.Bool, async args =>
             {
-                int memAddr = (int)args[0];
+                int memAddr = (int)args[1];
                 int maxStringSize = (int)args[2];
                 var text = vm.GetMemoryString((ushort)memAddr);
-                var r = Dialogs.EditText(args[1].ToString() ?? "", text, maxStringSize);
+                var r = Dialogs.EditText(args[0].ToString() ?? "", text, maxStringSize);
                 vm.SetMemoryString((ushort)memAddr, r);
                 vm?.ResetStopwatch();
-                return null;
+                return r != null;
             });
 
             vmFunctions.AddFunction(39, "addr", VariableType.Int, async args =>

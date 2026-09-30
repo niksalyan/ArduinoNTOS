@@ -12,10 +12,6 @@ init{
 	
 	playerNames[0] = "[BANK]";
 	
-
-	
-	// saveStr(addr(1540, 3, 8), "TIGRAN", 6);
-
 }
 
 

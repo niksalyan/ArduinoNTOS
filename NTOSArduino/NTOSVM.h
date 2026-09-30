@@ -1401,20 +1401,7 @@ private:
           break;
         }
 
-      case 16:  // drawCircle
-        {
-          uint8_t color = (uint8_t)Pop().value;
-          uint32_t r = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
-
-          tft.drawCircle(x, y, r, Color332To565(color));
-
-
-          break;
-        }
-
-      case 17:  // fillCircle
+      case 16:  // fillCircle
         {
           uint8_t color = (uint8_t)Pop().value;
           uint32_t r = Pop().value;
@@ -1422,6 +1409,19 @@ private:
           uint32_t x = Pop().value;
 
           tft.fillCircle(x, y, r, Color332To565(color));
+
+
+          break;
+        }
+
+      case 17:  // drawCircle
+        {
+          uint8_t color = (uint8_t)Pop().value;
+          uint32_t r = Pop().value;
+          uint32_t y = Pop().value;
+          uint32_t x = Pop().value;
+
+          tft.drawCircle(x, y, r, Color332To565(color));
 
           break;
         }
@@ -1508,8 +1508,15 @@ private:
                  NTOSUI::confirmNumber(line1, line2, from, to) });
 
           return true;
-
-          break;
+        }
+      case 34: // edit text
+        {
+          uint16_t max = (uint16_t)Pop().value;
+          uint16_t memAddr = (uint16_t)Pop().value;
+          const char* title = GetStringPointer(Pop());
+          Push({ StackValueType::Bool,
+                 NTOSUI::editText(title, (char*)&_memory[memAddr], max) });
+          return true;
         }
       case 39:  // addr
         {
@@ -1531,6 +1538,7 @@ private:
           uint32_t val = (int16_t)Pop().value;
           uint16_t eepromAddr = (int)Pop().value;
           EEPROMStorage::SaveInt(eepromAddr, val);
+          break;
         }
       case 42:  // loadFloat
         {
@@ -1544,37 +1552,39 @@ private:
           float val = (float)Pop().value;
           uint16_t eepromAddr = (int)Pop().value;
           EEPROMStorage::SaveFloat(eepromAddr, val);
+          break;
         }
       case 44:  // loadStr
         {
           uint16_t max = (uint16_t)Pop().value;
           char* def = GetStringPointer(Pop());
-          char* memAddr = (char*)Pop().value;
+          uint16_t memAddr = (uint16_t)Pop().value;
           uint16_t eepromAddr = (uint16_t)Pop().value;
-          
+
           if (max == 0)
             return false;
 
           EEPROMStorage::LoadStr(
             eepromAddr,
-            memAddr,
+            (char*)&_memory[memAddr],
             max,
             def);
-
-          return false;
+          break;
         }
       case 45:  // saveStr
         {
           uint16_t max = (uint16_t)Pop().value;
-          char* value = GetStringPointer(Pop());
+          char* text = GetStringPointer(Pop());
           uint16_t eepromAddr = (uint16_t)Pop().value;
 
-          if (value != nullptr && max > 0) {
-            EEPROMStorage::SaveStr(
+          if (max == 0 || text == nullptr)
+            return false;
+
+          EEPROMStorage::SaveStr(
               eepromAddr,
-              value,
+              text,
               max);
-          }
+            break;
         }
       default:
         Serial.print("[NTOS] Unknown function: ");

@@ -320,7 +320,7 @@ namespace NTOSEmulator.Libs
                     0,
                     0,
                     buffer.Width,
-                    25);
+                    32);
 
                 textRenderer.SetGraphics(g);
                 
@@ -329,14 +329,14 @@ namespace NTOSEmulator.Libs
 
                 Color c = textRenderer.TextColor;
                 textRenderer.SetTextColor(Color.Black);
-                textRenderer.SetCursor(243 - textRenderer.GetTextWidth(text) / 2, 9);
+                textRenderer.SetCursor(243 - textRenderer.GetTextWidth(text) / 2, 14);
                 textRenderer.Print(text);
 
                 textRenderer.SetTextColor(Color.White);
-                textRenderer.SetCursor(240 - textRenderer.GetTextWidth(text) / 2, 5);
+                textRenderer.SetCursor(240 - textRenderer.GetTextWidth(text) / 2, 10);
                 textRenderer.Print(text);
 
-                textRenderer.SetCursor(0, 26);
+                textRenderer.SetCursor(0, 32);
                 textRenderer.SetTextSize(2);
 
                 textRenderer.SetTextColor(c);

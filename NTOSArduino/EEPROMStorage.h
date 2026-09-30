@@ -82,14 +82,14 @@ public:
     uint16_t address,
     const char* value,
     uint16_t maxSize) {
-    if (value == nullptr || maxSize == 0)
+
+    if (value == nullptr)
       return;
 
-    // Keep one byte for '\0'
     uint16_t length = strlen(value);
 
-    if (length >= maxSize)
-      length = maxSize - 1;
+    if (length > maxSize)
+      length = maxSize;
 
     // Write string
     for (uint16_t i = 0; i < length; i++) {
@@ -104,9 +104,7 @@ public:
       '\0');
 
     // Clear the rest of the allocated slot.
-    // This prevents an old longer value from surviving
-    // after saving a shorter value.
-    for (uint16_t i = length + 1; i < maxSize; i++) {
+    for (uint16_t i = length + 1; i <= maxSize; i++) {
       EEPROM.update(
         address + 1 + i,
         '\0');
@@ -121,7 +119,8 @@ public:
     char* buffer,
     uint16_t maxSize,
     const char* defaultValue) {
-    if (buffer == nullptr || maxSize == 0)
+
+    if (buffer == nullptr)
       return;
 
     // No valid value stored.
@@ -131,19 +130,14 @@ public:
         return;
       }
 
-      strncpy(
-        buffer,
-        defaultValue,
-        maxSize - 1);
-
-      buffer[maxSize - 1] = '\0';
+      strncpy(buffer, defaultValue, maxSize);
+      buffer[maxSize] = '\0';
       return;
     }
 
     // Read stored string.
-    for (uint16_t i = 0; i < maxSize - 1; i++) {
-      char value = EEPROM.read(
-        address + 1 + i);
+    for (uint16_t i = 0; i < maxSize; i++) {
+      char value = EEPROM.read(address + 1 + i);
 
       buffer[i] = value;
 
@@ -151,8 +145,7 @@ public:
         return;
     }
 
-    // Guarantee termination even if EEPROM
-    // contains a corrupted/non-terminated string.
-    buffer[maxSize - 1] = '\0';
+    // Guarantee termination.
+    buffer[maxSize] = '\0';
   }
 };

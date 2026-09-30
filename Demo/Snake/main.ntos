@@ -102,8 +102,8 @@ init {
 draw {
 
 
-	getKey();
-    dialog("SNAKE");
+	
+    cls();
 
     fillBox(20, 30, 440, 270, BLACK);
 

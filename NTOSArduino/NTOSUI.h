@@ -138,6 +138,8 @@ public:
       HEADER_HEIGHT,
       COLOR_HEADER);
 
+    tft.setTextSize(2);
+
     // Bottom separator
     tft.drawFastHLine(
       0,
@@ -450,6 +452,295 @@ public:
     tft.setCursor(drawX, drawY);
     tft.print(text);
   }
+
+  
+  static bool editText(
+    const char* line1,
+    char* text,
+    int length) {
+
+    if (text == nullptr || length <= 0) {
+      return false;
+    }
+
+    // ----------------------------------------------------------
+    // Temporary editing buffer
+    // ----------------------------------------------------------
+
+    char buffer[length + 1];
+
+    for (int i = 0; i < length; i++) {
+      buffer[i] = text[i];
+
+      if (buffer[i] == '\0') {
+        buffer[i] = ' ';
+      }
+    }
+
+    buffer[length] = '\0';
+
+    // ----------------------------------------------------------
+    // Find charset length
+    // ----------------------------------------------------------
+
+    int charsetLength = 0;
+
+    while (nameCharset[charsetLength] != '\0') {
+      charsetLength++;
+    }
+
+    // ----------------------------------------------------------
+    // Editor state
+    // ----------------------------------------------------------
+
+    int cursor = 0;
+
+    // ----------------------------------------------------------
+    // Layout
+    // ----------------------------------------------------------
+
+    const int charWidth = 20;
+    const int textY = 140;
+    const int totalWidth = length * charWidth;
+    const int startX = (tft.width() - totalWidth) / 2;
+
+    // ----------------------------------------------------------
+    // Draw editor frame ONCE
+    // ----------------------------------------------------------
+    drawWindow(
+      30,
+      85,
+      tft.width() - 60,
+      180, false);
+
+
+    // tft.fastFillRectBlack(
+    //   30,
+    //   85,
+    //   tft.width() - 60,
+    //   180);
+
+    // tft.drawRoundRect(
+    //   30,
+    //   85,
+    //   tft.width() - 60,
+    //   180,
+    //   10,
+    //   TFT_YELLOW);
+
+    // ----------------------------------------------------------
+    // Title
+    // ----------------------------------------------------------
+
+    tft.setTextSize(3);
+
+    printCentered(
+      line1,
+      tft.width() / 2,
+      105,
+      COLOR_TEXT);
+
+    // ----------------------------------------------------------
+    // Controls
+    // ----------------------------------------------------------
+
+    tft.setTextSize(2);
+
+    printCentered(
+      "4 6 =    CURSOR",
+      tft.width() / 2,
+      185,
+      TFT_WHITE);
+
+    printCentered(
+      "2 8 = CHARACTER",
+      tft.width() / 2,
+      205,
+      TFT_WHITE);
+
+    printCentered(
+      "* = CANCEL    D = CONFIRM",
+      tft.width() / 2,
+      225,
+      TFT_WHITE);
+
+    // ----------------------------------------------------------
+    // Draw ONLY the text/cursor area
+    // ----------------------------------------------------------
+
+    auto drawText = [&]() {
+      // Clear only the text area
+      // tft.fastFillRectBlack(
+      //   startX - 5,
+      //   textY - 5,
+      //   totalWidth + 10,
+      //   40);
+
+      // tft.setTextSize(3);
+      tft.fastFillRect(
+        startX - 5,
+        textY,
+        totalWidth + 10,
+        29, COLOR_CARD);
+
+      for (int i = 0; i < length; i++) {
+
+        char c[2];
+
+        c[0] = buffer[i];
+        c[1] = '\0';
+
+        uint16_t color =
+          (i == cursor) ? TFT_CYAN : TFT_WHITE;
+
+        printCentered(
+          c,
+          startX + i * charWidth + charWidth / 2,
+          textY,
+          color, 3);
+      }
+
+      
+
+      // Cursor underline
+      tft.drawLine(
+        startX + cursor * charWidth,
+        textY + 28,
+        startX + cursor * charWidth + charWidth - 3,
+        textY + 28,
+        TFT_CYAN);
+    };
+
+    // ----------------------------------------------------------
+    // Initial draw
+    // ----------------------------------------------------------
+
+    drawText();
+
+    // ----------------------------------------------------------
+    // Blocking input loop
+    // ----------------------------------------------------------
+
+    while (true) {
+
+      char key = Terminal::getKey();
+
+      if (!key) {
+        continue;
+      }
+
+      switch (key) {
+
+          // ========================================================
+          // CANCEL
+          // ========================================================
+
+        case '*':
+          return false;
+          // ========================================================
+          // CONFIRM
+          // ========================================================
+
+        case 'D':
+
+          for (int i = 0; i < length; i++) {
+            text[i] = buffer[i];
+          }
+
+          text[length] = '\0';
+
+          return true;
+
+          // ========================================================
+          // CURSOR LEFT
+          // ========================================================
+
+        case '4':
+
+          if (cursor > 0) {
+            cursor--;
+          }
+
+          break;
+
+          // ========================================================
+          // CURSOR RIGHT
+          // ========================================================
+
+        case '6':
+
+          if (cursor < length - 1) {
+            cursor++;
+          }
+
+          break;
+
+          // ========================================================
+          // PREVIOUS CHARACTER
+          // ========================================================
+
+        case '2':
+          {
+            int index = 0;
+
+            while (
+              index < charsetLength && nameCharset[index] != buffer[cursor]) {
+              index++;
+            }
+
+            if (index >= charsetLength) {
+              index = 0;
+            } else if (index > 0) {
+              index--;
+            } else {
+              index = charsetLength - 1;
+            }
+
+            buffer[cursor] = nameCharset[index];
+            break;
+          }
+
+          // ========================================================
+          // NEXT CHARACTER
+          // ========================================================
+
+        case '8':
+          {
+            int index = 0;
+
+            while (
+              index < charsetLength && nameCharset[index] != buffer[cursor]) {
+              index++;
+            }
+
+            if (index >= charsetLength) {
+              index = 0;
+            } else {
+              index++;
+
+              if (index >= charsetLength) {
+                index = 0;
+              }
+            }
+
+            buffer[cursor] = nameCharset[index];
+            break;
+          }
+        case '#':
+          buffer[cursor] = ' ';
+          if (cursor < length - 1) {
+            cursor++;
+          }
+          break;
+        default:
+          buffer[cursor] = key;
+          break;
+      }
+
+      drawText();
+    }
+  }
+
 
 
   static void waitForKey(int ms) {
