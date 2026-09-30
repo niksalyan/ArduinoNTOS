@@ -353,13 +353,14 @@ namespace NTOSEmulator
             //bytecodeOutput.Text = "";
 
             compiler.ClearVariables();
-
+            byte[] bytecode = null;
             try
             {
-                byte[] bytecode = compiler.Compile(source);
+                bytecode = compiler.Compile(source);
                 DebugOutput("Compiled");
             } catch (Exception ex)
             {
+                bytecode = null;
                 DebugError(ex.Message);
             }
 
@@ -368,25 +369,28 @@ namespace NTOSEmulator
                 bytecodeGrid.DataSource = compiler.Instructions;
                 variablesGrid.DataSource = compiler.Variables;
             });
-            
+
             //bytecodeOutput.Text = app.ToArduinoArray(name);
-/* // TODO
-            if (error != null)
-            {
-                DebugError(error);
-                return;
-            }
-*/
-            try
-            {
-                currentKey = 0;
-                currentNumber = -1;
-                vm.Initialized = initialized;
-                // await vm.Execute(bytecode); // TODO
-            }
-            catch (Exception ex)
-            {
-                DebugError(ex.Message);
+            /* // TODO
+                        if (error != null)
+                        {
+                            DebugError(error);
+                            return;
+                        }
+            */
+
+            if (bytecode != null) {
+                try
+                {
+                    currentKey = 0;
+                    currentNumber = -1;
+                    vm.Initialized = initialized;
+                    await vm.Execute(bytecode); // TODO
+                }
+                catch (Exception ex)
+                {
+                    DebugError(ex.Message);
+                }
             }
         }
 

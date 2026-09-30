@@ -96,6 +96,90 @@ namespace NTOSCompiler.Compiler
             return null;
         }
 
+        protected override object? VisitWhileStatement(
+    WhileStatement whileStatement)
+        {
+            // The condition must be the first instruction of the loop.
+            int loopStartIndex = _instructions.Count;
+
+            // Compile condition.
+            Visit(whileStatement.Test);
+
+            // Reserve the exit jump.
+            int jumpIfFalseIndex = _instructions.Count;
+            Add(OpCode.JumpIfFalse, 0);
+
+            // Compile loop body.
+            Visit(whileStatement.Body);
+
+            // Jump back to the condition.
+            Add(OpCode.Jump, loopStartIndex);
+
+            // False condition exits after the loop body.
+            int endIndex = _instructions.Count;
+
+            _instructions[jumpIfFalseIndex] =
+                new Instruction(OpCode.JumpIfFalse, endIndex);
+
+            return null;
+        }
+
+        protected override object? VisitCallExpression(
+    CallExpression callExpression)
+        {
+            if (callExpression.Callee is not Identifier identifier)
+                throw new InvalidOperationException(
+                    "Only named function calls are supported.");
+
+            string functionName = identifier.Name;
+
+            if (_vmFunctions == null)
+            {
+                throw new InvalidOperationException(
+                    "VMFunctions is required to compile function calls.");
+            }
+
+            int argumentCount = 0;
+
+            foreach (var argument in callExpression.Arguments)
+            {
+                Visit(argument);
+                argumentCount++;
+            }
+
+            int functionIndex =
+                _vmFunctions.GetIndex(functionName);
+
+            Add(
+                OpCode.CallFunction,
+                new FunctionCall(
+                    (ushort)functionIndex,
+                    (byte)argumentCount));
+
+            return _vmFunctions.GetReturnType(functionName);
+        }
+
+        protected override object? VisitDoWhileStatement(
+    DoWhileStatement doWhileStatement)
+        {
+            int loopStartIndex = _instructions.Count;
+
+            Visit(doWhileStatement.Body);
+            Visit(doWhileStatement.Test);
+
+            int jumpIfFalseIndex = _instructions.Count;
+            Add(OpCode.JumpIfFalse, 0);
+
+            Add(OpCode.Jump, loopStartIndex);
+
+            int endIndex = _instructions.Count;
+
+            _instructions[jumpIfFalseIndex] =
+                new Instruction(OpCode.JumpIfFalse, endIndex);
+
+            return null;
+        }
+
         protected override object? VisitExpressionStatement(
             ExpressionStatement expressionStatement)
         {

@@ -1,68 +1,113 @@
-var a = 27;
-var b = 0;
-
-if (a > 50) {
-    b = 500;
-} else if (a > 40) {
-    b = 400;
-} else if (a > 30) {
-    b = 300;
-} else if (a > 20) {
-    b = 200;
-} else if (a > 10) {
-    b = 100;
-} else {
-    b = 0;
-}
+dialog("aaa");
+drawBox(50,50,100,100,50);
 
 /* VARS
-a	Int	0	4
-b	Int	4	4
+total	Int	0	4
+i	Int	4	4
+j	Int	8	4
 */
 
 /* INSTRUCTIONS
-PushInt	27	0
+PushInt	0	0
 StoreInt	0	5
 PushInt	0	8
 StoreInt	4	13
-LoadInt	0	16
-PushInt	50	19
-Greater		24
-JumpIfFalse	11	25
-PushInt	500	28
-StoreInt	4	33
-Jump	41	36
-LoadInt	0	39
-PushInt	40	42
-Greater		47
-JumpIfFalse	18	48
-PushInt	400	51
-StoreInt	4	56
-Jump	41	59
-LoadInt	0	62
-PushInt	30	65
-Greater		70
-JumpIfFalse	25	71
-PushInt	300	74
-StoreInt	4	79
-Jump	41	82
-LoadInt	0	85
-PushInt	20	88
-Greater		93
-JumpIfFalse	32	94
-PushInt	200	97
-StoreInt	4	102
-Jump	41	105
-LoadInt	0	108
-PushInt	10	111
-Greater		116
-JumpIfFalse	39	117
-PushInt	100	120
-StoreInt	4	125
-Jump	41	128
-PushInt	0	131
-StoreInt	4	136
-End		139
+PushInt	0	16
+StoreInt	4	21
+LoadInt	4	24
+PushInt	3	27
+Less		32
+JumpIfFalse	70	33
+LoadInt	4	36
+PushInt	0	39
+Greater		44
+JumpIfFalse	52	45
+LoadInt	0	48
+PushInt	10	51
+Add		56
+StoreInt	0	57
+PushInt	0	60
+StoreInt	8	65
+LoadInt	8	68
+PushInt	2	71
+Less		76
+JumpIfFalse	51	77
+LoadInt	8	80
+PushInt	0	83
+Equal		88
+JumpIfFalse	33	89
+LoadInt	0	92
+PushInt	1	95
+Add		100
+StoreInt	0	101
+Jump	46	104
+LoadInt	8	107
+PushInt	1	110
+Equal		115
+JumpIfFalse	42	116
+LoadInt	0	119
+PushInt	2	122
+Add		127
+StoreInt	0	128
+Jump	46	131
+LoadInt	0	134
+PushInt	100	137
+Add		142
+StoreInt	0	143
+LoadInt	8	146
+PushInt	1	149
+Add		154
+StoreInt	8	155
+Jump	20	158
+Jump	65	161
+LoadInt	0	164
+PushInt	5	167
+Add		172
+StoreInt	0	173
+LoadInt	4	176
+PushInt	1	179
+Add		184
+StoreInt	4	185
+LoadInt	4	188
+PushInt	2	191
+Less		196
+JumpIfFalse	65	197
+Jump	52	200
+LoadInt	4	203
+PushInt	1	206
+Add		211
+StoreInt	4	212
+Jump	6	215
+LoadInt	0	218
+PushInt	20	221
+Greater		226
+JumpIfFalse	79	227
+LoadInt	0	230
+PushInt	100	233
+Add		238
+StoreInt	0	239
+Jump	99	242
+LoadInt	0	245
+PushInt	10	248
+Greater		253
+JumpIfFalse	88	254
+LoadInt	0	257
+PushInt	50	260
+Add		265
+StoreInt	0	266
+Jump	99	269
+LoadInt	0	272
+PushInt	5	275
+Greater		280
+JumpIfFalse	97	281
+LoadInt	0	284
+PushInt	25	287
+Add		292
+StoreInt	0	293
+Jump	99	296
+PushInt	0	299
+StoreInt	0	304
+End		307
 */
 
 /* ERROR:
