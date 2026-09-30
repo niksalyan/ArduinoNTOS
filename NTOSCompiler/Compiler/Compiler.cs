@@ -19,7 +19,6 @@ namespace NTOSCompiler.Compiler
         private List<Instruction> _instructions = new List<Instruction>();
 
         private readonly Dictionary<string, int> _functions = new();
-        private readonly List<(int InstructionIndex, string Name)> _unresolvedFunctionCalls = new();
         public List<Variable> Variables => _variables;
         public List<Instruction> Instructions => _instructions;
 
@@ -39,7 +38,6 @@ namespace NTOSCompiler.Compiler
         {
             _instructions.Clear();
             _functions.Clear();
-            _unresolvedFunctionCalls.Clear();
             _src = src;
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
