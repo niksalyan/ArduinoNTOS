@@ -322,26 +322,6 @@ namespace NTOSCompiler.Compiler
             return returnType;
         }
 
-        private void ResolveFunctionCalls()
-        {
-            foreach (var (instructionIndex, name)
-                in _unresolvedFunctionCalls)
-            {
-                if (!_functions.TryGetValue(
-                        name,
-                        out int targetInstructionIndex))
-                {
-                    throw new InvalidOperationException(
-                        $"Unknown function '{name}'.");
-                }
-
-                _instructions[instructionIndex] =
-                    new Instruction(
-                        OpCode.CallSubroutine,
-                        targetInstructionIndex);
-            }
-        }
-
         protected override object? VisitDoWhileStatement(
     DoWhileStatement doWhileStatement)
         {
