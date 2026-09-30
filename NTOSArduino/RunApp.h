@@ -1,7 +1,6 @@
 #pragma once
 #include "progmem_far.h"
 #include "NTOSVM.h"
-#include "UI.h"
 #include "Terminal.h"
 
 class RunApp {
@@ -12,7 +11,7 @@ public:
 
   static void open(char* name) {
 
-    UI::setHandler(handler);
+    NTOSUI::setHandler(handler);
 
     tft.fillScreenBlack();
     tft.setTextSize(2);

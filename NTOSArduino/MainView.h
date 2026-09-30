@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "UI.h"
 #include "NTOSUI.h"
 #include "Storage.h"
 
@@ -229,7 +228,7 @@ private:
       displayName,
       MAX_APP_NAME);
 
-    UI::printCentered(
+    NTOSUI::printCentered(
       displayName,
       x + TILE_WIDTH / 2,
       y + 58,
@@ -242,13 +241,13 @@ private:
 
   static void drawEmptyState() {
 
-    UI::printCentered(
+    NTOSUI::printCentered(
       "NO APPS",
       tft.width() / 2,
       130,
       NTOSUI::COLOR_TEXT);
 
-    UI::printCentered(
+    NTOSUI::printCentered(
       "APPLICATIONS NOT FOUND",
       tft.width() / 2,
       150,
@@ -265,7 +264,7 @@ public:
 
     loadApps();
 
-    UI::setHandler(handler);
+    NTOSUI::setHandler(handler);
 
     draw();
   }

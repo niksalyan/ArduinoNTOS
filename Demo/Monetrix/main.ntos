@@ -14,7 +14,7 @@ init{
 	
 
 	
-	saveStr(addr(1540, 3, 8), "TIGRAN", 6);
+	// saveStr(addr(1540, 3, 8), "TIGRAN", 6);
 
 }
 
@@ -32,7 +32,7 @@ draw{
 		for(int x = 0; x <= 2; x = x + 1) {
 			int i = x + y * 3 + 1;
 			if (i <= playersCount) {
-				cursor(12 + x * 155, 40 + y * 80, 3);
+				cursor(12 + x * 155, 60 + y * 80, 2);
 				print(i, GRAY);
 				print(":", GRAY);
 				print(playerNames[i], WHITE); 
@@ -45,7 +45,7 @@ draw{
 					color = GREEN;
 				}
 
-				cursor(12 + x * 155, 70 + y * 80, 4);
+				cursor(12 + x * 155, 85 + y * 80, 4);
 				print("$", color);
 				print(playerBalance[i], color);
 			}

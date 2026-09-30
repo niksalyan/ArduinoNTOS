@@ -3,7 +3,6 @@
 #define SOFTWARE_SPI_FOR_SD
 #include <SoftSD.h>
 #include <Arduino.h>
-#include "UI.h"
 #include "NTOSUI.h"
 #include "Navigation.h"
 #include "Storage.h"
@@ -1479,7 +1478,7 @@ private:
         {
           const char* line2 = GetStringPointer(Pop());
           const char* line1 = GetStringPointer(Pop());
-          UI::alert(line1, line2);
+          NTOSUI::alert(line1, line2);
 
           break;
         }
@@ -1490,7 +1489,7 @@ private:
 
 
           Push({ StackValueType::Bool,
-                 UI::confirm(text) });
+                 NTOSUI::confirm(text) });
 
           return true;
 
@@ -1506,11 +1505,19 @@ private:
 
 
           Push({ StackValueType::Int,
-                 UI::confirmNumber(line1, "* CANCEL", line2, from, to) });
+                 NTOSUI::confirmNumber(line1, line2, from, to) });
 
           return true;
 
           break;
+        }
+      case 39:  // addr
+        {
+          int16_t v3 = (int16_t)Pop().value;
+          int16_t v2 = (int16_t)Pop().value;
+          int16_t v1 = (int16_t)Pop().value;
+          Push({ StackValueType::Int, v1 + v2 * v3 });
+          return true;
         }
       case 40:  // loadInt
         {
@@ -1525,44 +1532,38 @@ private:
           uint16_t eepromAddr = (int)Pop().value;
           EEPROMStorage::SaveInt(eepromAddr, val);
         }
-      case 43:  // loadFloat
+      case 42:  // loadFloat
         {
           float def = (float)Pop().value;
           uint16_t eepromAddr = (int)Pop().value;
           Push({ StackValueType::Float, EEPROMStorage::LoadFloat(eepromAddr, def) });
           return true;
         }
-      case 44:  // saveFloat
+      case 43:  // saveFloat
         {
           float val = (float)Pop().value;
           uint16_t eepromAddr = (int)Pop().value;
           EEPROMStorage::SaveFloat(eepromAddr, val);
         }
-      case 45:  // loadStr
+      case 44:  // loadStr
         {
           uint16_t max = (uint16_t)Pop().value;
           char* def = GetStringPointer(Pop());
+          char* memAddr = (char*)Pop().value;
           uint16_t eepromAddr = (uint16_t)Pop().value;
-
+          
           if (max == 0)
-            return true;
-
-          char buffer[max];
+            return false;
 
           EEPROMStorage::LoadStr(
             eepromAddr,
-            buffer,
+            memAddr,
             max,
             def);
 
-          // Store loaded string in VM memory and push its VM address.
-          // uint16_t vmAddr = AllocateString(buffer);
-
-          //Push({ StackValueType::MemoryString, vmAddr });
-
           return false;
         }
-      case 46:  // saveStr
+      case 45:  // saveStr
         {
           uint16_t max = (uint16_t)Pop().value;
           char* value = GetStringPointer(Pop());
@@ -1576,7 +1577,7 @@ private:
           }
         }
       default:
-        Serial.print("[NTOS] Unknown system function: ");
+        Serial.print("[NTOS] Unknown function: ");
         Serial.println(functionIndex);
 
         for (uint8_t i = 0; i < argumentCount; i++) {
