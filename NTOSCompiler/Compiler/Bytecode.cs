@@ -266,6 +266,11 @@ public class BytecodeProgram
         _variables = sharedVariables ?? new();
     }
 
+    public BytecodeProgram(List<Instruction> instructions)
+    {
+        Instructions = instructions;
+    }
+
     public void UpdateBytecode()
     {
         PrepareBytecode(true);
