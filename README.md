@@ -187,7 +187,7 @@ But NTOS is **not JavaScript running on an Arduino**.
 The compilation process is:
 
 ```text
-                 main.ntos
+                 main.js
                      │
                      ▼
               ┌────────────┐
@@ -658,7 +658,7 @@ The Arduino does not execute this JavaScript directly.
 It becomes:
 
 ```text
-main.ntos
+main.js
     │
     ▼
 Acornima
@@ -990,7 +990,7 @@ Every byte has a job.
 
 | Extension | Purpose                |
 | --------- | ---------------------- |
-| `.ntos`   | NTOS source code       |
+| `.js`   | NTOS source code       |
 | `.ntx`    | Compiled NTOS bytecode |
 | `.nti`    | NTOS image resource    |
 
@@ -1010,7 +1010,7 @@ Monetrix/
 A typical NTOS application goes through this process:
 
 ```text
-                 main.ntos
+                 main.js
                      │
                      ▼
              ┌──────────────┐

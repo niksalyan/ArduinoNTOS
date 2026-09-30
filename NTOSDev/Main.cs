@@ -105,7 +105,7 @@ namespace NTOSDev
 
         public void OpenFile(string filePath)
         {
-            if (Path.GetExtension(filePath)?.ToLower() == ".ntos")
+            if (Path.GetExtension(filePath)?.ToLower() == ".js")
             {
                 new CodeEditor(filePath).Show(dockPanel, DockState.Document);
             } else

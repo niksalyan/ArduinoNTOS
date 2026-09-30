@@ -17,27 +17,38 @@
 // ========================================
 
 
-init {
-    int current = 0;
-    int left = 0;
-    int operator = 0;
-    int newInput = 1;
+function init() {
+    var current = 0;
+    var left = 0;
+    var operator = 0;
+    var newInput = 1;
 }
 
 
 // ========================================
 // DRAW CALCULATOR
 // ========================================
+dialog("CALCULATOR");
 
-draw {
+function update() {
+	// ====================================
+    // DISPLAY
+    // ====================================
 
-    dialog("CALCULATOR");
+    fillBox(20, 45, 440, 40, DARKGREEN);
+    drawBox(20, 45, 440, 40, WHITE);
 
+    cursor(40, 55,3);
+    print(current, WHITE);
+}
+
+
+function draw() {
     // Background
     fillBox(0, 32, 480, 320, DARKBLUE);
 
 
-    call update;
+    update();
 
 
     // ====================================
@@ -120,32 +131,19 @@ draw {
     print("/", WHITE);
 }
 
-update {
-	// ====================================
-    // DISPLAY
-    // ====================================
-
-    fillBox(20, 45, 440, 40, DARKGREEN);
-    drawBox(20, 45, 440, 40, WHITE);
-
-    cursor(40, 55,3);
-    print(current, WHITE);
-}
-
+draw();
 
 // Draw the initial calculator
-call draw;
+//draw();
 
 
 // ========================================
 // KEYPAD LOOP
 // ========================================
 
-loop {
+function loop() {
 
-    char key = getKey();
-
-
+    var key = getKey();
     switch(key) {
 
         // =================================
@@ -160,7 +158,8 @@ loop {
 			}
 
 			current = current * 10;
-			call update;
+			update();
+			break; 
 
 
         // =================================
@@ -175,7 +174,8 @@ loop {
             }
 
             current = current * 10 + 1;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -190,7 +190,8 @@ loop {
             }
 
             current = current * 10 + 2;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -205,8 +206,9 @@ loop {
             }
 
             current = current * 10 + 3;
-            call update;
-
+            update();
+			break; 
+			
 
         // =================================
         // NUMBER 4
@@ -220,7 +222,8 @@ loop {
             }
 
             current = current * 10 + 4;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -235,7 +238,8 @@ loop {
             }
 
             current = current * 10 + 5;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -250,7 +254,8 @@ loop {
             }
 
             current = current * 10 + 6;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -265,7 +270,8 @@ loop {
             }
 
             current = current * 10 + 7;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -280,7 +286,8 @@ loop {
             }
 
             current = current * 10 + 8;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -295,7 +302,8 @@ loop {
             }
 
             current = current * 10 + 9;
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -309,7 +317,8 @@ loop {
             operator = 1;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -323,7 +332,8 @@ loop {
             operator = 2;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -337,7 +347,8 @@ loop {
             operator = 3;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -351,7 +362,8 @@ loop {
             operator = 4;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -366,7 +378,8 @@ loop {
             operator = 0;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
 
 
         // =================================
@@ -398,7 +411,8 @@ loop {
             operator = 0;
             newInput = 1;
 
-            call update;
+            update();
+			break; 
     }
 
 

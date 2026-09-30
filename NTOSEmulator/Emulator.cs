@@ -47,7 +47,7 @@ namespace NTOSEmulator
             {
                 if (args.Length > 0)
                 {
-                    string file = appPath + args[0]?.ToString() + ".ntos";
+                    string file = appPath + args[0]?.ToString() + ".js";
                     Debug.WriteLine(file);
                     Execute(file, true);
                 }
@@ -272,8 +272,8 @@ namespace NTOSEmulator
             try
             {
                 PrepareDirectory(appPath + "build");
-                string[] files = Directory.GetFiles(appPath, "*.ntos")
-                    .OrderBy(f => Path.GetFileName(f).Equals("main.ntos", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                string[] files = Directory.GetFiles(appPath, "*.js")
+                    .OrderBy(f => Path.GetFileName(f).Equals("main.js", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                     .ToArray();
                 foreach (string file in files)
                 {

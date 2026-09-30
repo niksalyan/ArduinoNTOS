@@ -19,6 +19,7 @@ namespace NTOSCompiler.Compiler
         private List<Instruction> _instructions = new List<Instruction>();
 
         private readonly Dictionary<string, int> _functions = new();
+        private readonly Stack<List<int>> _breakJumps = new();
         public List<Variable> Variables => _variables;
         public List<Instruction> Instructions => _instructions;
 
@@ -38,6 +39,7 @@ namespace NTOSCompiler.Compiler
         {
             _instructions.Clear();
             _functions.Clear();
+            _breakJumps.Clear();
             _src = src;
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
@@ -94,6 +96,241 @@ namespace NTOSCompiler.Compiler
                 _instructions[jumpIfFalseIndex] =
                     new Instruction(OpCode.JumpIfFalse, endIndex);
             }
+
+            return null;
+        }
+
+        protected override object? VisitSwitchStatement(
+    SwitchStatement switchStatement)
+        {
+            // ------------------------------------------------------------
+            // NTOS switch implementation
+            //
+            // The switch expression is currently required to be an
+            // identifier. This lets us load it again for each case
+            // without requiring a DUP opcode or a temporary variable.
+            // ------------------------------------------------------------
+
+            if (switchStatement.Discriminant is not Identifier)
+            {
+                throw new InvalidOperationException(
+                    "Switch expression must be a variable.");
+            }
+
+            // Breaks belonging to this switch.
+            var breakJumps = new List<int>();
+            _breakJumps.Push(breakJumps);
+
+            // Information about each case.
+            var cases = new List<(SwitchCase Case, int TrueJumpIndex)>();
+
+            SwitchCase? defaultCase = null;
+
+            // ------------------------------------------------------------
+            // Phase 1:
+            // Generate the case-dispatch code.
+            //
+            // Example:
+            //
+            // Load key
+            // Push 'A'
+            // Equal
+            // JumpIfFalse nextTest
+            // Jump caseA
+            //
+            // Load key
+            // Push 'B'
+            // Equal
+            // JumpIfFalse default
+            // Jump caseB
+            // ------------------------------------------------------------
+
+            var falseJumps = new List<int>();
+
+            foreach (SwitchCase switchCase in switchStatement.Cases)
+            {
+                // default has no test.
+                if (switchCase.Test == null)
+                {
+                    defaultCase = switchCase;
+                    continue;
+                }
+
+                // The previous case failed.
+                // Its JumpIfFalse must continue here.
+                int currentTestIndex = _instructions.Count;
+
+                foreach (int jumpIndex in falseJumps)
+                {
+                    _instructions[jumpIndex] =
+                        new Instruction(
+                            OpCode.JumpIfFalse,
+                            currentTestIndex);
+                }
+
+                falseJumps.Clear();
+
+                // Load switch value.
+                Visit(switchStatement.Discriminant);
+
+                // Load case value.
+                Visit(switchCase.Test);
+
+                // Compare.
+                Add(OpCode.Equal);
+
+                // If false, test the next case.
+                int jumpIfFalseIndex = _instructions.Count;
+
+                Add(OpCode.JumpIfFalse, 0);
+
+                falseJumps.Add(jumpIfFalseIndex);
+
+                // If true, jump to this case's body.
+                int jumpToBodyIndex = _instructions.Count;
+
+                Add(OpCode.Jump, 0);
+
+                cases.Add(
+                    (switchCase, jumpToBodyIndex));
+            }
+
+            // ------------------------------------------------------------
+            // Phase 2:
+            // The final failed comparison goes to default,
+            // or to the end if there is no default.
+            // ------------------------------------------------------------
+
+            int bodyStartIndex = _instructions.Count;
+
+            foreach (int jumpIndex in falseJumps)
+            {
+                _instructions[jumpIndex] =
+                    new Instruction(
+                        OpCode.JumpIfFalse,
+                        bodyStartIndex);
+            }
+
+            // ------------------------------------------------------------
+            // Phase 3:
+            // Emit case bodies in their original order.
+            //
+            // This is what gives us fall-through behavior.
+            //
+            // case 'A':
+            //     foo();
+            //
+            // case 'B':
+            //     bar();
+            //
+            // If A matches and doesn't break, execution naturally
+            // continues into B.
+            // ------------------------------------------------------------
+
+            var caseBodyIndexes =
+                new Dictionary<SwitchCase, int>();
+
+            foreach (SwitchCase switchCase in switchStatement.Cases)
+            {
+                int caseBodyIndex = _instructions.Count;
+
+                caseBodyIndexes[switchCase] = caseBodyIndex;
+
+                foreach (Statement statement in switchCase.Consequent)
+                {
+                    Visit(statement);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // Switch end.
+            // ------------------------------------------------------------
+
+            int endIndex = _instructions.Count;
+
+            // ------------------------------------------------------------
+            // Patch case dispatch jumps.
+            // ------------------------------------------------------------
+
+            foreach (var entry in cases)
+            {
+                SwitchCase switchCase = entry.Case;
+                int jumpIndex = entry.TrueJumpIndex;
+
+                _instructions[jumpIndex] =
+                    new Instruction(
+                        OpCode.Jump,
+                        caseBodyIndexes[switchCase]);
+            }
+
+            // ------------------------------------------------------------
+            // Patch failed case comparison.
+            //
+            // The final JumpIfFalse currently points to the beginning
+            // of the body area. It needs to point specifically to
+            // default, or the end of the switch.
+            // ------------------------------------------------------------
+
+            if (falseJumps.Count > 0)
+            {
+                int target;
+
+                if (defaultCase != null)
+                {
+                    target = caseBodyIndexes[defaultCase];
+                }
+                else
+                {
+                    target = endIndex;
+                }
+
+                foreach (int jumpIndex in falseJumps)
+                {
+                    _instructions[jumpIndex] =
+                        new Instruction(
+                            OpCode.JumpIfFalse,
+                            target);
+                }
+            }
+
+            // ------------------------------------------------------------
+            // Patch all break statements belonging to this switch.
+            // ------------------------------------------------------------
+
+            foreach (int breakJumpIndex in breakJumps)
+            {
+                _instructions[breakJumpIndex] =
+                    new Instruction(
+                        OpCode.Jump,
+                        endIndex);
+            }
+
+            _breakJumps.Pop();
+
+            return null;
+        }
+
+        protected override object? VisitBreakStatement(
+    BreakStatement breakStatement)
+        {
+            if (breakStatement.Label != null)
+            {
+                throw new InvalidOperationException(
+                    "Labeled break is not supported.");
+            }
+
+            if (_breakJumps.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    "'break' is only valid inside a switch.");
+            }
+
+            int jumpIndex = _instructions.Count;
+
+            // Target is patched when the switch ends.
+            Add(OpCode.Jump, 0);
+
+            _breakJumps.Peek().Add(jumpIndex);
 
             return null;
         }

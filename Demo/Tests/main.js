@@ -1,6 +1,6 @@
-init{
-	int px = 240;
-	int py = 160;
+function init(){
+	var px = 240;
+	var py = 160;
 }
 
 cls();
@@ -36,11 +36,11 @@ fillBox(0, 235, 480, 85, GREEN);
 
 // Buildings
 
-int width = 0;
-int bx = 0;
+var width = 0;
+var bx = 0;
 for (bx = 5; bx < 480; bx = bx + width + 5) {
 	width = 20 + (bx % 15);
-    int height = 20 + (bx * 3) % 55;
+    var height = 20 + (bx * 3) % 55;
 
     fillBox(
         bx,
@@ -58,7 +58,7 @@ for (bx = 5; bx < 480; bx = bx + width + 5) {
 bx = 10;
 while (bx < 470) {
 
-    int by = 210;
+    var by = 210;
 
     while (by < 230) {
 
@@ -82,15 +82,15 @@ while (bx < 470) {
 // FIREWORK 1
 // ================================
 
-int cx = 120;
-int cy = 105;
+var cx = 120;
+var cy = 105;
 
-int i = 0;
+var i = 0;
 
 while (i < 12) {
 
-    int dx = (i * 17) % 35 - 17;
-    int dy = (i * 29) % 35 - 17;
+    var dx = (i * 17) % 35 - 17;
+    var dy = (i * 29) % 35 - 17;
 
     drawLine(
         cx,
@@ -114,8 +114,8 @@ i = 0;
 
 while (i < 16) {
 
-    int dx = (i * 23) % 50 - 25;
-    int dy = (i * 31) % 50 - 25;
+    var dx = (i * 23) % 50 - 25;
+    var dy = (i * 31) % 50 - 25;
 
     drawLine(
         cx,
@@ -139,8 +139,8 @@ i = 0;
 
 while (i < 14) {
 
-    int dx = (i * 19) % 40 - 20;
-    int dy = (i * 27) % 40 - 20;
+    var dx = (i * 19) % 40 - 20;
+    var dy = (i * 27) % 40 - 20;
 
     drawLine(
         cx,
@@ -160,11 +160,11 @@ while (i < 14) {
 fillBox(0, 275, 480, 45, BLUE);
 
 // Water reflection lines
-int wy = 280;
+var wy = 280;
 
 while (wy < 320) {
 
-    int wx = (wy * 13) % 40;
+    var wx = (wy * 13) % 40;
 
     while (wx < 480) {
 
@@ -186,11 +186,11 @@ while (wy < 320) {
 // MOON REFLECTION
 // ================================
 
-int ry = 280;
+var ry = 280;
 
 while (ry < 320) {
 
-    int width = 40 - (ry - 280);
+    var width = 40 - (ry - 280);
 
     drawLine(
         380 - width,
@@ -210,7 +210,7 @@ while (ry < 320) {
 fillBox(0, 310, 480, 10, GREEN);
 
 // Grass
-int gx = 0;
+var gx = 0;
 
 while (gx < 480) {
 

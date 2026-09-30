@@ -1,4 +1,0 @@
-dialog("WORKS");
-
-cursor(240, 50, 2);
-printRight("OKaaaaaaaaa", WHITE);
