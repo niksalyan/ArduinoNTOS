@@ -514,6 +514,27 @@ namespace NTOSCompiler.Compiler
             if (expression is BinaryExpression binary)
                 return GetBinaryExpressionType(binary);
 
+            if (expression is MemberExpression memberExpression)
+            {
+                if (memberExpression.Object is Identifier identifier2 &&
+                    memberExpression.Computed)
+                {
+                    Variable? variable =
+                        _variables.FirstOrDefault(
+                            x => x.Name == identifier2.Name);
+
+                    if (variable == null)
+                        throw new InvalidOperationException(
+                            $"Variable '{identifier2.Name}' is not declared.");
+
+                    if (!variable.IsArray)
+                        throw new InvalidOperationException(
+                            $"Variable '{identifier2.Name}' is not an array.");
+
+                    return variable.Type;
+                }
+            }
+
             if (expression is ArrayExpression array)
             {
                 if (array.Elements.Count == 0)
