@@ -49,8 +49,12 @@ namespace NTOSDev
                 CloseAllPanels();
                 projectExplorer.LoadFolder(s);
                 DoAction("projectExplorer");
-                DoAction("aiAgent");
+                DoAction("runEmulator");
 
+                string lastProj = NTOS.LastProject + "\\main.js";
+                if (File.Exists(lastProj)) {
+                    OpenFile(lastProj);
+                }
 
             };
 
