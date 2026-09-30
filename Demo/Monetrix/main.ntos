@@ -5,15 +5,19 @@ var c = a + b;
 /* VARS
 a	Int	0	4
 b	Float	4	4
+c	Float	8	4
 */
 
 /* INSTRUCTIONS
 StoreInt	0	0
 StoreFloat	4	0
+Add		0
+StoreFloat	8	0
+End		0
 */
 
 /* ERROR:
-Cannot determine type of expression: NonLogicalBinaryExpression
+No Error
 */ 
 
 

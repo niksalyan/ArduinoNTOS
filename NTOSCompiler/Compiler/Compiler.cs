@@ -122,8 +122,60 @@ namespace NTOSCompiler.Compiler
             if (expression is Identifier identifier)
                 return GetVariable(identifier.Name).Type;
 
+            if (expression is BinaryExpression binary)
+                return GetBinaryExpressionType(binary);
+
             throw new InvalidOperationException(
                 $"Cannot determine type of expression: {expression.GetType().Name}");
+        }
+
+        private VariableType GetBinaryExpressionType(
+    BinaryExpression expression)
+        {
+            switch (expression.Operator)
+            {
+                case Operator.Addition:
+                case Operator.Subtraction:
+                case Operator.Multiplication:
+                case Operator.Division:
+                case Operator.Remainder:
+                    {
+                        VariableType left =
+                            GetExpressionType(expression.Left);
+
+                        VariableType right =
+                            GetExpressionType(expression.Right);
+
+                        if (left == VariableType.Float ||
+                            right == VariableType.Float)
+                        {
+                            return VariableType.Float;
+                        }
+
+                        if (left == VariableType.Int &&
+                            right == VariableType.Int)
+                        {
+                            return VariableType.Int;
+                        }
+
+                        throw new InvalidOperationException(
+                            $"Invalid arithmetic types: {left} and {right}.");
+                    }
+
+                case Operator.Equality:
+                case Operator.Inequality:
+                case Operator.LessThan:
+                case Operator.GreaterThan:
+                case Operator.LessThanOrEqual:
+                case Operator.GreaterThanOrEqual:
+                case Operator.LogicalAnd:
+                case Operator.LogicalOr:
+                    return VariableType.Bool;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot determine type of operator: {expression.Operator}");
+            }
         }
 
         private VariableType GetLiteralType(Literal literal)
