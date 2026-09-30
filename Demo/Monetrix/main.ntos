@@ -1,4 +1,5 @@
 var playersCount = 4;
+
 var playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
 var playerNames = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"]; 
 
@@ -64,7 +65,7 @@ function draw() {
 draw();
 
 function loop(){
-    var key = getKey();
+    var key = b0;
 	var selected = getNumericKey();
 
 	if (key == 'C') {

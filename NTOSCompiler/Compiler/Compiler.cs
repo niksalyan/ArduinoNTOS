@@ -655,11 +655,19 @@ namespace NTOSCompiler.Compiler
 
         private VariableType GetLiteralType(Literal literal)
         {
+            if (literal is StringLiteral)
+            {
+                string value = (string)literal.Value!;
+
+                // In NTOS, a character is a byte.
+                if (value.Length == 1)
+                    return VariableType.Byte;
+
+                return VariableType.Str;
+            }
+
             if (literal.Value is bool)
                 return VariableType.Bool;
-
-            if (literal.Value is string)
-                return VariableType.Str;
 
             if (literal.Value is int ||
                 literal.Value is long)
