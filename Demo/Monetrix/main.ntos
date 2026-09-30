@@ -1,8 +1,11 @@
-var playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
+var playerBalance = [0, 2500, 3000, 2500, 2500, 2500, 2500];
 var playerNames   = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"];
 
 var c = 3;
-debug(playerBalance[3]);
+
+playerBalance[2] = 12000;
+
+debug(playerBalance[2]);
 
 
 /* VARS

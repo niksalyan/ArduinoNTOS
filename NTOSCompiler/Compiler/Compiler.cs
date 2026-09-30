@@ -770,6 +770,75 @@ namespace NTOSCompiler.Compiler
             return null;
         }
 
+        protected override object? VisitMemberExpression(
+    MemberExpression member)
+        {
+            if (!member.Computed ||
+                member.Object is not Identifier identifier)
+            {
+                throw new InvalidOperationException(
+                    "Only array indexing is supported.");
+            }
+
+            Variable variable =
+                GetVariable(identifier.Name);
+
+            if (!variable.IsArray)
+                throw new InvalidOperationException(
+                    $"Variable '{variable.Name}' is not an array.");
+
+            // The index expression must produce an integer.
+            VariableType indexType =
+                GetExpressionType(member.Property);
+
+            if (indexType != VariableType.Int)
+                throw new InvalidOperationException(
+                    $"Array index must be Int, but got {indexType}.");
+
+            // Base address.
+            Add(
+                OpCode.PushInt,
+                variable.Address);
+
+            // Index.
+            CompileExpression(member.Property);
+
+            // index * elementSize
+            Add(
+                OpCode.PushInt,
+                variable.GetElementSize());
+
+            Add(OpCode.Multiply);
+
+            // base + offset
+            Add(OpCode.Add);
+
+            // Load element.
+            Add(
+                variable.Type switch
+                {
+                    VariableType.Int =>
+                        OpCode.LoadIndirectInt,
+
+                    VariableType.Float =>
+                        OpCode.LoadIndirectFloat,
+
+                    VariableType.Byte =>
+                        OpCode.LoadIndirectByte,
+
+                    VariableType.Bool =>
+                        OpCode.LoadIndirectByte,
+
+                    VariableType.Str =>
+                        OpCode.LoadIndirectStr,
+
+                    _ => throw new InvalidOperationException(
+                        $"Unsupported array type: {variable.Type}")
+                });
+
+            return variable.Type;
+        }
+
         private void Load(Variable variable)
         {
             switch (variable.Type)
