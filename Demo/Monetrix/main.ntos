@@ -1,10 +1,18 @@
-var a = 10;
+var a = 27;
 var b = 0;
 
-if (a > 5) {
+if (a > 50) {
+    b = 500;
+} else if (a > 40) {
+    b = 400;
+} else if (a > 30) {
+    b = 300;
+} else if (a > 20) {
+    b = 200;
+} else if (a > 10) {
     b = 100;
 } else {
-    b = 200;
+    b = 0;
 }
 
 /* VARS
@@ -13,20 +21,48 @@ b	Int	4	4
 */
 
 /* INSTRUCTIONS
-PushInt	10	0
+PushInt	27	0
 StoreInt	0	5
 PushInt	0	8
 StoreInt	4	13
 LoadInt	0	16
-PushInt	5	19
+PushInt	50	19
 Greater		24
 JumpIfFalse	11	25
-PushInt	100	28
+PushInt	500	28
 StoreInt	4	33
-Jump	13	36
-PushInt	200	39
-StoreInt	4	44
-End		47
+Jump	41	36
+LoadInt	0	39
+PushInt	40	42
+Greater		47
+JumpIfFalse	18	48
+PushInt	400	51
+StoreInt	4	56
+Jump	41	59
+LoadInt	0	62
+PushInt	30	65
+Greater		70
+JumpIfFalse	25	71
+PushInt	300	74
+StoreInt	4	79
+Jump	41	82
+LoadInt	0	85
+PushInt	20	88
+Greater		93
+JumpIfFalse	32	94
+PushInt	200	97
+StoreInt	4	102
+Jump	41	105
+LoadInt	0	108
+PushInt	10	111
+Greater		116
+JumpIfFalse	39	117
+PushInt	100	120
+StoreInt	4	125
+Jump	41	128
+PushInt	0	131
+StoreInt	4	136
+End		139
 */
 
 /* ERROR:
