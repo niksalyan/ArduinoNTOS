@@ -1,5 +1,9 @@
+var a = 5;
+var b = 6;
+var c = a + b;
 
 
+/*
 init{
 	int playersCount = 4;
     int playerBalance[7];
@@ -85,3 +89,4 @@ loop{
 
     delay(1);
 }
+*/

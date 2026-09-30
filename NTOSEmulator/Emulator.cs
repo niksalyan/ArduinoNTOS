@@ -4,7 +4,7 @@ using NTOSEmulator.Libs;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
-using System.Xml.Linq;
+
 
 namespace NTOSEmulator
 {
@@ -12,7 +12,7 @@ namespace NTOSEmulator
     {
         public VMFunctions vmFunctions { get; private set; } = new VMFunctions();
         private VirtualMachine vm;
-        private BytecodeApp app;
+        private Compiler compiler;
 
         private ScreenBuffer screen;
 
@@ -178,7 +178,7 @@ namespace NTOSEmulator
 
             screen = new ScreenBuffer(vmFunctions);
 
-            app = new BytecodeApp(vmFunctions, screen.colors);
+            compiler = new Compiler(vmFunctions, screen.colors);
             vm = new VirtualMachine(4096, vmFunctions);
 
             screen.OnInvalidate += () =>
@@ -226,7 +226,7 @@ namespace NTOSEmulator
 
         public void ClearMemory()
         {
-            app.Reset();
+            // compiler.ClearMemory();// TODO
         }
 
         public void ClearDebug()
@@ -285,8 +285,8 @@ namespace NTOSEmulator
 
                         string name = Path.GetFileNameWithoutExtension(file);
                         string source = File.ReadAllText(file);
-                        string error = app.CompileSource(name, source);
-                        if (error == null)
+                        byte[] bytecode = compiler.Compile(source);
+                        /*if (error == null)
                         {
                             byte[] bytecode = app.GetBytecode(name);
                             File.WriteAllBytes(appPath + "build\\" + name + ".ntx", bytecode);
@@ -295,7 +295,7 @@ namespace NTOSEmulator
                         else
                         {
                             DebugOutput("Build: " + name + " : " + error);
-                        }
+                        }*/
 
 
                     }
@@ -352,26 +352,35 @@ namespace NTOSEmulator
             variablesGrid.DataSource = null;
             //bytecodeOutput.Text = "";
 
-            string error = app.CompileSource(name, source);
+            try
+            {
+                byte[] bytecode = compiler.Compile(source);
+                DebugOutput("Compiled");
+            } catch (Exception ex)
+            {
+                DebugError(ex.Message);
+            }
 
-
-
-            bytecodeGrid.DataSource = app.Instructions;
-            variablesGrid.DataSource = app.Variables;
+            BeginInvoke(() =>
+            {
+                bytecodeGrid.DataSource = compiler.Instructions;
+                variablesGrid.DataSource = compiler.Variables;
+            });
+            
             //bytecodeOutput.Text = app.ToArduinoArray(name);
-
+/* // TODO
             if (error != null)
             {
                 DebugError(error);
                 return;
             }
-
+*/
             try
             {
                 currentKey = 0;
                 currentNumber = -1;
                 vm.Initialized = initialized;
-                await vm.Execute(app.GetBytecode(name));
+                // await vm.Execute(bytecode); // TODO
             }
             catch (Exception ex)
             {
@@ -536,7 +545,7 @@ namespace NTOSEmulator
 
         private void showBytecode_Click(object sender, EventArgs e)
         {
-            DebugStart(app.ToArduinoArray(lastBytecode));
+            // DebugStart(app.ToArduinoArray(lastBytecode));
         }
 
         private async void uploadButton_Click(object sender, EventArgs e)
