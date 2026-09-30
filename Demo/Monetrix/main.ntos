@@ -41,7 +41,7 @@ PushByte	28	53
 CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	55
 Pop		59
 Return		60
-CallSubroutine	0	61
+CallSubroutine	10	61
 PushInt	100	64
 CallFunction	FunctionCall { Index = 3, ArgumentCount = 1 }	69
 Pop		73

@@ -274,18 +274,17 @@ namespace NTOSCompiler.Compiler
             // User-defined function / subroutine
             // ------------------------------------------------------------
 
-            if (_functions.ContainsKey(functionName))
+            if (_functions.TryGetValue(
+                    functionName,
+                    out int userFunctionIndex))
             {
                 if (callExpression.Arguments.Count != 0)
                     throw new InvalidOperationException(
                         $"Function '{functionName}' does not accept arguments.");
 
-                int instructionIndex = _instructions.Count;
-
-                Add(OpCode.CallSubroutine, 0);
-
-                _unresolvedFunctionCalls.Add(
-                    (instructionIndex, functionName));
+                Add(
+                    OpCode.CallSubroutine,
+                    userFunctionIndex);
 
                 return VariableType.None;
             }
@@ -294,7 +293,7 @@ namespace NTOSCompiler.Compiler
             // VM function
             // ------------------------------------------------------------
 
-            int functionIndex =
+            int vmFunctionIndex =
                 _vmFunctions.GetIndex(functionName);
 
             int argumentCount =
@@ -311,7 +310,7 @@ namespace NTOSCompiler.Compiler
             Add(
                 OpCode.CallFunction,
                 new FunctionCall(
-                    (ushort)functionIndex,
+                    (ushort)vmFunctionIndex,
                     (byte)argumentCount));
 
             if (returnType == VariableType.None)
