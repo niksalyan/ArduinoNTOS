@@ -1,5 +1,6 @@
 using NTOSCompiler.Compiler;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 
 namespace NTOSCompiler;
@@ -255,21 +256,18 @@ public class BytecodeProgram
     private List<Variable> _variables;
     
 
-    public List<Instruction> Instructions { get; } = new();
+    public List<Instruction> Instructions { get; set; } = new();
 
     private byte[] _bytecode;
 
     public byte[] Bytecode => _bytecode;
 
-    public BytecodeProgram(List<Variable> sharedVariables = null)
+    public BytecodeProgram(List<Variable> sharedVariables = null, List<Instruction> instructions = null)
     {
         _variables = sharedVariables ?? new();
+        Instructions = instructions ?? Instructions;
     }
 
-    public BytecodeProgram(List<Instruction> instructions)
-    {
-        Instructions = instructions;
-    }
 
     public void UpdateBytecode()
     {
@@ -288,6 +286,7 @@ public class BytecodeProgram
             {
                 instruction.Address =
                     checked((int)stream.Length);
+                Debug.WriteLine("Assigning address: " + instruction.Address);
             }
 
             stream.WriteByte(

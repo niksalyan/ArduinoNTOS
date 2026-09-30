@@ -37,7 +37,9 @@ namespace NTOSCompiler.Compiler
 
             Add(OpCode.End);
 
-            return new BytecodeProgram(_instructions).PrepareBytecode();
+            var program = new BytecodeProgram(_variables, _instructions);
+            program.PrepareBytecode(true); //  We do 2 pass bytecode generation first pass assigns addresses to the instructions
+            return program.PrepareBytecode();
         }
 
         // ------------------------------------------------------------
@@ -279,6 +281,31 @@ namespace NTOSCompiler.Compiler
             Variable variable = GetVariable(identifier.Name);
 
             Load(variable);
+
+            return null;
+        }
+
+        protected override object? VisitAssignmentExpression(
+            AssignmentExpression expression)
+        {
+            if (expression.Left is not Identifier identifier)
+                throw new InvalidOperationException(
+                    "Only simple variable assignment is supported.");
+
+            Variable variable = GetVariable(identifier.Name);
+
+            if (expression.Operator != Operator.Assignment)
+                throw new InvalidOperationException(
+                    $"Unsupported assignment operator: {expression.Operator}");
+
+            VariableType type = GetExpressionType(expression.Right);
+
+            if (type != variable.Type)
+                throw new InvalidOperationException(
+                    $"Cannot assign {type} to variable '{variable.Name}' of type {variable.Type}.");
+
+            CompileExpression(expression.Right);
+            Store(variable);
 
             return null;
         }
