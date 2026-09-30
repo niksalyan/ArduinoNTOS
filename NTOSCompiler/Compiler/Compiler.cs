@@ -375,10 +375,6 @@ namespace NTOSCompiler.Compiler
             Variable? existing = _variables
                 .FirstOrDefault(x => x.Name == name);
 
-            // let + existing variable:
-            // completely ignore this declaration.
-            if (existing != null && isLet)
-                return;
 
             // No initializer.
             if (variableDeclarator.Init == null)
@@ -388,7 +384,7 @@ namespace NTOSCompiler.Compiler
                 GetExpressionType(variableDeclarator.Init);
 
             // var + existing variable:
-            // overwrite the existing value.
+            // Existing variable.
             if (existing != null)
             {
                 if (existing.Type != type)
@@ -396,7 +392,31 @@ namespace NTOSCompiler.Compiler
                         $"Variable '{name}' is {existing.Type}, " +
                         $"but initializer is {type}.");
 
-                CompileExpression(variableDeclarator.Init);
+                if (isLet)
+                {
+                    int jumpIndex = _instructions.Count;
+
+                    Add(OpCode.JumpIfInitialized, 0);
+
+                    CompileExpression(
+                        variableDeclarator.Init);
+
+                    Store(existing);
+
+                    int endIndex = _instructions.Count;
+
+                    _instructions[jumpIndex] =
+                        new Instruction(
+                            OpCode.JumpIfInitialized,
+                            endIndex);
+
+                    return;
+                }
+
+                // var: always assign.
+                CompileExpression(
+                    variableDeclarator.Init);
+
                 Store(existing);
 
                 return;

@@ -50,4 +50,8 @@ namespace NTOSCompiler.Compiler
         }
 
     }
+
+    public readonly record struct FunctionCall(
+    ushort Index,
+    byte ArgumentCount);
 }

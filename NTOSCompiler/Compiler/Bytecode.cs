@@ -221,29 +221,6 @@ public class BytecodeApp
         return sb.ToString();
     }
 
-    public string? CompileSource(string name, string source)
-    {
-        try
-        {
-            _instructions = null;
-            var lexer = new Lexer(source);
-            var tokens = lexer.Tokenize();
-
-            var bytecode = new BytecodeProgram(_variables);
-
-            var parser = new Parser(tokens, _vmFunctions, _constants);
-            var program = parser.Compile(bytecode);
-
-            _bytecodes[name] = program.Bytecode;
-            _instructions = program.Instructions;
-
-            return null;
-        } catch(Exception ex)
-        {
-            return ex.Message;
-        }
-    }
-
     public void Reset()
     {
         _variables.Clear();
