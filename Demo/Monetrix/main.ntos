@@ -2,6 +2,20 @@ var a = 5;
 var b = 6.0;
 var c = a + b; 
 
+/* VARS
+a	Int	0	4
+b	Float	4	4
+*/
+
+/* INSTRUCTIONS
+StoreInt	0	0
+StoreFloat	4	0
+*/
+
+/* ERROR:
+Cannot determine type of expression: NonLogicalBinaryExpression
+*/ 
+
 
 
 /*
