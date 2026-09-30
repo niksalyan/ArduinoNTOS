@@ -4,6 +4,7 @@
 #include <SoftSD.h>
 #include <Arduino.h>
 #include "UI.h"
+#include "NTOSUI.h"
 #include "Navigation.h"
 #include "Storage.h"
 #include "EEPROMStorage.h"
@@ -1467,9 +1468,9 @@ private:
       case 30:  // dialog
         {
           const char* text = GetStringPointer(Pop());
-          UI::dialog(text);
+          NTOSUI::dialog(text);
           tft.setTextSize(2);
-          tft.setCursor(0, 26);
+          tft.setCursor(0, NTOSUI::HEADER_HEIGHT);
 
           break;
         }
@@ -1555,12 +1556,11 @@ private:
             def);
 
           // Store loaded string in VM memory and push its VM address.
-          uint16_t vmAddr = AllocateString(buffer);
+          // uint16_t vmAddr = AllocateString(buffer);
 
-          Push({ StackValueType::MemoryString,
-                 vmAddr });
+          //Push({ StackValueType::MemoryString, vmAddr });
 
-          return true;
+          return false;
         }
       case 46:  // saveStr
         {

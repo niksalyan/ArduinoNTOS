@@ -2,6 +2,7 @@
 #pragma once
 
 #include "UI.h"
+#include "NTOSUI.h"
 #include "Storage.h"
 
 class MainView {
@@ -20,9 +21,6 @@ private:
   static constexpr uint8_t MAX_APPS = 32;
   static constexpr uint8_t MAX_APP_NAME = 11;
 
-  // Screen
-  static constexpr int HEADER_HEIGHT = 32;
-  static constexpr int FOOTER_HEIGHT = 32;
 
   // Application cards
   static constexpr int TILE_WIDTH = 135;
@@ -33,36 +31,6 @@ private:
 
   static constexpr int COL_GAP = 12;
   static constexpr int ROW_GAP = 10;
-
-  // ==================================================
-  // Colors
-  // ==================================================
-
-  static constexpr uint16_t COLOR_BACKGROUND = TFT_BLACK;
-
-  static constexpr uint16_t COLOR_HEADER =
-    0x18E3;
-
-  static constexpr uint16_t COLOR_CARD =
-    0x1082;
-
-  static constexpr uint16_t COLOR_CARD_SELECTED =
-    0x2945;
-
-  static constexpr uint16_t COLOR_BORDER =
-    0x39C7;
-
-  static constexpr uint16_t COLOR_BORDER_SELECTED =
-    TFT_CYAN;
-
-  static constexpr uint16_t COLOR_PRIMARY =
-    TFT_CYAN;
-
-  static constexpr uint16_t COLOR_TEXT =
-    TFT_WHITE;
-
-  static constexpr uint16_t COLOR_TEXT_SECONDARY =
-    0x8410;
 
   // ==================================================
   // State
@@ -200,66 +168,7 @@ private:
     buffer[bufferSize - 1] = '\0';
   }
 
-  // ==================================================
-  // Draw application icon
-  // ==================================================
-
-  static void drawIcon(
-    int x,
-    int y,
-    bool selected) {
-
-
-
-    uint16_t color =
-      selected
-        ? COLOR_TEXT
-        : TFT_CYAN;
-
-    // Simple modern "window" icon.
-    //
-    // This can later be replaced with:
-    //
-    // Storage::loadIcon(...)
-    //
-
-    int iconX = x + TILE_WIDTH / 2 - 14;
-    int iconY = y + 15;
-
-    tft.drawRect(
-      iconX,
-      iconY,
-      28,
-      24,
-      color);
-
-    tft.drawFastHLine(
-      iconX,
-      iconY + 6,
-      28,
-      color);
-
-    // Window buttons
-    tft.fillCircle(
-      iconX + 4,
-      iconY + 3,
-      1,
-      color);
-
-    tft.fillCircle(
-      iconX + 8,
-      iconY + 3,
-      1,
-      color);
-
-    // Simple content symbol
-    tft.drawRect(
-      iconX + 6,
-      iconY + 11,
-      16,
-      8,
-      color);
-  }
+  
 
   // ==================================================
   // Draw application tile
@@ -291,48 +200,7 @@ private:
     bool selected =
       index == selectedApp;
 
-    uint16_t background =
-      selected
-        ? COLOR_CARD_SELECTED
-        : COLOR_CARD;
-
-    uint16_t border =
-      selected
-        ? COLOR_BORDER_SELECTED
-        : COLOR_BORDER;
-
-    // ------------------------------------------------
-    // Card
-    // ------------------------------------------------
-
-    tft.fastFillRect(
-      x,
-      y,
-      TILE_WIDTH,
-      TILE_HEIGHT,
-      background);
-
-    tft.drawRect(
-      x,
-      y,
-      TILE_WIDTH,
-      TILE_HEIGHT,
-      border);
-
-    // ------------------------------------------------
-    // Selection indicator
-    // ------------------------------------------------
-
-    if (selected) {
-
-      // Small accent bar on the left.
-      tft.fastFillRect(
-        x,
-        y,
-        5,
-        TILE_HEIGHT,
-        COLOR_PRIMARY);
-    }
+    NTOSUI::drawWindow(x, y, TILE_WIDTH, TILE_HEIGHT, selected);
 
     // ------------------------------------------------
     // Icon
@@ -353,10 +221,7 @@ private:
 
 
     if(!Storage::drawImage(displayName, "icon", x + TILE_WIDTH / 2, y + TILE_HEIGHT / 3, 2, 2, 0)) {
-      drawIcon(
-            x,
-            y,
-            true);
+      NTOSUI::drawIcon(x + TILE_WIDTH / 2 - 14, y + 18);
     }
 
     getDisplayName(
@@ -368,119 +233,7 @@ private:
       displayName,
       x + TILE_WIDTH / 2,
       y + 58,
-      COLOR_TEXT);
-  }
-
-  // ==================================================
-  // Draw empty tile
-  // ==================================================
-
-  static void drawEmptyTile(
-    uint8_t localIndex) {
-
-    uint8_t column =
-      localIndex % COLS;
-
-    uint8_t row =
-      localIndex / COLS;
-
-    int x = tileX(column);
-    int y = tileY(row);
-
-    tft.fastFillRect(
-      x,
-      y,
-      TILE_WIDTH,
-      TILE_HEIGHT,
-      COLOR_BACKGROUND);
-  }
-
-  // ==================================================
-  // Header
-  // ==================================================
-
-  static void drawHeader() {
-
-    // Header background
-    tft.fastFillRect(
-      0,
-      0,
-      tft.width(),
-      HEADER_HEIGHT,
-      COLOR_HEADER);
-
-    // Bottom separator
-    tft.drawFastHLine(
-      0,
-      HEADER_HEIGHT - 1,
-      tft.width(),
-      COLOR_BORDER);
-
-    // NTOS title
-    UI::print(
-      "NTOS",
-      12,
-      10,
-      COLOR_PRIMARY);
-
-    // Page indicator
-    char pageText[20];
-
-    sprintf(
-      pageText,
-      "%d / %d",
-      currentPage + 1,
-      pageCount());
-
-    UI::printRight(
-      pageText,
-      tft.width() - 12,
-      10,
-      COLOR_TEXT_SECONDARY);
-  }
-
-  // ==================================================
-  // Footer
-  // ==================================================
-
-  static void drawFooter() {
-
-    int y =
-      tft.height() - FOOTER_HEIGHT;
-
-    // Background
-    tft.fastFillRect(
-      0,
-      y,
-      tft.width(),
-      FOOTER_HEIGHT,
-      COLOR_HEADER);
-
-    // Top separator
-    tft.drawFastHLine(
-      0,
-      y,
-      tft.width(),
-      COLOR_BORDER);
-
-    // Navigation
-    UI::print(
-      "4/6",
-      10,
-      y + 7,
-      COLOR_TEXT_SECONDARY);
-
-    UI::printCentered(
-      "0 OPEN",
-      tft.width() / 2,
-      y + 7,
-      COLOR_PRIMARY);
-
-    UI::printRight(
-      "2/8",
-      tft.width() - 10,
-      y + 7,
-      COLOR_TEXT_SECONDARY);
+      NTOSUI::COLOR_TEXT);
   }
 
   // ==================================================
@@ -493,13 +246,13 @@ private:
       "NO APPS",
       tft.width() / 2,
       130,
-      COLOR_TEXT);
+      NTOSUI::COLOR_TEXT);
 
     UI::printCentered(
       "APPLICATIONS NOT FOUND",
       tft.width() / 2,
       150,
-      COLOR_TEXT_SECONDARY);
+      NTOSUI::COLOR_TEXT_SECONDARY);
   }
 
   // ==================================================
@@ -528,7 +281,6 @@ public:
     // Clear desktop
     // ------------------------------------------------
 
-    tft.fillScreenBlack();
 
     tft.setTextSize(2);
 
@@ -536,7 +288,15 @@ public:
     // Header
     // ------------------------------------------------
 
-    drawHeader();
+    // Page indicator
+    char pageText[10];
+
+    sprintf(
+      pageText,
+      "%d / %d",
+      currentPage + 1,
+      pageCount());
+    NTOSUI::dialog("NTOS", pageText);
 
     // ------------------------------------------------
     // Applications
@@ -572,8 +332,7 @@ public:
         i < start + APPS_PER_PAGE;
         i++) {
 
-        drawEmptyTile(
-          i - start);
+        // drawEmptyTile( i - start);
       }
     }
 
@@ -581,7 +340,7 @@ public:
     // Footer
     // ------------------------------------------------
 
-    drawFooter();
+    NTOSUI::drawFooter("4/6", "0 OPEN", "2/8");
   }
 
 private:
