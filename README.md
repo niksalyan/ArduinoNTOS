@@ -1,10 +1,18 @@
 # NTOS
 
-### A tiny operating system for Arduino, built from scratch.
+### A tiny operating system for Arduino, with an Arduino JavaScript programming language.
 
 **NTOS** is an experimental operating system designed for Arduino Mega with an Adafruit 3.5" TFT Shield and SD card.
 
 It includes its own **programming language, compiler, bytecode format, virtual machine, runtime, application system, graphics APIs, and development environment**.
+
+The NTOS programming language uses familiar **JavaScript syntax** and is parsed by **Acornima**, a real JavaScript parser. The resulting JavaScript AST is compiled into custom NTOS bytecode and executed by the NTOS Virtual Machine on the Arduino.
+
+> **Arduino JavaScript → JavaScript AST → NTOS Compiler → NTOS Bytecode → NTOS VM → Arduino**
+
+The Arduino does **not** run a JavaScript interpreter.
+
+JavaScript parsing happens during compilation on the development machine. The Arduino receives and executes the resulting NTOS bytecode.
 
 The goal isn't to build the smallest Arduino project.
 
@@ -12,7 +20,7 @@ The goal is to understand how an operating system works by building one from the
 
 ---
 
-## 🚀 The Story
+# 🚀 The Story
 
 NTOS started with a simple idea:
 
@@ -24,7 +32,7 @@ But that immediately created another problem:
 
 **How does the Arduino execute an application stored on the SD card?**
 
-Instead of using an existing scripting engine, I decided to build a custom bytecode format and a virtual machine.
+Instead of putting an interpreter on the Arduino, NTOS uses a custom bytecode format and a virtual machine.
 
 Then came the compiler.
 
@@ -39,6 +47,8 @@ Then graphics.
 Then application loading.
 
 Then resources.
+
+Then a development environment.
 
 At some point, the project stopped being an experiment for running programs from an SD card.
 
@@ -67,7 +77,9 @@ NTOS is essentially a small software stack running on an Arduino:
 └──────────────────────────────┘
 ```
 
-Applications are compiled into NTOS bytecode and stored on the SD card.
+Applications are written using NTOS source code and compiled into NTOS bytecode.
+
+The bytecode is stored on the SD card.
 
 The Arduino loads the bytecode and executes it through the NTOS Virtual Machine.
 
@@ -80,47 +92,183 @@ The firmware provides the runtime and hardware interface, while applications rem
 The complete development pipeline looks like this:
 
 ```text
-                 Development PC
-                       │
-                       ▼
-              ┌─────────────────┐
-              │    NTOS Dev     │
-              │                 │
-              │ Source Code     │
-              │ Resources       │
-              │ Build Tools     │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │ NTOS Compiler   │
-              └────────┬────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │    Bytecode     │
-              │      *.ntx      │
-              └────────┬────────┘
-                       │
-                       ▼
-                ┌────────────┐
-                │  SD Card   │
-                └─────┬──────┘
-                      │
-                      ▼
-              ┌─────────────────┐
-              │    NTOS VM      │
-              │    Arduino      │
-              └────────┬────────┘
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-       Graphics      Input        Storage
-          │            │            │
-          └────────────┼────────────┘
-                       ▼
-                 TFT Display
+                         Development PC
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      NTOS Dev       │
+                    │                     │
+                    │ Source Code         │
+                    │ Resources           │
+                    │ Build Tools         │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      Acornima       │
+                    │  JavaScript Parser  │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                         JavaScript AST
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │    NTOS Compiler    │
+                    │      AST Visitor    │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                       NTOS Instructions
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │   Bytecode Builder  │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                         NTOS Bytecode
+                             *.ntx
+                               │
+                               ▼
+                          ┌─────────┐
+                          │ SD Card │
+                          └────┬────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │       NTOS VM       │
+                    │       Arduino       │
+                    └──────────┬──────────┘
+                               │
+                  ┌────────────┼────────────┐
+                  ▼            ▼            ▼
+               Graphics      Input       Storage
+                  │            │            │
+                  └────────────┼────────────┘
+                               ▼
+                         TFT Display
 ```
+
+There are two very different parts to the system:
+
+### Development side
+
+The development machine parses and compiles the source code.
+
+### Runtime side
+
+The Arduino executes the generated NTOS bytecode.
+
+This distinction is important.
+
+**Acornima is part of the compiler frontend. It is not part of the Arduino runtime.**
+
+---
+
+# 🟨 Arduino JavaScript
+
+One of the defining features of NTOS is its **Arduino JavaScript** programming model.
+
+NTOS source code uses familiar JavaScript syntax:
+
+```js
+var playersCount = 4;
+
+var balance = 2500;
+
+if (balance > 2000) {
+    print("Balance is high", GREEN);
+}
+```
+
+But NTOS is **not JavaScript running on an Arduino**.
+
+The compilation process is:
+
+```text
+                 main.ntos
+                     │
+                     ▼
+              ┌────────────┐
+              │  Acornima  │
+              │ JS Parser  │
+              └──────┬─────┘
+                     │
+                     ▼
+              JavaScript AST
+                     │
+                     ▼
+              ┌────────────┐
+              │    NTOS    │
+              │  Compiler  │
+              └──────┬─────┘
+                     │
+                     ▼
+              NTOS Bytecode
+                     │
+                     ▼
+              ┌────────────┐
+              │   NTOS VM  │
+              └──────┬─────┘
+                     │
+                     ▼
+                  Arduino
+```
+
+The Arduino never needs to understand JavaScript source code.
+
+It only needs to understand NTOS bytecode.
+
+This allows NTOS to use a mature JavaScript parser while keeping the compiler, bytecode, VM, memory model, runtime, and hardware interfaces completely under NTOS control.
+
+---
+
+# 🧩 The JavaScript Parser Under the Hood
+
+NTOS does not use a hand-written parser for its source language.
+
+The compiler uses **Acornima** to parse NTOS source code.
+
+Acornima produces a JavaScript-compatible **Abstract Syntax Tree (AST)**.
+
+The NTOS compiler then walks that AST and translates supported language constructs into NTOS instructions.
+
+For example:
+
+```js
+if (playerBalance > 2000) {
+    print("RICH", GREEN);
+}
+```
+
+is not interpreted directly.
+
+Conceptually:
+
+```text
+Source
+  │
+  ▼
+Acornima
+  │
+  ▼
+IfStatement
+  │
+  ├── BinaryExpression
+  │      └── playerBalance > 2000
+  │
+  └── BlockStatement
+         └── print(...)
+  │
+  ▼
+NTOS AST Visitor
+  │
+  ▼
+Jump / comparison / runtime-call instructions
+```
+
+This architecture makes the compiler easier to extend because language constructs can be implemented through AST visitors rather than requiring a new tokenizer and parser for every feature.
 
 ---
 
@@ -149,18 +297,22 @@ The Arduino is responsible for executing NTOS applications.
 
 The compiler converts NTOS source code into custom bytecode.
 
-It handles things such as:
+It is written in C# and uses **Acornima** as its JavaScript parser frontend.
+
+It handles:
 
 * Variables
 * Data types
 * Expressions
+* Arrays
 * Functions
 * Control flow
+* Memory addresses
 * Bytecode generation
 * Runtime function calls
 * Application compilation
 
-The compiler is written in C#.
+The compiler operates on an AST rather than directly interpreting source text.
 
 ---
 
@@ -174,19 +326,483 @@ Instead of compiling every application directly into Arduino firmware, NTOS exec
 NTOS Source
      │
      ▼
- Compiler
+Acornima
      │
      ▼
- Bytecode
+JavaScript AST
      │
      ▼
- VM
+NTOS Compiler
      │
      ▼
- Arduino
+Bytecode
+     │
+     ▼
+NTOS VM
+     │
+     ▼
+Arduino
 ```
 
 This separation is one of the core ideas behind NTOS.
+
+---
+
+# 💻 Arduino JavaScript Examples
+
+NTOS source code is intentionally familiar to JavaScript developers while targeting the NTOS virtual machine.
+
+## Variables
+
+```js
+var playersCount = 4;
+
+var balance = 2500;
+
+var playerName = "TIGRAN";
+
+var enabled = true;
+
+var key = 'A';
+```
+
+NTOS currently supports:
+
+```text
+int
+float
+bool
+byte
+string
+```
+
+Character literals are represented as bytes:
+
+```js
+var key = 'A';
+
+if (key == 'A') {
+    print("Pressed A", GREEN);
+}
+```
+
+---
+
+# ➕ Expressions
+
+Arithmetic expressions are compiled into NTOS VM instructions.
+
+```js
+var a = 100;
+var b = 50;
+
+var total = a + b;
+var difference = a - b;
+var multiplied = total * 2;
+var remainder = total % 3;
+```
+
+Compound assignments are also supported:
+
+```js
+balance += 500;
+balance -= 100;
+```
+
+Comparisons can be used directly in control flow:
+
+```js
+if (balance >= 2000) {
+    print("OK", GREEN);
+}
+```
+
+---
+
+# 📦 Arrays
+
+Arrays can be declared directly from their values.
+
+```js
+var balances = [
+    2500,
+    2500,
+    2500,
+    2500
+];
+
+var names = [
+    "P1",
+    "P2",
+    "P3",
+    "P4"
+];
+```
+
+The compiler automatically determines:
+
+* Element type
+* Number of elements
+* Element size
+* Required memory
+
+Array indexing uses normal JavaScript syntax:
+
+```js
+var player = 2;
+
+print(names[player], WHITE);
+print(balances[player], GREEN);
+```
+
+Array elements can be modified:
+
+```js
+balances[2] = 3000;
+names[2] = "TIGRAN";
+```
+
+Arrays are stored in the NTOS global memory space.
+
+This means an array declared by one compiled bytecode unit can remain available to another compiled bytecode unit through its shared variable address.
+
+---
+
+# 🔁 Control Flow
+
+NTOS supports normal JavaScript-style control flow.
+
+## `if`
+
+```js
+if (balance > 2000) {
+    print("RICH", GREEN);
+}
+```
+
+## `while`
+
+```js
+var i = 0;
+
+while (i < 10) {
+    print(i, WHITE);
+
+    i = i + 1;
+}
+```
+
+## `do / while`
+
+```js
+var i = 0;
+
+do {
+    print(i, WHITE);
+
+    i = i + 1;
+}
+while (i < 10);
+```
+
+## `for`
+
+```js
+for (var i = 0; i < 6; i = i + 1) {
+    print(i, WHITE);
+}
+```
+
+Nested loops are supported:
+
+```js
+for (var y = 0; y < 2; y = y + 1) {
+
+    for (var x = 0; x < 3; x = x + 1) {
+
+        if (x == y) {
+            print("MATCH", GREEN);
+        }
+    }
+}
+```
+
+The compiler converts these structures into NTOS jump instructions.
+
+---
+
+# 🔧 Functions and Subroutines
+
+NTOS supports functions as bytecode subroutines.
+
+```js
+function drawPlayer() {
+    print("PLAYER", WHITE);
+    print(2500, GREEN);
+}
+
+drawPlayer();
+```
+
+Functions are compiled into NTOS bytecode.
+
+The VM uses its subroutine and return-stack mechanism to execute them.
+
+NTOS functions currently operate using the NTOS global memory model rather than JavaScript-style local function environments.
+
+This keeps the runtime small and predictable for the target hardware.
+
+---
+
+# 🖥️ NTOS Runtime Functions
+
+NTOS applications can call functions provided by the NTOS runtime.
+
+For example:
+
+```js
+function draw() {
+
+    dialog("MONETRIX BANK");
+
+    cursor(20, 50, 2);
+
+    print("Balance:", WHITE);
+
+    print(2500, GREEN);
+}
+```
+
+Runtime functions are compiled into NTOS VM function-call instructions.
+
+The actual implementation runs inside the NTOS runtime on the Arduino.
+
+This creates a clean separation:
+
+```text
+Arduino JavaScript
+       │
+       ▼
+NTOS Compiler
+       │
+       ▼
+NTOS VM Function Call
+       │
+       ▼
+NTOS Runtime
+       │
+       ▼
+Arduino Hardware
+```
+
+---
+
+# 🎮 A More Complete Example
+
+The following example combines variables, arrays, functions, loops, array indexing, conditions, runtime functions, and character input:
+
+```js
+var playersCount = 4;
+
+var playerBalances = [
+    2500,
+    2500,
+    2500,
+    2500
+];
+
+var playerNames = [
+    "P1",
+    "P2",
+    "P3",
+    "P4"
+];
+
+function draw() {
+
+    dialog("MONETRIX BANK");
+
+    for (var i = 0; i < playersCount; i = i + 1) {
+
+        cursor(20, 60 + i * 40, 2);
+
+        print(playerNames[i], WHITE);
+
+        print(" $", WHITE);
+
+        print(playerBalances[i], GREEN);
+    }
+}
+
+draw();
+
+function loop() {
+
+    var key = getKey();
+
+    if (key == 'C') {
+
+        playersCount = 2;
+
+        draw();
+    }
+
+    delay(1);
+}
+```
+
+This is still just source code.
+
+The Arduino does not execute this JavaScript directly.
+
+It becomes:
+
+```text
+main.ntos
+    │
+    ▼
+Acornima
+    │
+    ▼
+JavaScript AST
+    │
+    ▼
+NTOS Compiler
+    │
+    ▼
+NTOS Bytecode
+    │
+    ▼
+SD Card
+    │
+    ▼
+NTOS VM
+    │
+    ▼
+Arduino TFT
+```
+
+---
+
+# 🏦 Monetrix Example
+
+One of the applications being developed with NTOS is **Monetrix Bank**.
+
+A simplified version can look like:
+
+```js
+var playersCount = 4;
+
+var playerBalance = [
+    0,
+    2500,
+    2500,
+    2500,
+    2500,
+    2500,
+    2500
+];
+
+var playerNames = [
+    "[BANK]",
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6"
+];
+
+function draw() {
+
+    dialog("MONETRIX BANK");
+
+    for (var y = 0; y <= 1; y = y + 1) {
+
+        for (var x = 0; x <= 2; x = x + 1) {
+
+            var i = x + y * 3 + 1;
+
+            if (i <= playersCount) {
+
+                cursor(
+                    12 + x * 155,
+                    60 + y * 80,
+                    2
+                );
+
+                print(i, GRAY);
+                print(":", GRAY);
+
+                print(
+                    playerNames[i],
+                    WHITE
+                );
+
+                var color = YELLOW;
+
+                if (playerBalance[i] < 0) {
+                    color = RED;
+                }
+
+                if (playerBalance[i] > 200) {
+                    color = GREEN;
+                }
+
+                cursor(
+                    12 + x * 155,
+                    85 + y * 80,
+                    4
+                );
+
+                print("$", color);
+                print(playerBalance[i], color);
+            }
+        }
+    }
+}
+
+draw();
+
+function loop() {
+
+    var key = getKey();
+
+    var selected = getNumericKey();
+
+    if (key == 'C') {
+
+        var pc = confirmNumber(
+            "PLAYERS COUNT",
+            "2 - 6",
+            2,
+            6
+        );
+
+        if (pc >= 0) {
+            playersCount = pc;
+        }
+
+        draw();
+    }
+
+    if (key == 'A') {
+        load("settings");
+    }
+
+    if (selected >= 0 &&
+        selected <= playersCount) {
+
+        load("target");
+    }
+
+    delay(1);
+}
+```
+
+This type of application demonstrates the actual goal of NTOS:
+
+**Write an application using a high-level language, compile it into bytecode, put it on an SD card, and let the Arduino execute it through the NTOS VM.**
 
 ---
 
@@ -235,6 +851,26 @@ Applications can draw things such as:
 
 The graphics API is designed around the capabilities and limitations of the target hardware.
 
+For example:
+
+```js
+cursor(20, 40, 2);
+
+print("Hello NTOS", WHITE);
+```
+
+Or:
+
+```js
+cursor(20, 80, 4);
+
+print("$2500", GREEN);
+```
+
+The application does not need to know how the TFT hardware is driven internally.
+
+It calls the NTOS runtime.
+
 ---
 
 # 🖼️ NTI Image Format
@@ -265,6 +901,7 @@ For example:
 2 byte header
 +
 1024 bytes pixel data
+
 =
 1026 bytes
 ```
@@ -373,34 +1010,68 @@ Monetrix/
 A typical NTOS application goes through this process:
 
 ```text
-        main.ntos
-            │
-            ▼
-     ┌─────────────┐
-     │   Compiler  │
-     └──────┬──────┘
-            │
-            ▼
-         main.ntx
-            │
-            │
-      ┌─────┴─────┐
-      │            │
-      ▼            ▼
-   NTI files    Bytecode
-      │            │
-      └─────┬──────┘
-            ▼
-         Build/
-            │
-            ▼
-         SD Card
-            │
-            ▼
-        NTOS VM
-            │
-            ▼
-        Application
+                 main.ntos
+                     │
+                     ▼
+             ┌──────────────┐
+             │   Acornima   │
+             │ JavaScript   │
+             │    Parser    │
+             └──────┬───────┘
+                    │
+                    ▼
+             JavaScript AST
+                    │
+                    ▼
+             ┌──────────────┐
+             │ NTOS Compiler│
+             └──────┬───────┘
+                    │
+                    ▼
+             NTOS Instructions
+                    │
+                    ▼
+             ┌──────────────┐
+             │   Bytecode   │
+             │    Builder   │
+             └──────┬───────┘
+                    │
+                    ▼
+                 main.ntx
+                    │
+          ┌─────────┴─────────┐
+          │                   │
+          ▼                   ▼
+       NTI files           Bytecode
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+                 Build/
+                    │
+                    ▼
+                 SD Card
+                    │
+                    ▼
+                NTOS VM
+                    │
+                    ▼
+               Application
+```
+
+The important part is that **Acornima is only used during compilation**.
+
+Once the `.ntx` bytecode has been generated, the Arduino has no need for the JavaScript parser.
+
+The runtime path is simply:
+
+```text
+NTOS Bytecode
+      │
+      ▼
+   NTOS VM
+      │
+      ▼
+   Arduino
 ```
 
 ---
@@ -415,6 +1086,8 @@ It provides an opportunity to explore the internals of:
 
 * Compiler design
 * Programming language design
+* JavaScript parsing
+* Abstract Syntax Trees
 * Bytecode
 * Virtual machines
 * Runtime systems
@@ -460,20 +1133,66 @@ ArduinoNTOS/
 
 # 📋 Current Features
 
+### Compiler
+
 * [x] Custom NTOS compiler
-* [x] Custom bytecode
+* [x] Acornima JavaScript parser frontend
+* [x] JavaScript-compatible syntax
+* [x] AST-based compilation
+* [x] Custom bytecode generation
+* [x] `var` declarations
+* [x] `let` declarations
+* [x] Global/shared variable memory
+* [x] Integer values
+* [x] Floating-point values
+* [x] Boolean values
+* [x] Byte values
+* [x] String values
+* [x] Character literals
+* [x] Arrays
+* [x] Array indexing
+* [x] Array element assignment
+* [x] Arithmetic expressions
+* [x] Comparison operators
+* [x] Logical operators
+* [x] Unary expressions
+* [x] Compound assignments
+* [x] `if` / `else`
+* [x] `while`
+* [x] `do / while`
+* [x] `for`
+* [x] Functions
+* [x] NTOS subroutines
+* [x] Runtime function calls
+
+### Runtime
+
 * [x] Custom virtual machine
-* [x] SD-card application loading
-* [x] Application management
+* [x] Bytecode execution
 * [x] Runtime functions
+* [x] Shared application memory
+* [x] Application loading
+* [x] SD-card application storage
+* [x] Application management
+
+### Graphics
+
 * [x] TFT graphics
 * [x] Text rendering
+* [x] Images
 * [x] NTI image format
 * [x] NTI image builder
+* [x] UI functionality
+
+### Development
+
 * [x] NTOS development environment
 * [x] Bytecode inspection
 * [x] Serial application upload
 * [x] Arduino emulator/development tools
+
+### In Progress
+
 * [ ] More VM instructions
 * [ ] Expanded application APIs
 * [ ] More complete filesystem/application management
@@ -485,13 +1204,33 @@ ArduinoNTOS/
 
 NTOS is an **experimental work in progress**.
 
+The core compiler-to-VM pipeline is operational:
+
+```text
+NTOS Source
+    ↓
+Acornima
+    ↓
+JavaScript AST
+    ↓
+NTOS Compiler
+    ↓
+NTOS Bytecode
+    ↓
+NTOS VM
+    ↓
+Arduino
+```
+
+The compiler is now operating on a real parsed syntax tree rather than simply processing a custom collection of tokens.
+
+This provides a much stronger foundation for adding language features.
+
 The architecture continues to evolve as new features are added and new limitations are discovered.
 
 That is intentional.
 
-The project is being built from the bottom up, so sometimes adding one feature means discovering that three layers underneath it need to be redesigned.
-
-That is half the fun.
+The project is being built from the bottom up, so sometimes adding one feature means discovering that another layer underneath it needs to evolve.
 
 ---
 
@@ -510,11 +1249,53 @@ The long-term goal is to create a small but complete environment where an Arduin
 
 All running on an Arduino.
 
-No desktop OS underneath it.
+The development machine uses a real JavaScript parser.
 
-No scripting engine doing the heavy lifting.
+The compiler converts the resulting AST into custom NTOS bytecode.
 
-Just a small computer system built piece by piece.
+The Arduino executes that bytecode using the NTOS Virtual Machine.
+
+There is **no JavaScript interpreter running on the Arduino**.
+
+```text
+             Arduino JavaScript
+                     │
+                     ▼
+               ┌───────────┐
+               │  Acornima  │
+               │ JS Parser  │
+               └─────┬─────┘
+                     │
+                     ▼
+                JavaScript AST
+                     │
+                     ▼
+               ┌───────────┐
+               │    NTOS   │
+               │  Compiler │
+               └─────┬─────┘
+                     │
+                     ▼
+               NTOS Bytecode
+                     │
+                     ▼
+               ┌───────────┐
+               │  NTOS VM  │
+               └─────┬─────┘
+                     │
+                     ▼
+                  Arduino
+```
+
+**Arduino JavaScript is the language frontend.**
+
+**NTOS bytecode is the executable format.**
+
+**The NTOS VM is the runtime.**
+
+The parser may understand JavaScript.
+
+The Arduino understands NTOS.
 
 ---
 
@@ -528,7 +1309,7 @@ For example:
 MIT License
 ```
 
-or replace this section with the license you choose.
+Or replace this section with the license you choose.
 
 ---
 
@@ -542,6 +1323,10 @@ The rabbit hole went considerably deeper.
 
 The answer became a compiler.
 
+Then a parser.
+
+Then a bytecode format.
+
 Then a VM.
 
 Then a runtime.
@@ -554,4 +1339,34 @@ And eventually:
 
 **an operating system for an Arduino.**
 
-Welcome to NTOS. 🖥️⚙️
+```text
+              JavaScript Syntax
+                     │
+                     ▼
+                  Acornima
+                     │
+                     ▼
+               JavaScript AST
+                     │
+                     ▼
+                NTOS Compiler
+                     │
+                     ▼
+                NTOS Bytecode
+                     │
+                     ▼
+                  NTOS VM
+                     │
+                     ▼
+                  Arduino
+```
+
+Welcome to **NTOS**. 🖥️⚙️
+
+---
+
+### NTOS Project
+
+Built as an experiment in compilers, virtual machines, embedded systems, and the question:
+
+> **How much of a computer can you build yourself?**
