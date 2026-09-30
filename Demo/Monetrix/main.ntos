@@ -9,8 +9,12 @@ c	Float	8	4
 */
 
 /* INSTRUCTIONS
+PushInt	5	0
 StoreInt	0	0
+PushFloat	6	0
 StoreFloat	4	0
+LoadInt	0	0
+LoadFloat	4	0
 Add		0
 StoreFloat	8	0
 End		0

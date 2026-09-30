@@ -4,7 +4,7 @@ using Acornima.Ast;
 
 namespace NTOSCompiler.Compiler
 {
-    
+
 
     public class Compiler : AstVisitor
     {
@@ -37,7 +37,7 @@ namespace NTOSCompiler.Compiler
 
             Add(OpCode.End);
 
-            return new BytecodeProgram(_instructions).PrepareBytecode();        
+            return new BytecodeProgram(_instructions).PrepareBytecode();
         }
 
         // ------------------------------------------------------------
@@ -130,7 +130,7 @@ namespace NTOSCompiler.Compiler
         }
 
         private VariableType GetBinaryExpressionType(
-    BinaryExpression expression)
+                BinaryExpression expression)
         {
             switch (expression.Operator)
             {
@@ -240,6 +240,60 @@ namespace NTOSCompiler.Compiler
 
             return null;
         }
+
+
+        protected override object? VisitLiteral(Literal literal)
+        {
+            switch (GetLiteralType(literal))
+            {
+                case VariableType.Int:
+                    Add(
+                        OpCode.PushInt,
+                        Convert.ToInt32(literal.Value));
+                    break;
+
+                case VariableType.Float:
+                    Add(
+                        OpCode.PushFloat,
+                        Convert.ToSingle(literal.Value));
+                    break;
+
+                case VariableType.Bool:
+                    Add(
+                        OpCode.PushByte,
+                        (bool)literal.Value ? 1 : 0);
+                    break;
+
+                case VariableType.Byte:
+                    Add(
+                        OpCode.PushByte,
+                        Convert.ToByte(literal.Value));
+                    break;
+
+                case VariableType.Str:
+                    Add(
+                        OpCode.PushStr,
+                        Convert.ToString(literal.Value) ?? string.Empty);
+                    break;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported literal type: {literal.Value}");
+            }
+
+            return null;
+        }
+
+        protected override object? VisitIdentifier(
+    Identifier identifier)
+        {
+            Variable variable = GetVariable(identifier.Name);
+
+            Load(variable);
+
+            return null;
+        }
+
         private void Store(Variable variable)
         {
             switch (variable.Type)
@@ -264,6 +318,33 @@ namespace NTOSCompiler.Compiler
                 default:
                     throw new InvalidOperationException(
                         $"Cannot store variable type {variable.Type}.");
+            }
+        }
+
+        private void Load(Variable variable)
+        {
+            switch (variable.Type)
+            {
+                case VariableType.Int:
+                    Add(OpCode.LoadInt, variable.Address);
+                    break;
+
+                case VariableType.Float:
+                    Add(OpCode.LoadFloat, variable.Address);
+                    break;
+
+                case VariableType.Byte:
+                case VariableType.Bool:
+                    Add(OpCode.LoadByte, variable.Address);
+                    break;
+
+                case VariableType.Str:
+                    Add(OpCode.LoadStr, variable.Address);
+                    break;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Cannot load variable type {variable.Type}.");
             }
         }
 
