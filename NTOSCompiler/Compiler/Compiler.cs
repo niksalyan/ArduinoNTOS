@@ -28,6 +28,11 @@ namespace NTOSCompiler.Compiler
             _constants = constants ?? new();
         }
 
+        public void ClearVariables()
+        {
+            _variables.Clear();
+        }
+
         public byte[] Compile(string src)
         {
             _instructions.Clear();
@@ -45,6 +50,51 @@ namespace NTOSCompiler.Compiler
         // ------------------------------------------------------------
         // Statements
         // ------------------------------------------------------------
+        protected override object? VisitIfStatement(
+    IfStatement ifStatement)
+        {
+            // Compile condition.
+            Visit(ifStatement.Test);
+
+            // Reserve JumpIfFalse.
+            int jumpIfFalseIndex = _instructions.Count;
+            Add(OpCode.JumpIfFalse, 0);
+
+            // Compile "then" branch.
+            Visit(ifStatement.Consequent);
+
+            if (ifStatement.Alternate != null)
+            {
+                // Reserve Jump over the else branch.
+                int jumpEndIndex = _instructions.Count;
+                Add(OpCode.Jump, 0);
+
+                // The next instruction is the start of else.
+                int elseIndex = _instructions.Count;
+
+                _instructions[jumpIfFalseIndex] =
+                    new Instruction(OpCode.JumpIfFalse, elseIndex);
+
+                // Compile else / else-if.
+                Visit(ifStatement.Alternate);
+
+                // The instruction after the else branch.
+                int endIndex = _instructions.Count;
+
+                _instructions[jumpEndIndex] =
+                    new Instruction(OpCode.Jump, endIndex);
+            }
+            else
+            {
+                // No else: false goes directly after the then branch.
+                int endIndex = _instructions.Count;
+
+                _instructions[jumpIfFalseIndex] =
+                    new Instruction(OpCode.JumpIfFalse, endIndex);
+            }
+
+            return null;
+        }
 
         protected override object? VisitExpressionStatement(
             ExpressionStatement expressionStatement)

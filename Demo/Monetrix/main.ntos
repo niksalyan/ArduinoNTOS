@@ -1,23 +1,32 @@
-var a = 5;
-var b = 6.0;
-var c = a + b; 
+var a = 10;
+var b = 0;
+
+if (a > 5) {
+    b = 100;
+} else {
+    b = 200;
+}
 
 /* VARS
 a	Int	0	4
-b	Float	4	4
-c	Float	8	4
+b	Int	4	4
 */
 
 /* INSTRUCTIONS
-PushInt	5	0
+PushInt	10	0
 StoreInt	0	5
-PushFloat	6	8
-StoreFloat	4	13
+PushInt	0	8
+StoreInt	4	13
 LoadInt	0	16
-LoadFloat	4	19
-Add		22
-StoreFloat	8	23
-End		26
+PushInt	5	19
+Greater		24
+JumpIfFalse	11	25
+PushInt	100	28
+StoreInt	4	33
+Jump	13	36
+PushInt	200	39
+StoreInt	4	44
+End		47
 */
 
 /* ERROR:

@@ -352,6 +352,8 @@ namespace NTOSEmulator
             variablesGrid.DataSource = null;
             //bytecodeOutput.Text = "";
 
+            compiler.ClearVariables();
+
             try
             {
                 byte[] bytecode = compiler.Compile(source);
