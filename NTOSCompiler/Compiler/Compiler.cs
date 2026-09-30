@@ -52,16 +52,23 @@ namespace NTOSCompiler.Compiler
         }
 
         protected override object? VisitVariableDeclaration(
-            VariableDeclaration variableDeclaration)
+    VariableDeclaration variableDeclaration)
         {
+            bool isLet = variableDeclaration.Kind == VariableDeclarationKind.Let;
+            bool isVar = variableDeclaration.Kind == VariableDeclarationKind.Var;
+
             foreach (var declaration in variableDeclaration.Declarations)
-                Visit(declaration);
+            {
+                CompileVariableDeclarator(declaration, isLet, isVar);
+            }
 
             return null;
         }
 
-        protected override object? VisitVariableDeclarator(
-            VariableDeclarator variableDeclarator)
+        private void CompileVariableDeclarator(
+            VariableDeclarator variableDeclarator,
+            bool isLet,
+            bool isVar)
         {
             if (variableDeclarator.Id is not Identifier identifier)
                 throw new InvalidOperationException(
@@ -69,33 +76,42 @@ namespace NTOSCompiler.Compiler
 
             string name = identifier.Name;
 
-            // No initializer:
-            // let a;
-            // var a;
+            Variable? existing = _variables
+                .FirstOrDefault(x => x.Name == name);
+
+            // let + existing variable:
+            // completely ignore this declaration.
+            if (existing != null && isLet)
+                return;
+
+            // No initializer.
             if (variableDeclarator.Init == null)
-                return null;
+                return;
 
-            VariableType type = GetExpressionType(variableDeclarator.Init);
+            VariableType type =
+                GetExpressionType(variableDeclarator.Init);
 
-            Variable variable = DeclareVariable(name, type);
+            // var + existing variable:
+            // overwrite the existing value.
+            if (existing != null)
+            {
+                if (existing.Type != type)
+                    throw new InvalidOperationException(
+                        $"Variable '{name}' is {existing.Type}, " +
+                        $"but initializer is {type}.");
 
-            // let: existing variable is left untouched.
-            // var: existing variable gets overwritten.
-            //
-            // Since we don't know whether DeclareVariable created it,
-            // check the variable list directly.
+                CompileExpression(variableDeclarator.Init);
+                Store(existing);
 
-            bool alreadyExists = _variables.Any(x =>
-                x.Name == name &&
-                ReferenceEquals(x, variable));
+                return;
+            }
 
-            // We need to distinguish creation from an existing variable.
-            // Replace this logic with Contains-before-Declare if preferred.
+            // New variable.
+            Variable variable =
+                DeclareVariable(name, type);
+
             CompileExpression(variableDeclarator.Init);
-
             Store(variable);
-
-            return null;
         }
 
         private VariableType GetExpressionType(Expression expression)
@@ -142,6 +158,36 @@ namespace NTOSCompiler.Compiler
             Visit(expression);
         }
 
+        protected override object? VisitBinaryExpression(
+    BinaryExpression expression)
+        {
+            Visit(expression.Left);
+            Visit(expression.Right);
+
+            Add(expression.Operator switch
+            {
+                Operator.Addition => OpCode.Add,
+                Operator.Subtraction => OpCode.Subtract,
+                Operator.Multiplication => OpCode.Multiply,
+                Operator.Division => OpCode.Divide,
+                Operator.Remainder => OpCode.Modulo,
+
+                Operator.Equality => OpCode.Equal,
+                Operator.Inequality => OpCode.NotEqual,
+                Operator.LessThan => OpCode.Less,
+                Operator.GreaterThan => OpCode.Greater,
+                Operator.LessThanOrEqual => OpCode.LessEqual,
+                Operator.GreaterThanOrEqual => OpCode.GreaterEqual,
+
+                Operator.LogicalAnd => OpCode.And,
+                Operator.LogicalOr => OpCode.Or,
+
+                _ => throw new InvalidOperationException(
+                    $"Unsupported binary operator: {expression.Operator}")
+            });
+
+            return null;
+        }
         private void Store(Variable variable)
         {
             switch (variable.Type)
