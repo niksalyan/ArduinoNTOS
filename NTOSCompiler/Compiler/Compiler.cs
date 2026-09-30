@@ -180,23 +180,19 @@ namespace NTOSCompiler.Compiler
 
             string functionName = identifier.Name;
 
-            if (_vmFunctions == null)
-            {
-                throw new InvalidOperationException(
-                    "VMFunctions is required to compile function calls.");
-            }
+            int functionIndex =
+                _vmFunctions.GetIndex(functionName);
 
-            int argumentCount = 0;
+            int argumentCount =
+                callExpression.Arguments.Count;
 
             foreach (var argument in callExpression.Arguments)
             {
                 Visit(argument);
-                argumentCount++;
             }
 
-
-            int functionIndex =
-                _vmFunctions.GetIndex(functionName);
+            VariableType returnType =
+                _vmFunctions.GetReturnType(functionName);
 
             Add(
                 OpCode.CallFunction,
@@ -204,7 +200,12 @@ namespace NTOSCompiler.Compiler
                     (ushort)functionIndex,
                     (byte)argumentCount));
 
-            return _vmFunctions.GetReturnType(functionName);
+            if (returnType == VariableType.None)
+            {
+                Add(OpCode.Pop);
+            }
+
+            return returnType;
         }
 
         protected override object? VisitDoWhileStatement(
@@ -309,8 +310,17 @@ namespace NTOSCompiler.Compiler
             if (expression is BinaryExpression binary)
                 return GetBinaryExpressionType(binary);
 
+            if (expression is CallExpression call)
+            {
+                if (call.Callee is not Identifier functionIdentifier)
+                    throw new InvalidOperationException(
+                        "Only named function calls are supported.");
+
+                return _vmFunctions.GetReturnType(functionIdentifier.Name);
+            }
+
             throw new InvalidOperationException(
-                $"Cannot determine type of expression: {expression.GetType().Name}");
+                $"Unsupported expression type: {expression.GetType().Name}");
         }
 
         private VariableType GetBinaryExpressionType(

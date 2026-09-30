@@ -2,7 +2,7 @@ var a = 5;
 var b = 6;
 
 
-debug($b); // Variable address is properly logged
+debug(addr($b,4,3)); // Variable address is properly logged
 
 /* VARS
 a	Int	0	4
