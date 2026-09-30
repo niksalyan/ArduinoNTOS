@@ -512,7 +512,27 @@ namespace NTOSCompiler.Compiler
 
             if (expression is Identifier identifier)
             {
-                return GetVariable(identifier.Name).Type;
+                string name = identifier.Name;
+
+                if (_constants.ContainsKey(name))
+                    return VariableType.Byte;
+
+                if (name.Length > 1 &&
+                    name[0] == 'b' &&
+                    byte.TryParse(
+                        name.AsSpan(1),
+                        out _))
+                {
+                    return VariableType.Byte;
+                }
+
+                if (name.Length > 1 && name[0] == '$')
+                    return VariableType.Int;
+
+                Variable variable =
+                    GetVariable(name);
+
+                return variable.Type;
             }
 
             if (expression is BinaryExpression binary)
@@ -760,6 +780,35 @@ namespace NTOSCompiler.Compiler
         protected override object? VisitUnaryExpression(
     UnaryExpression node)
         {
+            if (node is UpdateExpression update)
+            {
+                if (update.Argument is not Identifier identifier)
+                {
+                    throw new InvalidOperationException(
+                        "Increment and decrement operators are only supported for variables.");
+                }
+
+                Variable variable =
+                    GetVariable(identifier.Name);
+
+                // Load current value
+                Load(variable);
+
+                // +1 / -1
+                Add(OpCode.PushInt, 1);
+
+                Add(
+                    update.Operator == Operator.Increment
+                        ? OpCode.Add
+                        : OpCode.Subtract);
+
+                // Store result
+                Store(variable);
+
+                return variable.Type;
+            }
+
+            // Unary minus
             Add(OpCode.PushInt, 0);
 
             Visit(node.Argument);

@@ -1,67 +1,38 @@
-var a = 1; // works
-
-a+=1;
-
-
-debug(a);
-
-/* VARS
-b	Str	0	10
-a	Str	10	7
-*/
-
-/* INSTRUCTIONS
-PushStr	niksalyan	0
-StoreStr	0	11
-PushStr	tigran	14
-StoreStr	10	22
-LoadStr	0	25
-CallFunction	FunctionCall { Index = 0, ArgumentCount = 1 }	28
-Pop		32
-End		33
-*/
-
-/* ERROR:
-No Error
-*/ 
+var playersCount = 4;
+var playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
+var playerNames = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"]; 
 
 
-
-/*
-init{
-	int playersCount = 4;
-    int playerBalance[7];
-	str[6] playerNames[7]; 
-
-	for(int i = 1; i <= 6; i = i + 1) {
-		playerBalance[i] = loadInt(1500 + i * 5, 2500);
-		loadStr(addr(1540, i, 8), addr(&playerNames, i, 7), "PLAYER", 6); 
+function init(){
+	
+	for(var i = 1; i <= 6; i++) {
+		// playerBalance[i] = loadInt(1500 + i * 5, 2500);
+		// loadStr(addr(1540, i, 8), addr(&playerNames, i, 7), "PLAYER", 6); 
 	}
 	
 	playerNames[0] = "[BANK]";
-	
 }
 
 
 
 
-int sourceAccount = -1;
-int targetAccount = -1; 
+var sourceAccount = -1;
+var targetAccount = -1; 
 
-draw{
+function draw() {
 	dialog("MONETRIX BANK"); 
 	
-
-	for(int y = 0; y <= 1; y = y + 1) {
-		for(int x = 0; x <= 2; x = x + 1) {
-			int i = x + y * 3 + 1;
+	
+	for(var y = 0; y <= 1; y++) {
+		for(var x = 0; x <= 2; x++) {
+			var i = x + y * 3 + 1;
 			if (i <= playersCount) {
 				cursor(12 + x * 155, 60 + y * 80, 2);
 				print(i, GRAY);
 				print(":", GRAY);
 				print(playerNames[i], WHITE); 
 
-				byte color = YELLOW;
+				var color = YELLOW;
 				if (playerBalance[i] < 0) {
 					color = RED;
 				}
@@ -90,16 +61,16 @@ draw{
 }
 
 
-call draw;
+draw();
 
-loop{
-    char key = getKey();
-	int selected = getNumericKey();
+function loop(){
+    var key = getKey();
+	var selected = getNumericKey();
 
 	if (key == 'C') {
-		int pc = confirmNumber("PLAYESR COUNT", "2 - 6", 2, 6);
+		var pc = confirmNumber("PLAYESR COUNT", "2 - 6", 2, 6);
 		if (pc >= 0) {playersCount = pc;}
-		call draw;
+		draw();
 	}
 
 	if (key == 'A') {
@@ -113,4 +84,3 @@ loop{
 
     delay(1);
 }
-*/
