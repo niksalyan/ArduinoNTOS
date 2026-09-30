@@ -3,29 +3,36 @@
 init{
 	int playersCount = 4;
     int playerBalance[7];
-	str[6] playerName[7];
+	str[6] playerNames[7]; 
 
 	for(int i = 1; i <= 6; i = i + 1) {
 		playerBalance[i] = loadInt(1500 + i * 5, 2500);
+		
 	}
 	
-	playerName[0] = "[BANK]";
-	playerName[1] = "";// loadStr(1540, "TIGRA2"); 
-	playerName[2] = "P2";
-	playerName[3] = "AMELIA";
-	playerName[4] = "P4";
-	playerName[5] = "P5";
-	playerName[6] = "P6"; 
+	playerNames[0] = "[BANK]";
+	
+
+	loadStr(1540 + 1 * 8, &playerNames + 1 * 7, "P1", 6); 
+	loadStr(1540 + 2 * 8, &playerNames + 2 * 7, "P2", 6); 
+	loadStr(1540 + 3 * 8, &playerNames + 3 * 7, "P3", 6); 
+	loadStr(1540 + 4 * 8, &playerNames + 4 * 7, "P4", 6); 
+	loadStr(1540 + 5 * 8, &playerNames + 5 * 7, "P5", 6); 
+	loadStr(1540 + 6 * 8, &playerNames + 6 * 7, "P6", 6); 
+
+	//saveStr(1540 + 3 * 8, "TIGRAN", 6);
 
 }
 
 
 
+
 int sourceAccount = -1;
-int targetAccount = -1;
+int targetAccount = -1; 
 
 draw{
 	dialog("MONETRIX BANK"); 
+	
 
 	for(int y = 0; y <= 1; y = y + 1) {
 		for(int x = 0; x <= 2; x = x + 1) {
@@ -34,7 +41,7 @@ draw{
 				cursor(12 + x * 155, 40 + y * 80, 3);
 				print(i, GRAY);
 				print(":", GRAY);
-				print(playerName[i], WHITE); 
+				print(playerNames[i], WHITE); 
 
 				byte color = YELLOW;
 				if (playerBalance[i] < 0) {

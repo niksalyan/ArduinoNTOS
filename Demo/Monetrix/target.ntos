@@ -2,7 +2,7 @@ dialog("TRANSFER TO");
 
 cursor(20, 50, 3);
 print("FROM: ", WHITE);
-print(playerName[sourceAccount], WHITE);
+print(playerNames[sourceAccount], WHITE);
 
 cursor(20, 90, 3);
 print("TO:   ", WHITE);
@@ -15,7 +15,7 @@ for(int y = 0; y <= 1; y = y + 1) {
 			cursor(50 + x * 120, 150 + y * 30, 2);
 			print(i, GRAY);
 			print(":", GRAY);
-			print(playerName[i], WHITE); 
+			print(playerNames[i], WHITE); 
 
 		}
 		

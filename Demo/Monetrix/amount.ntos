@@ -4,11 +4,11 @@ dialog("INPUT AMOUNT");
 
 cursor(20, 50, 3);
 print("FROM: ", WHITE);
-print(playerName[sourceAccount], WHITE);
+print(playerNames[sourceAccount], WHITE);
 
 cursor(20, 90, 3);
 print("TO:   ", WHITE);
-print(playerName[targetAccount], WHITE);
+print(playerNames[targetAccount], WHITE);
 
 update {
 	fillBox(100, 200, 250, 30, BLACK);
