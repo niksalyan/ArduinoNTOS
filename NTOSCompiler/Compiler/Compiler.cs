@@ -19,6 +19,7 @@ namespace NTOSCompiler.Compiler
         private List<Instruction> _instructions = new List<Instruction>();
 
         private readonly Dictionary<string, int> _functions = new();
+        private readonly List<(int InstructionIndex, string Name)> _unresolvedFunctionCalls = new();
         public List<Variable> Variables => _variables;
         public List<Instruction> Instructions => _instructions;
 
@@ -38,6 +39,7 @@ namespace NTOSCompiler.Compiler
         {
             _instructions.Clear();
             _functions.Clear();
+            _unresolvedFunctionCalls.Clear();
             _src = src;
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
@@ -268,6 +270,30 @@ namespace NTOSCompiler.Compiler
 
             string functionName = identifier.Name;
 
+            // ------------------------------------------------------------
+            // User-defined function / subroutine
+            // ------------------------------------------------------------
+
+            if (_functions.ContainsKey(functionName))
+            {
+                if (callExpression.Arguments.Count != 0)
+                    throw new InvalidOperationException(
+                        $"Function '{functionName}' does not accept arguments.");
+
+                int instructionIndex = _instructions.Count;
+
+                Add(OpCode.CallSubroutine, 0);
+
+                _unresolvedFunctionCalls.Add(
+                    (instructionIndex, functionName));
+
+                return VariableType.None;
+            }
+
+            // ------------------------------------------------------------
+            // VM function
+            // ------------------------------------------------------------
+
             int functionIndex =
                 _vmFunctions.GetIndex(functionName);
 
@@ -294,6 +320,26 @@ namespace NTOSCompiler.Compiler
             }
 
             return returnType;
+        }
+
+        private void ResolveFunctionCalls()
+        {
+            foreach (var (instructionIndex, name)
+                in _unresolvedFunctionCalls)
+            {
+                if (!_functions.TryGetValue(
+                        name,
+                        out int targetInstructionIndex))
+                {
+                    throw new InvalidOperationException(
+                        $"Unknown function '{name}'.");
+                }
+
+                _instructions[instructionIndex] =
+                    new Instruction(
+                        OpCode.CallSubroutine,
+                        targetInstructionIndex);
+            }
         }
 
         protected override object? VisitDoWhileStatement(
