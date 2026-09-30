@@ -22,8 +22,6 @@ namespace NTOSCompiler.Compiler
         public List<Variable> Variables => _variables;
         public List<Instruction> Instructions => _instructions;
 
-        public bool IsInitalized = false; // So this should work with JumpIfInitialized
-
 
         public Compiler(VMFunctions vmFunctions, Dictionary<string, byte>? constants)
         {
@@ -39,6 +37,7 @@ namespace NTOSCompiler.Compiler
         public byte[] Compile(string src)
         {
             _instructions.Clear();
+            _functions.Clear();
             _src = src;
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
@@ -172,6 +171,93 @@ namespace NTOSCompiler.Compiler
 
             return null;
         }
+
+        protected override object? VisitFunctionDeclaration(
+    FunctionDeclaration functionDeclaration)
+        {
+            string name = functionDeclaration.Id!.Name;
+
+            if (_functions.ContainsKey(name))
+                throw new InvalidOperationException(
+                    $"Function '{name}' is already declared.");
+
+            // ------------------------------------------------------------
+            // init()
+            // ------------------------------------------------------------
+
+            if (name == "init")
+            {
+                int jumpIfInitializedIndex =
+                    _instructions.Count;
+
+                Add(OpCode.JumpIfInitialized, 0);
+
+                _functions[name] =
+                    _instructions.Count;
+
+                Visit(functionDeclaration.Body);
+
+                int endIndex2 =
+                    _instructions.Count;
+
+                _instructions[jumpIfInitializedIndex] =
+                    new Instruction(
+                        OpCode.JumpIfInitialized,
+                        endIndex2);
+
+                return null;
+            }
+
+            // ------------------------------------------------------------
+            // loop()
+            // ------------------------------------------------------------
+
+            if (name == "loop")
+            {
+                int loopStartIndex =
+                    _instructions.Count;
+
+                _functions[name] =
+                    loopStartIndex;
+
+                Visit(functionDeclaration.Body);
+
+                Add(OpCode.Jump, loopStartIndex);
+
+                return null;
+            }
+
+            // ------------------------------------------------------------
+            // Normal subroutine
+            // ------------------------------------------------------------
+
+            // Skip the function body during normal execution.
+            int jumpIndex =
+                _instructions.Count;
+
+            Add(OpCode.Jump, 0);
+
+            // First instruction of the actual function.
+            _functions[name] =
+                _instructions.Count;
+
+            Visit(functionDeclaration.Body);
+
+            // User functions have no return value.
+            Add(OpCode.Return);
+
+            // Execution continues after the function.
+            int endIndex =
+                _instructions.Count;
+
+            _instructions[jumpIndex] =
+                new Instruction(
+                    OpCode.Jump,
+                    endIndex);
+
+            return null;
+        }
+
 
         protected override object? VisitCallExpression(
     CallExpression callExpression)
