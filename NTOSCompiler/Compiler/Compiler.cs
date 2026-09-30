@@ -362,9 +362,9 @@ namespace NTOSCompiler.Compiler
         }
 
         private void CompileVariableDeclarator(
-            VariableDeclarator variableDeclarator,
-            bool isLet,
-            bool isVar)
+    VariableDeclarator variableDeclarator,
+    bool isLet,
+    bool isVar)
         {
             if (variableDeclarator.Id is not Identifier identifier)
                 throw new InvalidOperationException(
@@ -403,13 +403,26 @@ namespace NTOSCompiler.Compiler
             }
 
             // New variable.
+            int maxStringLength = 0;
+
+            if (type == VariableType.Str &&
+                variableDeclarator.Init is Literal literal &&
+                literal.Value is string value)
+            {
+                maxStringLength = value.Length;
+            }
+
             Variable variable =
-                DeclareVariable(name, type);
+                DeclareVariable(
+                    name,
+                    type,
+                    false,
+                    1,
+                    maxStringLength);
 
             CompileExpression(variableDeclarator.Init);
             Store(variable);
         }
-
         private VariableType GetExpressionType(Expression expression)
         {
             if (expression is Literal literal)
