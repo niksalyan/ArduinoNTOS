@@ -2,7 +2,7 @@ dialog("a");
 var i = 0;
 
 function init() {
-	debug("init called" + 2);
+	debug("init called");
 }
 
 function draw() {
@@ -18,19 +18,39 @@ function loop() {
 }
 
 
+
 /* VARS
-a	Int	0	4
-b	Int	4	4
+i	Int	0	4
 */
 
 /* INSTRUCTIONS
-PushInt	5	0
-StoreInt	0	5
-PushInt	6	8
-StoreInt	4	13
-PushInt	4	16
-CallFunction	FunctionCall { Index = 0, ArgumentCount = 1 }	21
-End		25
+PushStr	a	0
+CallFunction	FunctionCall { Index = 30, ArgumentCount = 1 }	3
+Pop		7
+PushInt	0	8
+StoreInt	0	13
+JumpIfInitialized	9	16
+PushStr	init called	19
+CallFunction	FunctionCall { Index = 0, ArgumentCount = 1 }	32
+Pop		36
+Jump	17	37
+LoadInt	0	40
+PushInt	100	43
+PushInt	10	48
+PushByte	28	53
+CallFunction	FunctionCall { Index = 16, ArgumentCount = 4 }	55
+Pop		59
+Return		60
+CallSubroutine	0	61
+PushInt	100	64
+CallFunction	FunctionCall { Index = 3, ArgumentCount = 1 }	69
+Pop		73
+LoadInt	0	74
+PushInt	20	77
+Add		82
+StoreInt	0	83
+Jump	17	86
+End		89
 */
 
 /* ERROR:
