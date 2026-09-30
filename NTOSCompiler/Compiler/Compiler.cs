@@ -506,13 +506,24 @@ namespace NTOSCompiler.Compiler
         private VariableType GetExpressionType(Expression expression)
         {
             if (expression is Literal literal)
+            {
                 return GetLiteralType(literal);
+            }
 
             if (expression is Identifier identifier)
+            {
                 return GetVariable(identifier.Name).Type;
+            }
 
             if (expression is BinaryExpression binary)
+            {
                 return GetBinaryExpressionType(binary);
+            }
+
+            if (expression is NonUpdateUnaryExpression unary)
+            {
+                return GetExpressionType(unary.Argument);
+            }
 
             if (expression is MemberExpression memberExpression)
             {
@@ -654,6 +665,7 @@ namespace NTOSCompiler.Compiler
             Visit(expression);
         }
 
+
         protected override object? VisitBinaryExpression(
     BinaryExpression expression)
         {
@@ -745,30 +757,138 @@ namespace NTOSCompiler.Compiler
             return null;
         }
 
-        protected override object? VisitAssignmentExpression(
-            AssignmentExpression expression)
+        protected override object? VisitUnaryExpression(
+    UnaryExpression node)
         {
-            if (expression.Left is not Identifier identifier)
-                throw new InvalidOperationException(
-                    "Only simple variable assignment is supported.");
+            Add(OpCode.PushInt, 0);
 
-            Variable variable = GetVariable(identifier.Name);
+            Visit(node.Argument);
 
-            if (expression.Operator != Operator.Assignment)
-                throw new InvalidOperationException(
-                    $"Unsupported assignment operator: {expression.Operator}");
-
-            VariableType type = GetExpressionType(expression.Right);
-
-            if (type != variable.Type)
-                throw new InvalidOperationException(
-                    $"Cannot assign {type} to variable '{variable.Name}' of type {variable.Type}.");
-
-            CompileExpression(expression.Right);
-            Store(variable);
+            Add(OpCode.Subtract);
 
             return null;
         }
+
+        protected override object? VisitAssignmentExpression(
+    AssignmentExpression assignment)
+        {
+            // Normal variable assignment
+            if (assignment.Left is Identifier identifier)
+            {
+                Variable variable =
+                    GetVariable(identifier.Name);
+
+                // Normal =
+                if (assignment.Operator == Operator.Assignment)
+                {
+                    CompileExpression(assignment.Right);
+                    Store(variable);
+
+                    return variable.Type;
+                }
+
+                // Compound assignment
+                if (assignment.Operator == Operator.AdditionAssignment ||
+                    assignment.Operator == Operator.SubtractionAssignment)
+                {
+                    // Load current value
+                    Load(variable);
+
+                    // Right-hand value
+                    CompileExpression(assignment.Right);
+
+                    // Operation
+                    Add(
+                        assignment.Operator ==
+                            Operator.AdditionAssignment
+                            ? OpCode.Add
+                            : OpCode.Subtract);
+
+                    // Store result
+                    Store(variable);
+
+                    return variable.Type;
+                }
+
+                throw new InvalidOperationException(
+                    $"Assignment operator '{assignment.Operator}' is not supported.");
+            }
+
+            // Array element assignment
+            if (assignment.Left is MemberExpression member)
+            {
+                if (!member.Computed ||
+                    member.Object is not Identifier identifier2)
+                {
+                    throw new InvalidOperationException(
+                        "Only array indexing is supported.");
+                }
+
+                Variable variable =
+                    GetVariable(identifier2.Name);
+
+                if (!variable.IsArray)
+                    throw new InvalidOperationException(
+                        $"Variable '{variable.Name}' is not an array.");
+
+                VariableType indexType =
+                    GetExpressionType(member.Property);
+
+                if (indexType != VariableType.Int)
+                    throw new InvalidOperationException(
+                        $"Array index must be Int, but got {indexType}.");
+
+                // Address
+                Add(
+                    OpCode.PushInt,
+                    variable.Address);
+
+                // Index
+                CompileExpression(member.Property);
+
+                // index * element size
+                Add(
+                    OpCode.PushInt,
+                    variable.GetElementSize());
+
+                Add(OpCode.Multiply);
+
+                // base + offset
+                Add(OpCode.Add);
+
+                // Value
+                CompileExpression(assignment.Right);
+
+                // Store
+                Add(
+                    variable.Type switch
+                    {
+                        VariableType.Int =>
+                            OpCode.StoreIndirectInt,
+
+                        VariableType.Float =>
+                            OpCode.StoreIndirectFloat,
+
+                        VariableType.Byte =>
+                            OpCode.StoreIndirectByte,
+
+                        VariableType.Bool =>
+                            OpCode.StoreIndirectByte,
+
+                        VariableType.Str =>
+                            OpCode.StoreIndirectStr,
+
+                        _ => throw new InvalidOperationException(
+                            $"Unsupported array type: {variable.Type}")
+                    });
+
+                return variable.Type;
+            }
+
+            throw new InvalidOperationException(
+                "Only simple variable or array element assignment is supported.");
+        }
+
 
         protected override object? VisitMemberExpression(
     MemberExpression member)

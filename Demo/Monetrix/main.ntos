@@ -1,12 +1,9 @@
-var playerBalance = [0, 2500, 3000, 2500, 2500, 2500, 2500];
-var playerNames   = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"];
+var a = 1; // works
 
-var c = 3;
+a+=1;
 
-playerBalance[2] = 12000;
 
-debug(playerBalance[2]);
-
+debug(a);
 
 /* VARS
 b	Str	0	10
