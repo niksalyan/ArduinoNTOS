@@ -18,9 +18,11 @@ namespace NTOSCompiler.Compiler
         private List<Variable> _variables = new List<Variable>();
         private List<Instruction> _instructions = new List<Instruction>();
 
-
+        private readonly Dictionary<string, int> _functions = new();
         public List<Variable> Variables => _variables;
         public List<Instruction> Instructions => _instructions;
+
+        public bool IsInitalized = false; // So this should work with JumpIfInitialized
 
 
         public Compiler(VMFunctions vmFunctions, Dictionary<string, byte>? constants)
