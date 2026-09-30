@@ -412,7 +412,22 @@ namespace NTOSCompiler.Compiler
 
         protected override object? VisitIdentifier(Identifier identifier)
         {
-            Variable variable = GetVariable(identifier.Name);
+            string name = identifier.Name;
+
+            if (_constants.ContainsKey(name))
+            {
+                Add(OpCode.PushByte, _constants[name]);
+                return null;
+            }
+            else if (name.Length > 1 &&
+                name[0] == 'b' &&
+                byte.TryParse(name.AsSpan(1), out byte byteValue))
+            {
+                Add(OpCode.PushByte, byteValue);
+                return null;
+            }
+
+            Variable variable = GetVariable(name);
 
             Load(variable);
 

@@ -286,7 +286,6 @@ public class BytecodeProgram
             {
                 instruction.Address =
                     checked((int)stream.Length);
-                Debug.WriteLine("Assigning address: " + instruction.Address);
             }
 
             stream.WriteByte(

@@ -1,5 +1,9 @@
 dialog("aaa");
-drawBox(50,50,100,100,50);
+var i = 0;
+while (i < 200) {
+	fillCircle(i,i,50, GREEN);
+	i = i + 10;
+}
 
 /* VARS
 total	Int	0	4
