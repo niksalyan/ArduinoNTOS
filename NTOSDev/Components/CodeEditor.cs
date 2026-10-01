@@ -1,6 +1,7 @@
 ﻿using NTOSDev.Components;
 using ScintillaNet.Abstractions.Classes;
 using ScintillaNet.Abstractions.Enumerations;
+using ScintillaNet.Abstractions.Extensions;
 using ScintillaNet.WinForms;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NTOSDev.Controls
 {
@@ -34,6 +36,23 @@ namespace NTOSDev.Controls
                 scintillaEditor.Text = File.ReadAllText(filePath);
                 fileSaved = true;
                 UpdateFileName();
+
+                //// Select indicator #8 for compiler errors
+                //scintillaEditor.IndicatorCurrent = 8;
+
+                //// Make it a squiggly underline
+                //scintillaEditor.Indicators[8].Style = IndicatorStyle.Squiggle;
+
+                //// Red
+                //scintillaEditor.Indicators[8].ForeColor = Color.Red;
+
+                //// Apply to the error position
+                //scintillaEditor.IndicatorFillRange(1500, 10);
+
+                //scintillaEditor.CharPositionFromPoint(15, 2); // Move cursor to the start of the document
+                //scintillaEditor.IndicatorFillRange(200, 1);
+
+
             }
 
             scintillaEditor.GotFocus += ScintillaEditor_GotFocus;
@@ -157,6 +176,10 @@ clas fillCircle drawCircle drawPixel drawLine load
 
             scintillaEditor.Styles[StyleConstants.LineNumber].BackColor =
                 Color.FromArgb(30, 30, 30);
+
+            scintillaEditor.Styles[StyleConstants.LineNumber].Size = 9;
+
+
 
 
             this.Controls.Add(scintillaEditor);

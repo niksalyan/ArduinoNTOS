@@ -45,7 +45,7 @@ function update() {
 
 function draw() {
     // Background
-    fillBox(0, 32, 480, 320, DARKBLUE);
+    fillBox(0, 33, 480, 285, rgb023);
 
 
     update();
@@ -144,168 +144,8 @@ draw();
 function loop() {
 
     var key = getKey();
+	var num = getNumericKey();
     switch(key) {
-
-        // =================================
-        // NUMBER 0
-        // =================================
-
-        case '0':
-
-			if (newInput == 1) {
-				current = 0;
-				newInput = 0;
-			}
-
-			current = current * 10;
-			update();
-			break; 
-
-
-        // =================================
-        // NUMBER 1
-        // =================================
-
-        case '1':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 1;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 2
-        // =================================
-
-        case '2':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 2;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 3
-        // =================================
-
-        case '3':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 3;
-            update();
-			break; 
-			
-
-        // =================================
-        // NUMBER 4
-        // =================================
-
-        case '4':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 4;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 5
-        // =================================
-
-        case '5':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 5;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 6
-        // =================================
-
-        case '6':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 6;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 7
-        // =================================
-
-        case '7':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 7;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 8
-        // =================================
-
-        case '8':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 8;
-            update();
-			break; 
-
-
-        // =================================
-        // NUMBER 9
-        // =================================
-
-        case '9':
-
-            if (newInput == 1) {
-                current = 0;
-                newInput = 0;
-            }
-
-            current = current * 10 + 9;
-            update();
-			break; 
-
-
         // =================================
         // ADD
         // A = +
@@ -413,6 +253,16 @@ function loop() {
 
             update();
 			break; 
+		default:
+			if (num >= 0) {
+				if (newInput == 1) {
+					current = 0;
+					newInput = 0;
+				}
+				current = current * 10 + num;
+				update();
+			}
+			break;
     }
 
 

@@ -799,6 +799,15 @@ namespace NTOSCompiler.Compiler
                     return VariableType.Byte;
                 }
 
+                if (name.Length == 6 &&
+                    name.StartsWith("rgb") &&
+                    byte.TryParse(
+                        name.AsSpan(3),
+                        out _))
+                {
+                    return VariableType.Byte;
+                }
+
                 if (name.Length > 1 && name[0] == '$')
                     return VariableType.Int;
 
@@ -1065,6 +1074,28 @@ namespace NTOSCompiler.Compiler
             else if (name.Length > 1 && name[0] == 'b' && byte.TryParse(name.AsSpan(1), out byte byteValue))
             {
                 Add(OpCode.PushByte, byteValue);
+                return null;
+            }
+            else if (name.Length == 6 && name.StartsWith("rgb"))
+            {
+                int r = name[3] - '0';
+                int g = name[4] - '0';
+                int b = name[5] - '0';
+
+                if (r > 9 || g > 9 || b > 9)
+                    return null;
+
+                // Convert 0..9 → RGB332 ranges
+                r = r * 7 / 9;
+                g = g * 7 / 9;
+                b = b * 3 / 9;
+
+                int colorValue =
+                    (r << 5) |
+                    (g << 2) |
+                    b;
+
+                Add(OpCode.PushByte, colorValue);
                 return null;
             }
 

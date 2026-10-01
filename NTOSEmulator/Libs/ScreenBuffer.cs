@@ -12,6 +12,10 @@ namespace NTOSEmulator.Libs
 
         public readonly Dictionary<string, byte> colors = new Dictionary<string, byte>
         {
+            ["LOW"] = 0x00,
+            ["HIGH"] = 0x1,
+
+
             ["BLACK"] = 0x00,
             ["WHITE"] = 0xFF,
 
@@ -312,7 +316,7 @@ namespace NTOSEmulator.Libs
                 
                 g.Clear(Color.Black);
                 g.FillRectangle(
-                    new SolidBrush(GetColor332(colors["BLUE"])),
+                    new SolidBrush(Color.FromArgb(25, 28, 24)),
                     0,
                     0,
                     buffer.Width,
@@ -325,11 +329,11 @@ namespace NTOSEmulator.Libs
 
                 Color c = textRenderer.TextColor;
                 textRenderer.SetTextColor(Color.Black);
-                textRenderer.SetCursor(243 - textRenderer.GetTextWidth(text) / 2, 14);
+                textRenderer.SetCursor(15, 14);
                 textRenderer.Print(text);
 
-                textRenderer.SetTextColor(Color.White);
-                textRenderer.SetCursor(240 - textRenderer.GetTextWidth(text) / 2, 10);
+                textRenderer.SetTextColor(Color.FromArgb(0, 154, 181));
+                textRenderer.SetCursor(12, 10);
                 textRenderer.Print(text);
 
                 textRenderer.SetCursor(0, 32);

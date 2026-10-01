@@ -51,10 +51,40 @@ namespace NTOSDev
                 DoAction("projectExplorer");
                 DoAction("runEmulator");
 
-                string lastProj = NTOS.LastProject + "\\main.js";
-                if (File.Exists(lastProj)) {
-                    OpenFile(lastProj);
+
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(NTOS.LastProject) && Directory.Exists(NTOS.LastProject))
+                    {
+                        string lastProj = NTOS.LastProject + "\\main.js";
+                        if (!File.Exists(lastProj))
+                        {
+                            File.WriteAllText(lastProj, @$"
+// NTOS Main executable file
+function init() {{
+    // This function is called when the project is initialized
+    dialog(""Hello, World!"");
+}}
+
+function loop() {{
+    // This function is called every frame
+    delay(1);
+}}
+");
+                        }
+
+                        if (File.Exists(lastProj))
+                        {
+                            OpenFile(lastProj);
+                        }
+                        projectExplorer.LoadFolder(NTOS.LastProject);
+                    }
+                } catch(Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
                 }
+                
+                
 
             };
 

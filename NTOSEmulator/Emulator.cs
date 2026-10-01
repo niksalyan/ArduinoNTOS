@@ -354,7 +354,16 @@ namespace NTOSEmulator
             try
             {
                 bytecode = compiler.Compile(source);
-                DebugOutput("Compiled");
+                // 2560
+                if (bytecode.Length > 2560)
+                {
+                    DebugError("Compiled " + bytecode.Length + "/2560b");
+
+                } else
+                {
+                    DebugOutput("Compiled " + bytecode.Length + "/2560b");
+                }
+                
             } catch (Exception ex)
             {
                 bytecode = null;
@@ -411,7 +420,8 @@ namespace NTOSEmulator
                 comPortsList.Enabled = !serial.IsOpen;
                 connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
                 uploadButton.Enabled = !isUploading;
-            });
+                showBytecode.Visible = false; // TODO
+			});
             
         }
 
