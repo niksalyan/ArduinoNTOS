@@ -9,7 +9,10 @@ namespace NTOSCompiler.Compiler
 
     public class Compiler : AstVisitor
     {
-        private static readonly Acornima.Parser _parser = new Acornima.Parser();
+        private static readonly Acornima.Parser _parser = new Acornima.Parser(new ParserOptions()
+        {
+            AllowTopLevelUsing = true
+        });
         private string _src;
 
         private readonly VMFunctions _vmFunctions;
@@ -587,21 +590,15 @@ namespace NTOSCompiler.Compiler
         protected override object? VisitVariableDeclaration(
     VariableDeclaration variableDeclaration)
         {
-            bool isLet = variableDeclaration.Kind == VariableDeclarationKind.Let;
-            bool isVar = variableDeclaration.Kind == VariableDeclarationKind.Var;
-
             foreach (var declaration in variableDeclaration.Declarations)
             {
-                CompileVariableDeclarator(declaration, isLet, isVar);
+                CompileVariableDeclarator(declaration, variableDeclaration.Kind);
             }
 
             return null;
         }
 
-        private void CompileVariableDeclarator(
-    VariableDeclarator variableDeclarator,
-    bool isLet,
-    bool isVar)
+        private void CompileVariableDeclarator(VariableDeclarator variableDeclarator, VariableDeclarationKind varibleKind)
         {
             if (variableDeclarator.Id is not Identifier identifier)
                 throw new InvalidOperationException(
@@ -627,7 +624,7 @@ namespace NTOSCompiler.Compiler
                         $"Variable '{name}' is {existing.Type}, " +
                         $"but initializer is {type}.");
 
-                if (isLet)
+                if (varibleKind == VariableDeclarationKind.Using)
                 {
                     int jumpIndex = _instructions.Count;
 
@@ -701,7 +698,7 @@ namespace NTOSCompiler.Compiler
             // but skip its initializer once initialized.
             int letJumpIndex = -1;
 
-            if (isLet)
+            if (varibleKind == VariableDeclarationKind.Using)
             {
                 letJumpIndex = _instructions.Count;
 

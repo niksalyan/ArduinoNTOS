@@ -87,6 +87,8 @@ var cy = 105;
 
 var i = 0;
 
+drawPixel(10,30, RED);
+
 while (i < 12) {
 
     var dx = (i * 17) % 35 - 17;

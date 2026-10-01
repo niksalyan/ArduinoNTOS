@@ -66,41 +66,98 @@ namespace NTOSDev.Controls
         private void InitializeScintilla()
         {
             scintillaEditor = new Scintilla();
+            scintillaEditor.BorderStyle = BorderStyle.None;
             scintillaEditor.Dock = DockStyle.Fill;
 
-            // Basic editor settings
             scintillaEditor.WrapMode = WrapMode.None;
             scintillaEditor.IndentWidth = 4;
             scintillaEditor.TabWidth = 4;
             scintillaEditor.UseTabs = true;
 
-            // Line numbers
             scintillaEditor.Margins[0].Type = MarginType.Number;
-            scintillaEditor.Margins[0].Width = 35;
+            scintillaEditor.Margins[0].Width = 40;
 
-            // Set font
             scintillaEditor.Styles[StyleConstants.Default].Font = "Consolas";
             scintillaEditor.Styles[StyleConstants.Default].Size = 11;
+            scintillaEditor.Styles[StyleConstants.Default].ForeColor =
+                Color.FromArgb(220, 220, 220);
+            scintillaEditor.Styles[StyleConstants.Default].BackColor =
+                Color.FromArgb(30, 30, 30);
+
+            // Your Scintilla build has the C++ lexer
+            scintillaEditor.LexerName = "cpp";
+
             scintillaEditor.StyleClearAll();
 
-            // Lexer
-            scintillaEditor.LexerName = "cpp"; // built-in JS lexer
+            // Default
+            scintillaEditor.Styles[0].ForeColor =
+                Color.FromArgb(220, 220, 220);
+            scintillaEditor.Styles[0].BackColor =
+                Color.FromArgb(30, 30, 30);
 
-            // --- COLORS --- (numeric style indexes from JS lexer)
-            scintillaEditor.Styles[0].ForeColor = Color.Black;          // Default
-            scintillaEditor.Styles[1].ForeColor = Color.Green;          // Comment
-            scintillaEditor.Styles[2].ForeColor = Color.Green;          // Line comment
-            scintillaEditor.Styles[3].ForeColor = Color.Brown;          // Double quoted string
-            scintillaEditor.Styles[4].ForeColor = Color.Brown;          // Single quoted string
-            scintillaEditor.Styles[5].ForeColor = Color.Blue;           // Keyword
-            scintillaEditor.Styles[6].ForeColor = Color.Purple;         // Number
-            scintillaEditor.Styles[7].ForeColor = Color.DarkOrange;     // Boolean/null
-            scintillaEditor.Styles[8].ForeColor = Color.Teal;           // Identifier (e.g., Bot/Web/custom commands)
-            scintillaEditor.Styles[9].ForeColor = Color.DarkMagenta;    // Operator / function call
+            // Comments
+            scintillaEditor.Styles[1].ForeColor =
+                Color.FromArgb(106, 153, 85);
+
+            scintillaEditor.Styles[2].ForeColor =
+                Color.FromArgb(106, 153, 85);
+
+            // Numbers
+            scintillaEditor.Styles[4].ForeColor =
+                Color.FromArgb(181, 206, 168);
 
             // Keywords
-            scintillaEditor.SetKeywords(0, "Bot Web function return var let const if else for while break continue new");
-            scintillaEditor.SetKeywords(1, "true false null undefined send wait Bot Web");
+            scintillaEditor.Styles[5].ForeColor =
+                Color.FromArgb(86, 156, 214);
+
+            // Strings
+            scintillaEditor.Styles[6].ForeColor =
+                Color.FromArgb(206, 145, 120);
+
+            // Character
+            scintillaEditor.Styles[7].ForeColor =
+                Color.FromArgb(206, 145, 120);
+
+            // Operators
+            scintillaEditor.Styles[10].ForeColor =
+                Color.FromArgb(220, 220, 170);
+
+            // C++ lexer keywords, but populated with our NTOS/JS vocabulary
+            scintillaEditor.SetKeywords(
+                0,
+                @$"
+using break case const continue debugg default delete do else export extends false finally for
+from function get if import in instanceof let new null of return set static super switch this
+throw true try typeof var void while with yield
+drawBox fillBox cursor print printCentered printRight delay confirm alert confirmNumber editText dialog loadStr saveStr
+clas fillCircle drawCircle drawPixel drawLine load
+"
+            );
+
+
+            // ---------------------------------------------------------
+            // Cursor
+            // ---------------------------------------------------------
+
+            scintillaEditor.CaretForeColor =
+                Color.FromArgb(255, 255, 255);
+
+            scintillaEditor.CaretWidth = 2;
+
+            // Do not highlight the entire current line.
+            scintillaEditor.CaretLineVisible = false;
+
+
+            // ---------------------------------------------------------
+            // Line number bar
+            // ---------------------------------------------------------
+
+            scintillaEditor.Styles[StyleConstants.LineNumber].ForeColor =
+                Color.FromArgb(64, 64, 64);
+
+            scintillaEditor.Styles[StyleConstants.LineNumber].BackColor =
+                Color.FromArgb(30, 30, 30);
+
 
             this.Controls.Add(scintillaEditor);
         }

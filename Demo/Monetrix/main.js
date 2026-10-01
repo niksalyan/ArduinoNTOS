@@ -1,6 +1,6 @@
-let playersCount = 4;
-let playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
-let playerNames = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"]; 
+using playersCount = 4;
+using playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
+using playerNames = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"]; 
 
 
 function init(){
@@ -10,6 +10,7 @@ function init(){
 		loadStr(addr(1540, i, 8), addr($playerNames, i, 7), playerNames[i], 6); 
 	}
 }
+
 
 var sourceAccount = -1;
 var targetAccount = -1; 
