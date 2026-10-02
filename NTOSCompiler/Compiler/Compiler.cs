@@ -115,6 +115,38 @@ namespace NTOSCompiler.Compiler
             return null;
         }
 
+        protected override object? VisitConditionalExpression(ConditionalExpression conditional)
+        {
+            // Compile test
+            Visit(conditional.Test);
+
+            // Reserve JumpIfFalse to else branch
+            int jumpIfFalseIndex = _instructions.Count;
+            Add(OpCode.JumpIfFalse, 0);
+
+            // Compile consequent (true branch)
+            Visit(conditional.Consequent);
+
+            // Jump over alternate after consequent
+            int jumpIndex = _instructions.Count;
+            Add(OpCode.Jump, 0);
+
+            // Else branch start
+            int elseIndex = _instructions.Count;
+            _instructions[jumpIfFalseIndex] =
+                new Instruction(OpCode.JumpIfFalse, elseIndex);
+
+            // Compile alternate (false branch)
+            Visit(conditional.Alternate);
+
+            // End
+            int endIndex = _instructions.Count;
+            _instructions[jumpIndex] =
+                new Instruction(OpCode.Jump, endIndex);
+
+            return null;
+        }
+
         protected override object? VisitSwitchStatement(
     SwitchStatement switchStatement)
         {
@@ -883,6 +915,30 @@ namespace NTOSCompiler.Compiler
                 }
 
                 return elementType;
+            }
+
+            if (expression is ConditionalExpression conditional)
+            {
+                // Condition must be boolean
+                VariableType testType = GetExpressionType(conditional.Test);
+
+                if (testType != VariableType.Bool)
+                    throw new InvalidOperationException(
+                        $"Conditional test must be Bool, but got {testType}.");
+
+                VariableType leftType = GetExpressionType(conditional.Consequent);
+                VariableType rightType = GetExpressionType(conditional.Alternate);
+
+                if (leftType == rightType)
+                    return leftType;
+
+                // Allow Int/Float promotion to Float
+                if ((leftType == VariableType.Float && rightType == VariableType.Int) ||
+                    (rightType == VariableType.Float && leftType == VariableType.Int))
+                    return VariableType.Float;
+
+                throw new InvalidOperationException(
+                    $"Ternary branches must have the same type, got {leftType} and {rightType}.");
             }
 
             if (expression is CallExpression call)

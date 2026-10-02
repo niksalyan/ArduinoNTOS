@@ -1,8 +1,10 @@
 let playerX = 240.0;
 let ballX = 240.0;
 let ballY = 300.0;
-let ballSX = 15.0;
-let ballSY = -15.0;
+let ballSX = 10.0;
+let ballSY = -10.0;
+
+
 
 // dialog("Breakout");
 cls();
