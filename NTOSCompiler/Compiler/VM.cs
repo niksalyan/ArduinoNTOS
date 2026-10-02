@@ -451,6 +451,29 @@ public sealed class VirtualMachine
 
                         break;
                     }
+                case OpCode.LoadIndirectByte:
+                    {
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        _stack.Push(
+                            GetByte(address));
+
+                        break;
+                    }
+
+                case OpCode.StoreIndirectByte:
+                    {
+                        byte value =
+                            Convert.ToByte(_stack.Pop());
+
+                        ushort address =
+                            Convert.ToUInt16(_stack.Pop());
+
+                        SetByte(address, value);
+
+                        break;
+                    }
                 case OpCode.Jump:
                     {
                         instructionPointer =

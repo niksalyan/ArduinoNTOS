@@ -13,6 +13,7 @@ namespace NTOSEmulator.Libs
 
         public readonly Dictionary<string, byte> colors = new Dictionary<string, byte>
         {
+            ["EMPTY"] = 0x00,
             ["LOW"] = 0x00,
             ["HIGH"] = 0x1,
 

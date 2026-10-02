@@ -4,6 +4,16 @@ let ballY = 300.0;
 let ballSX = 10.0;
 let ballSY = -10.0;
 
+let level = [
+		EMPTY, EMPTY, RED,    RED,    RED,    RED,    EMPTY, EMPTY,
+		EMPTY, RED,   RED,    ORANGE, ORANGE, RED,   RED,    EMPTY,
+		RED,   RED,   ORANGE, YELLOW, YELLOW, ORANGE, RED,   RED,
+		RED,   ORANGE,YELLOW, GREEN,  GREEN,  YELLOW,ORANGE, RED,
+		RED,   ORANGE,YELLOW, GREEN,  GREEN,  YELLOW,ORANGE, RED,
+		RED,   RED,   ORANGE, YELLOW, YELLOW, ORANGE, RED,   RED,
+		EMPTY, RED,   RED,    ORANGE, ORANGE, RED,   RED,    EMPTY,
+		EMPTY, EMPTY, RED,    RED,    RED,    RED,    EMPTY, EMPTY,
+];
 
 
 // dialog("Breakout");
@@ -14,6 +24,15 @@ cls();
 // 		drawSprite((x + y * 15) + 900, x * 32, y * 32, WHITE);
 // 	}
 //}
+
+function drawLevel() {
+	for (var y = 0; y < 8; y++) {
+		for (var x = 0; x < 8; x++) {
+			var i = x + y * 8;
+			fillBox(2 + x * 60, 30 + y * 20, 56, 16, level[i]);
+		}
+	}
+}
 
 function updateBall() {
 
@@ -53,6 +72,8 @@ function updatePlayer() {
 	fillBox(playerX - 60, 300, 10, 10, BLACK);
 	fillBox(playerX + 50, 300, 10, 10, BLACK);
 }
+
+drawLevel();
 
 function loop() {
 	updateBall();

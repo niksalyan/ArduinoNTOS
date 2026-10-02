@@ -670,6 +670,36 @@ public:
           break;
         }
 
+      case 0x35:  // LoadIndirectByte
+        {
+          StackValue address = Pop();
+
+          uint8_t value =
+            GetByte(
+              static_cast<uint16_t>(
+                address.value));
+
+          Push({ StackValueType::Byte,
+                 value });
+
+          break;
+        }
+
+
+      case 0x36:  // StoreIndirectByte
+        {
+          StackValue value = Pop();
+          StackValue address = Pop();
+
+          SetByte(
+            static_cast<uint16_t>(
+              address.value),
+            static_cast<uint8_t>(
+              value.value));
+
+          break;
+        }
+
         // ------------------------------------------------
         // Flow control
         // ------------------------------------------------
