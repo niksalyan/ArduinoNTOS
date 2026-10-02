@@ -362,7 +362,28 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-    
+            vmFunctions.AddFunction(128, "collision", 8, VariableType.Bool, async args =>
+            {
+                float x1 = Convert.ToSingle(args[0]);
+                float y1 = Convert.ToSingle(args[1]);
+                float w1 = Convert.ToSingle(args[2]);
+                float h1 = Convert.ToSingle(args[3]);
+
+                float x2 = Convert.ToSingle(args[4]);
+                float y2 = Convert.ToSingle(args[5]);
+                float w2 = Convert.ToSingle(args[6]);
+                float h2 = Convert.ToSingle(args[7]);
+
+                bool result =
+                    x1 - w1 / 2 < x2 + w2 / 2 &&
+                    x1 + w1 / 2 > x2 - w2 / 2 &&
+                    y1 - h1 / 2 < y2 + h2 / 2 &&
+                    y1 + h1 / 2 > y2 - h2 / 2;
+
+                return result;
+            });
+
+
 
 
         }

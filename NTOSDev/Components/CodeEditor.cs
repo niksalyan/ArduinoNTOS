@@ -149,7 +149,7 @@ using break case const continue debugg default delete do else export extends fal
 from function get if import in instanceof let new null of return set static super switch this
 throw true try typeof var void while with yield
 drawBox fillBox cursor print printCentered printRight delay confirm alert confirmNumber editText dialog loadStr saveStr
-clas fillCircle drawCircle drawPixel drawLine load drawSprite
+cls fillCircle drawCircle drawPixel drawLine load drawSprite collision
 "
             );
 

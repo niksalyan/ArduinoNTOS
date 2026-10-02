@@ -202,11 +202,7 @@ public:
   }
 
   static bool Tick() {
-
-    if (!_running) {
-      return;
-    }
-
+    if (!_running) return true;
     if (_delay > 0) {
       delay(1);
       _delay--;
@@ -1749,6 +1745,26 @@ private:
             text,
             max);
           break;
+        }
+
+      case 128:  // collision
+        {
+          uint32_t h2 = PopInt();
+          uint32_t w2 = PopInt();
+          uint32_t y2 = PopInt();
+          uint32_t x2 = PopInt();
+
+          uint32_t h1 = PopInt();
+          uint32_t w1 = PopInt();
+          uint32_t y1 = PopInt();
+          uint32_t x1 = PopInt();
+
+          bool result =
+            x1 - w1 / 2 < x2 + w2 / 2 && x1 + w1 / 2 > x2 - w2 / 2 && y1 - h1 / 2 < y2 + h2 / 2 && y1 + h1 / 2 > y2 - h2 / 2;
+
+          Push({ StackValueType::Bool, result });
+
+          return true;
         }
       default:
         Serial.print("[NTOS] Unknown function: ");
