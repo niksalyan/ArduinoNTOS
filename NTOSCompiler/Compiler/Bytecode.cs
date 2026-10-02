@@ -180,18 +180,12 @@ public class BytecodeApp
         return _bytecodes.ContainsKey(name) && _bytecodes[name].Length > 0 ? _bytecodes[name] : new byte[1];
     }
 
-    public string ToArduinoArray(string name, int columns = 8)
+    public static string ToArduinoArray(byte[] bytecode, int columns = 8)
     {
-        var bytecode = GetBytecode(name);
         var sb = new StringBuilder();
 
         for (int i = 0; i < bytecode.Length; i++)
         {
-            if (i > 0)
-            {
-                sb.Append(' ');
-            }
-
             sb.Append($"0x{bytecode[i]:X2}");
 
             if (i < bytecode.Length - 1)
@@ -208,9 +202,8 @@ public class BytecodeApp
         return sb.ToString();
     }
 
-    public string ToComArray(string name)
+    public static string ToComArray(byte[] bytecode)
     {
-        var bytecode = GetBytecode(name);
         var sb = new StringBuilder();
 
         for (int i = 0; i < bytecode.Length; i++)

@@ -1,4 +1,5 @@
-﻿using NTOSDev.Components;
+﻿using NTOSCompiler;
+using NTOSDev.Components;
 using ScintillaNet.Abstractions.Classes;
 using ScintillaNet.Abstractions.Enumerations;
 using ScintillaNet.Abstractions.Extensions;
@@ -25,6 +26,8 @@ namespace NTOSDev.Controls
 
         public static string currentFile = string.Empty;
 
+        private bool allowSaving = true;
+
         public CodeEditor(string filePath)
         {
             InitializeComponent();
@@ -32,27 +35,23 @@ namespace NTOSDev.Controls
             scintillaEditor.TextChanged += ScintillaEditor_TextChanged;
             if (File.Exists(filePath))
             {
-                this.filePath = filePath;
-                scintillaEditor.Text = File.ReadAllText(filePath);
-                fileSaved = true;
-                UpdateFileName();
+                if (Path.GetExtension(filePath).ToLower() == ".ntx")
+                {
+                    allowSaving = false;
+                    this.filePath = filePath;
+                    scintillaEditor.Text = BytecodeApp.ToArduinoArray(File.ReadAllBytes(filePath), 16);
+                    scintillaEditor.ReadOnly = true;
+                    fileSaved = true;
+                    UpdateFileName();
+                } else
+                {
+                    this.filePath = filePath;
+                    scintillaEditor.Text = File.ReadAllText(filePath);
 
-                //// Select indicator #8 for compiler errors
-                //scintillaEditor.IndicatorCurrent = 8;
-
-                //// Make it a squiggly underline
-                //scintillaEditor.Indicators[8].Style = IndicatorStyle.Squiggle;
-
-                //// Red
-                //scintillaEditor.Indicators[8].ForeColor = Color.Red;
-
-                //// Apply to the error position
-                //scintillaEditor.IndicatorFillRange(1500, 10);
-
-                //scintillaEditor.CharPositionFromPoint(15, 2); // Move cursor to the start of the document
-                //scintillaEditor.IndicatorFillRange(200, 1);
-
-
+                    fileSaved = true;
+                    UpdateFileName();
+                }
+               
             }
 
             scintillaEditor.GotFocus += ScintillaEditor_GotFocus;
@@ -66,6 +65,7 @@ namespace NTOSDev.Controls
 
         private void ReloadEmulator(bool force = false)
         {
+            if (!allowSaving) return;
             if (currentFile == filePath && !force) return;
             currentFile = filePath;
             DEmulator.RefreshEmulator();
@@ -198,7 +198,7 @@ cls fillCircle drawCircle drawPixel drawLine load drawSprite collision
 
         private void SaveFile()
         {
-            if (string.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath) || !allowSaving)
                 return;
 
             try

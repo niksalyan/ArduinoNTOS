@@ -31,6 +31,11 @@ namespace NTOSDev
             HideOnClose = true
         };
 
+        public SpriteViewer spriteViewer = new SpriteViewer()
+        {
+            HideOnClose = true
+        };
+
         public Main()
         {
             NTOS.Main = this;
@@ -65,7 +70,7 @@ function init() {{
     // This function is called when the project is initialized
 }}
 
-dunction draw() {{
+function draw() {{
     dialog(""Hello, World!"");
 }}
 
@@ -73,7 +78,7 @@ draw();
 
 function loop() {{
     // This function is called every frame
-    char key = getKey();
+    var key = getKey();
     switch(key) {{
         case '*':
             // Do something when the '*' key is pressed
@@ -153,7 +158,7 @@ function loop() {{
 
         public void OpenFile(string filePath)
         {
-            if (Path.GetExtension(filePath)?.ToLower() == ".js")
+            if (Path.GetExtension(filePath)?.ToLower() == ".js" || Path.GetExtension(filePath)?.ToLower() == ".ntx")
             {
                 new CodeEditor(filePath).Show(dockPanel, DockState.Document);
             } else
@@ -206,6 +211,9 @@ function loop() {{
                     break;
                 case "imageConverter":
                     dImage.Show(dockPanel, DockState.Document);
+                    break;
+                case "spriteViewer":
+                    spriteViewer.Show(dockPanel, DockState.Document);
                     break;
                 case "about":
                     new AboutForm().ShowDialog();

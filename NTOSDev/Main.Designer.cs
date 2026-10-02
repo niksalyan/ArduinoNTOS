@@ -46,6 +46,7 @@
             documentationToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
+            spriteViewerToolStripMenuItem = new ToolStripMenuItem();
             menuStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -104,7 +105,7 @@
             // 
             // toolsToolStripMenuItem
             // 
-            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem });
+            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem, spriteViewerToolStripMenuItem });
             toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             toolsToolStripMenuItem.Size = new Size(58, 24);
             toolsToolStripMenuItem.Text = "Tools";
@@ -125,13 +126,13 @@
             // runEmulatorToolStripMenuItem
             // 
             runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
-            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
+            runEmulatorToolStripMenuItem.Size = new Size(181, 26);
             runEmulatorToolStripMenuItem.Text = "Run Emulator";
             // 
             // buildToolStripMenuItem
             // 
             buildToolStripMenuItem.Name = "buildToolStripMenuItem";
-            buildToolStripMenuItem.Size = new Size(224, 26);
+            buildToolStripMenuItem.Size = new Size(181, 26);
             buildToolStripMenuItem.Text = "Rebuild";
             // 
             // helpToolStripMenuItem
@@ -160,6 +161,12 @@
             dockPanel.Name = "dockPanel";
             dockPanel.Size = new Size(1280, 692);
             dockPanel.TabIndex = 1;
+            // 
+            // spriteViewerToolStripMenuItem
+            // 
+            spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
+            spriteViewerToolStripMenuItem.Size = new Size(224, 26);
+            spriteViewerToolStripMenuItem.Text = "Sprite Viewer";
             // 
             // Main
             // 
@@ -201,5 +208,6 @@
         private ToolStripMenuItem helpToolStripMenuItem;
         private ToolStripMenuItem documentationToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
+        private ToolStripMenuItem spriteViewerToolStripMenuItem;
     }
 }

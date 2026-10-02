@@ -1218,11 +1218,49 @@ namespace NTOSCompiler.Compiler
         protected override object? VisitAssignmentExpression(
     AssignmentExpression assignment)
         {
-            // Normal variable assignment
-            if (assignment.Left is Identifier identifier)
+            // Whole array assignment
+            if (assignment.Left is Identifier identifier &&
+                assignment.Operator == Operator.Assignment &&
+                assignment.Right is ArrayExpression array)
             {
                 Variable variable =
                     GetVariable(identifier.Name);
+
+                if (!variable.IsArray)
+                {
+                    throw new InvalidOperationException(
+                        $"Variable '{variable.Name}' is not an array.");
+                }
+
+                if (array.Elements.Count != variable.Length)
+                {
+                    throw new InvalidOperationException(
+                        $"Array '{variable.Name}' has length {variable.Length}, " +
+                        $"but assignment contains {array.Elements.Count} elements.");
+                }
+
+                VariableType arrayType =
+                    GetExpressionType(array);
+
+                if (arrayType != variable.Type)
+                {
+                    throw new InvalidOperationException(
+                        $"Array '{variable.Name}' is {variable.Type}[], " +
+                        $"but assigned value is {arrayType}[].");
+                }
+
+                CompileArrayInitializer(
+                    variable,
+                    array);
+
+                return variable.Type;
+            }
+
+            // Normal variable assignment
+            if (assignment.Left is Identifier identifier2)
+            {
+                Variable variable =
+                    GetVariable(identifier2.Name);
 
                 // Normal =
                 if (assignment.Operator == Operator.Assignment)
@@ -1237,20 +1275,16 @@ namespace NTOSCompiler.Compiler
                 if (assignment.Operator == Operator.AdditionAssignment ||
                     assignment.Operator == Operator.SubtractionAssignment)
                 {
-                    // Load current value
                     Load(variable);
 
-                    // Right-hand value
                     CompileExpression(assignment.Right);
 
-                    // Operation
                     Add(
                         assignment.Operator ==
                             Operator.AdditionAssignment
                             ? OpCode.Add
                             : OpCode.Subtract);
 
-                    // Store result
                     Store(variable);
 
                     return variable.Type;
@@ -1264,14 +1298,14 @@ namespace NTOSCompiler.Compiler
             if (assignment.Left is MemberExpression member)
             {
                 if (!member.Computed ||
-                    member.Object is not Identifier identifier2)
+                    member.Object is not Identifier identifier3)
                 {
                     throw new InvalidOperationException(
                         "Only array indexing is supported.");
                 }
 
                 Variable variable =
-                    GetVariable(identifier2.Name);
+                    GetVariable(identifier3.Name);
 
                 if (!variable.IsArray)
                     throw new InvalidOperationException(

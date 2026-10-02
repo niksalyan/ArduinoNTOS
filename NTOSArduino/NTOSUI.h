@@ -778,9 +778,7 @@ public:
     }
   }
 
-  static uint8_t readSpriteByte(
-    uint16_t spriteIndex,
-    uint8_t byteIndex) {
+  static uint8_t readSpriteByte(uint16_t spriteIndex, uint16_t byteIndex) {
     uint16_t chunk =
       spriteIndex / SPRITES_SPRITES_PER_CHUNK;
 
@@ -790,25 +788,34 @@ public:
     uint16_t offset =
       localIndex * SPRITE_BYTES + byteIndex;
 
+    uint_farptr_t address;
+
     switch (chunk) {
       case 0:
-        return pgm_read_byte(&SPRITES_0[offset]);
+        address = pgm_get_far_address(SPRITES_0);
+        break;
 
       case 1:
-        return pgm_read_byte(&SPRITES_1[offset]);
+        address = pgm_get_far_address(SPRITES_1);
+        break;
 
       case 2:
-        return pgm_read_byte(&SPRITES_2[offset]);
+        address = pgm_get_far_address(SPRITES_2);
+        break;
 
       case 3:
-        return pgm_read_byte(&SPRITES_3[offset]);
+        address = pgm_get_far_address(SPRITES_3);
+        break;
 
       case 4:
-        return pgm_read_byte(&SPRITES_4[offset]);
+        address = pgm_get_far_address(SPRITES_4);
+        break;
 
       default:
         return 0;
     }
+
+    return pgm_read_byte_far(address + offset);
   }
 
   static void waitForKey(int ms) {
