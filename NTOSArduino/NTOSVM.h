@@ -8,6 +8,7 @@
 #include "Storage.h"
 #include "EEPROMStorage.h"
 
+
 // ============================================================
 // NTOS VM configuration
 // ============================================================
@@ -61,6 +62,8 @@ private:
   inline static bool _running = false;
   inline static int32_t _delay = 0;
   inline static char* appName = "";
+
+
 
 
 
@@ -191,6 +194,14 @@ public:
   }
 
   static void Update() {
+    for (uint8_t i = 0; i < 200; i++) {
+      if (Tick()) {
+        return;
+      }
+    }
+  }
+
+  static bool Tick() {
 
     if (!_running) {
       return;
@@ -199,12 +210,12 @@ public:
     if (_delay > 0) {
       delay(1);
       _delay--;
-      return;
+      return true;
     }
 
     if (_ip >= _bytecodeSize) {
       _running = false;
-      return;
+      return true;
     }
 
 
@@ -225,7 +236,7 @@ public:
         {
           Stop();
           Navigation::MainView();
-          return;
+          return true;
         }
 
 
@@ -357,25 +368,13 @@ public:
 
       case 0x08:  // StoreFloat
         {
-          uint16_t address =
-            ReadUInt16();
+          uint16_t address = ReadUInt16();
 
-          StackValue value =
-            Pop();
-
-          float number;
-
-          uint32_t bits =
-            value.value;
-
-          memcpy(
-            &number,
-            &bits,
-            sizeof(number));
+          StackValue value = Pop();
 
           SetFloat(
             address,
-            number);
+            StackValueToFloat(value));
 
           break;
         }
@@ -641,20 +640,9 @@ public:
           StackValue value = Pop();
           StackValue address = Pop();
 
-          float number;
-
-          uint32_t bits =
-            value.value;
-
-          memcpy(
-            &number,
-            &bits,
-            sizeof(number));
-
           SetFloat(
-            static_cast<uint16_t>(
-              address.value),
-            number);
+            static_cast<uint16_t>(address.value),
+            StackValueToFloat(value));
 
           break;
         }
@@ -723,7 +711,7 @@ public:
 
           _ip = target;
 
-          break;
+          return true;
         }
 
 
@@ -742,7 +730,7 @@ public:
                    0 });
           }
 
-          break;
+          return true;
         }
 
 
@@ -794,10 +782,12 @@ public:
 
       default:
         {
-          // Invalid opcode.
-          return;
+          Stop();
+          Navigation::MainView();
+          return true;
         }
     }
+    return false;
   }
 
 
@@ -824,6 +814,32 @@ private:
     }
 
     return _stack[--_sp];
+  }
+
+  static int32_t PopInt() {
+    StackValue v = Pop();
+
+    switch (v.type) {
+      case StackValueType::Int:
+        return (int32_t)v.value;
+
+      case StackValueType::Float:
+        {
+          float f;
+          memcpy(&f, &v.value, sizeof(float));
+
+          return (int32_t)roundf(f);
+        }
+
+      case StackValueType::Byte:
+        return (int32_t)(uint8_t)v.value;
+
+      case StackValueType::Bool:
+        return v.value ? 1 : 0;
+
+      default:
+        return 0;
+    }
   }
 
 
@@ -974,18 +990,50 @@ private:
   // Arithmetic
   // ========================================================
 
-  static void BinaryNumeric(
-    char operation) {
+  static void BinaryNumeric(char operation) {
     StackValue right = Pop();
     StackValue left = Pop();
 
-    int32_t a =
-      static_cast<int32_t>(
-        left.value);
+    bool useFloat =
+      left.type == StackValueType::Float || right.type == StackValueType::Float;
 
-    int32_t b =
-      static_cast<int32_t>(
-        right.value);
+    if (useFloat) {
+      float a = StackValueToFloat(left);
+      float b = StackValueToFloat(right);
+
+      float result = 0.0f;
+
+      switch (operation) {
+        case '+':
+          result = a + b;
+          break;
+
+        case '-':
+          result = a - b;
+          break;
+
+        case '*':
+          result = a * b;
+          break;
+
+        case '/':
+          if (b != 0.0f)
+            result = a / b;
+          break;
+
+        case '%':
+          if (b != 0.0f)
+            result = fmodf(a, b);
+          break;
+      }
+
+      PushFloat(result);
+      return;
+    }
+
+    // Integer arithmetic
+    int32_t a = (int32_t)left.value;
+    int32_t b = (int32_t)right.value;
 
     int32_t result = 0;
 
@@ -1014,45 +1062,78 @@ private:
     }
 
     Push({ StackValueType::Int,
-           static_cast<uint32_t>(result) });
+           (uint32_t)result });
   }
 
+  static float StackValueToFloat(const StackValue& v) {
+    if (v.type == StackValueType::Float) {
+      float result;
+
+      memcpy(
+        &result,
+        &v.value,
+        sizeof(result));
+
+      return result;
+    }
+
+    if (v.type == StackValueType::Int)
+      return (float)(int32_t)v.value;
+
+    if (v.type == StackValueType::Byte)
+      return (float)(uint8_t)v.value;
+
+    if (v.type == StackValueType::Bool)
+      return v.value ? 1.0f : 0.0f;
+
+    return 0.0f;
+  }
+
+  static void PushFloat(float value) {
+    uint32_t bits;
+
+    memcpy(
+      &bits,
+      &value,
+      sizeof(bits));
+
+    Push({ StackValueType::Float,
+           bits });
+  }
 
   // ========================================================
   // Comparison
   // ========================================================
 
-  static void Compare(
-    char operation) {
+  static void Compare(char operation) {
     StackValue right = Pop();
     StackValue left = Pop();
 
-    int32_t a =
-      static_cast<int32_t>(
-        left.value);
-
-    int32_t b =
-      static_cast<int32_t>(
-        right.value);
+    bool useFloat =
+      left.type == StackValueType::Float || right.type == StackValueType::Float;
 
     bool result = false;
 
-    switch (operation) {
-      case '<':
-        result = a < b;
-        break;
+    if (useFloat) {
+      float a = StackValueToFloat(left);
+      float b = StackValueToFloat(right);
 
-      case '>':
-        result = a > b;
-        break;
+      switch (operation) {
+        case '<': result = a < b; break;
+        case '>': result = a > b; break;
+        case 'L': result = a <= b; break;
+        case 'G': result = a >= b; break;
+      }
+    } else {
+      int32_t a = (int32_t)left.value;
+      int32_t b = (int32_t)right.value;
 
-      case 'L':
-        result = a <= b;
-        break;
-
-      case 'G':
-        result = a >= b;
-        break;
+      switch (operation) {
+        case '<': result = a < b; break;
+        case '>': result = a > b; break;
+        case 'L': result = a <= b; break;
+        case 'G': result = a >= b; break;
+      }
     }
 
     Push({ StackValueType::Bool,
@@ -1067,6 +1148,21 @@ private:
   static bool AreEqual(
     const StackValue& left,
     const StackValue& right) {
+
+    bool leftNumeric =
+      left.type == StackValueType::Int || left.type == StackValueType::Float || left.type == StackValueType::Byte || left.type == StackValueType::Bool;
+
+    bool rightNumeric =
+      right.type == StackValueType::Int || right.type == StackValueType::Float || right.type == StackValueType::Byte || right.type == StackValueType::Bool;
+
+    if (leftNumeric && rightNumeric) {
+      if (left.type == StackValueType::Float || right.type == StackValueType::Float) {
+        return StackValueToFloat(left) == StackValueToFloat(right);
+      }
+
+      return left.value == right.value;
+    }
+
     if (left.type != right.type)
       return false;
 
@@ -1313,6 +1409,13 @@ private:
 
           return true;
         }
+      case 6:  // getKeyPressed
+        {
+          byte key = (byte)Pop().value;
+          Push({ StackValueType::Bool,
+                 Terminal::isPressed(key) });
+          return true;
+        }
 
 
       case 9:  // cls
@@ -1326,10 +1429,10 @@ private:
       case 10:  // drawBox
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t h = Pop().value;
-          uint32_t w = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t h = PopInt();
+          uint32_t w = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
 
           tft.drawRect(x, y, w, h, Color332To565(color));
 
@@ -1339,10 +1442,10 @@ private:
       case 11:  // fillBox
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t h = Pop().value;
-          uint32_t w = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t h = PopInt();
+          uint32_t w = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
           if (color == 0) {
             tft.fastFillRectBlack(x, y, w, h);
           } else {
@@ -1354,11 +1457,11 @@ private:
       case 12:  // drawRoundBox
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t r = Pop().value;
-          uint32_t h = Pop().value;
-          uint32_t w = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t r = PopInt();
+          uint32_t h = PopInt();
+          uint32_t w = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
 
           tft.drawRoundRect(x, y, w, h, r, Color332To565(color));
 
@@ -1368,11 +1471,11 @@ private:
       case 13:  // fillRoundBox
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t r = Pop().value;
-          uint32_t h = Pop().value;
-          uint32_t w = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t r = PopInt();
+          uint32_t h = PopInt();
+          uint32_t w = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
           tft.fillRoundRect(x, y, w, h, r, Color332To565(color));
           break;
         }
@@ -1380,8 +1483,8 @@ private:
       case 14:  // pixel
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
 
           tft.drawPixel(x, y, Color332To565(color));
 
@@ -1391,10 +1494,10 @@ private:
       case 15:  // line
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t y2 = Pop().value;
-          uint32_t x2 = Pop().value;
-          uint32_t y1 = Pop().value;
-          uint32_t x1 = Pop().value;
+          uint32_t y2 = PopInt();
+          uint32_t x2 = PopInt();
+          uint32_t y1 = PopInt();
+          uint32_t x1 = PopInt();
 
           tft.drawLine(x1, y1, x2, y2, Color332To565(color));
 
@@ -1404,9 +1507,9 @@ private:
       case 16:  // fillCircle
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t r = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t r = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
 
           tft.fillCircle(x, y, r, Color332To565(color));
 
@@ -1417,9 +1520,9 @@ private:
       case 17:  // drawCircle
         {
           uint8_t color = (uint8_t)Pop().value;
-          uint32_t r = Pop().value;
-          uint32_t y = Pop().value;
-          uint32_t x = Pop().value;
+          uint32_t r = PopInt();
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
 
           tft.drawCircle(x, y, r, Color332To565(color));
 
@@ -1461,6 +1564,17 @@ private:
           tft.setTextColor(
             Color332To565(color));
           print(textValue, 2);
+          break;
+        }
+
+      case 29:  // drawSprite
+        {
+          uint8_t color = (uint8_t)Pop().value;
+
+          uint32_t y = PopInt();
+          uint32_t x = PopInt();
+          uint32_t i = Pop().value;
+          NTOSUI::drawSprite(i, x, y, Color332To565(color));
           break;
         }
 
@@ -1509,7 +1623,7 @@ private:
 
           return true;
         }
-      case 34: // edit text
+      case 34:  // edit text
         {
           uint16_t max = (uint16_t)Pop().value;
           uint16_t memAddr = (uint16_t)Pop().value;
@@ -1542,16 +1656,36 @@ private:
         }
       case 42:  // loadFloat
         {
-          float def = (float)Pop().value;
-          uint16_t eepromAddr = (int)Pop().value;
-          Push({ StackValueType::Float, EEPROMStorage::LoadFloat(eepromAddr, def) });
+          StackValue defValue = Pop();
+
+          float def = StackValueToFloat(defValue);
+
+          uint16_t eepromAddr =
+            (uint16_t)Pop().value;
+
+          float value =
+            EEPROMStorage::LoadFloat(
+              eepromAddr,
+              def);
+
+          PushFloat(value);
+
           return true;
         }
       case 43:  // saveFloat
         {
-          float val = (float)Pop().value;
-          uint16_t eepromAddr = (int)Pop().value;
-          EEPROMStorage::SaveFloat(eepromAddr, val);
+          StackValue value = Pop();
+
+          float val =
+            StackValueToFloat(value);
+
+          uint16_t eepromAddr =
+            (uint16_t)Pop().value;
+
+          EEPROMStorage::SaveFloat(
+            eepromAddr,
+            val);
+
           break;
         }
       case 44:  // loadStr
@@ -1581,10 +1715,10 @@ private:
             return false;
 
           EEPROMStorage::SaveStr(
-              eepromAddr,
-              text,
-              max);
-            break;
+            eepromAddr,
+            text,
+            max);
+          break;
         }
       default:
         Serial.print("[NTOS] Unknown function: ");

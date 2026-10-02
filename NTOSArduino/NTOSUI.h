@@ -1,9 +1,10 @@
 #pragma once
 #include "Terminal.h"
+#include "Sprites.h"
 
 class NTOSUI {
 private:
-  inline static const char nameCharset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";  
+  inline static const char nameCharset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
 public:
 
   // Screen
@@ -40,6 +41,8 @@ public:
   static constexpr uint16_t COLOR_TEXT_SECONDARY =
     0x8410;
 
+
+
   static void setHandler(KeyHandler kh) {
     Terminal::setHandlers(kh);
   }
@@ -54,7 +57,7 @@ public:
     waitForKey(1000);
   }
 
-  
+
   static bool confirm(const char* title) {
     drawPopupMessage(title, "* = CANCEL    D = CONFIRM");
     while (true) {
@@ -91,9 +94,9 @@ public:
   static void drawPopupMessage(char* title, char* message, char* left = "", char* right = "") {
 
     tft.fastFillRectBlack(35,
-               90,
-               tft.width() - 60,
-               tft.height() - 205);
+                          90,
+                          tft.width() - 60,
+                          tft.height() - 205);
     drawWindow(30,
                85,
                tft.width() - 60,
@@ -453,7 +456,7 @@ public:
     tft.print(text);
   }
 
-  
+
   static bool editText(
     const char* line1,
     char* text,
@@ -600,7 +603,7 @@ public:
           color, 3);
       }
 
-      
+
 
       // Cursor underline
       tft.drawLine(
@@ -741,7 +744,72 @@ public:
     }
   }
 
+  static void drawSprite(
+    uint16_t spriteIndex,
+    int16_t x,
+    int16_t y,
+    uint16_t color) {
+    for (uint8_t row = 0; row < SPRITE_SIZE; row++) {
+      uint8_t left =
+        readSpriteByte(spriteIndex, row * 2);
 
+      uint8_t right =
+        readSpriteByte(spriteIndex, row * 2 + 1);
+
+      for (uint8_t bit = 0; bit < 8; bit++) {
+        if (left & (1 << (7 - bit))) {
+          tft.fastFillRect(
+            x + bit * SPRITE_SCALE,
+            y + row * SPRITE_SCALE,
+            SPRITE_SCALE,
+            SPRITE_SCALE,
+            color);
+        }
+
+        if (right & (1 << (7 - bit))) {
+          tft.fastFillRect(
+            x + (8 + bit) * SPRITE_SCALE,
+            y + row * SPRITE_SCALE,
+            SPRITE_SCALE,
+            SPRITE_SCALE,
+            color);
+        }
+      }
+    }
+  }
+
+  static uint8_t readSpriteByte(
+    uint16_t spriteIndex,
+    uint8_t byteIndex) {
+    uint16_t chunk =
+      spriteIndex / SPRITES_SPRITES_PER_CHUNK;
+
+    uint16_t localIndex =
+      spriteIndex % SPRITES_SPRITES_PER_CHUNK;
+
+    uint16_t offset =
+      localIndex * SPRITE_BYTES + byteIndex;
+
+    switch (chunk) {
+      case 0:
+        return pgm_read_byte(&SPRITES_0[offset]);
+
+      case 1:
+        return pgm_read_byte(&SPRITES_1[offset]);
+
+      case 2:
+        return pgm_read_byte(&SPRITES_2[offset]);
+
+      case 3:
+        return pgm_read_byte(&SPRITES_3[offset]);
+
+      case 4:
+        return pgm_read_byte(&SPRITES_4[offset]);
+
+      default:
+        return 0;
+    }
+  }
 
   static void waitForKey(int ms) {
     for (int d = 0; d < ms; d++) {

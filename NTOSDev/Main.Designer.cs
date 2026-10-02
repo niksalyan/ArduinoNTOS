@@ -125,14 +125,14 @@
             // runEmulatorToolStripMenuItem
             // 
             runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
-            runEmulatorToolStripMenuItem.Size = new Size(181, 26);
+            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
             runEmulatorToolStripMenuItem.Text = "Run Emulator";
             // 
             // buildToolStripMenuItem
             // 
             buildToolStripMenuItem.Name = "buildToolStripMenuItem";
-            buildToolStripMenuItem.Size = new Size(181, 26);
-            buildToolStripMenuItem.Text = "Build";
+            buildToolStripMenuItem.Size = new Size(224, 26);
+            buildToolStripMenuItem.Text = "Rebuild";
             // 
             // helpToolStripMenuItem
             // 

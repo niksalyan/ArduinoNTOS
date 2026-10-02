@@ -28,6 +28,7 @@ namespace NTOSEmulator.Controls
         private char _lastKey;
 
         public event EventHandler<char>? KeyPressed;
+        public event EventHandler<char>? KeyReleased;
 
         public char LastKey => _lastKey;
 
@@ -373,7 +374,7 @@ namespace NTOSEmulator.Controls
             {
                 _pressedRow = row;
                 _pressedColumn = column;
-
+                EmitKeyDown(_keys[row, column]);
                 Invalidate();
             }
         }
@@ -403,7 +404,7 @@ namespace NTOSEmulator.Controls
                 currentRow == row &&
                 currentColumn == column)
             {
-                EmitKey(_keys[row, column]);
+                EmitKeyUp(_keys[row, column]);
             }
         }
 
@@ -420,7 +421,7 @@ namespace NTOSEmulator.Controls
 
             if (key.HasValue)
             {
-                EmitKey(key.Value);
+                EmitKeyDown(key.Value);
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
@@ -457,11 +458,20 @@ namespace NTOSEmulator.Controls
             };
         }
 
-        private void EmitKey(char key)
+        private void EmitKeyDown(char key)
         {
             _lastKey = key;
 
             KeyPressed?.Invoke(this, key);
+
+            Invalidate();
+        }
+
+        private void EmitKeyUp(char key)
+        {
+            _lastKey = key;
+
+            KeyReleased?.Invoke(this, key);
 
             Invalidate();
         }

@@ -63,11 +63,25 @@ namespace NTOSDev
 // NTOS Main executable file
 function init() {{
     // This function is called when the project is initialized
+}}
+
+dunction draw() {{
     dialog(""Hello, World!"");
 }}
 
+draw();
+
 function loop() {{
     // This function is called every frame
+    char key = getKey();
+    switch(key) {{
+        case '*':
+            // Do something when the '*' key is pressed
+            break;
+        case '#':
+            // Do something when the '#' key is pressed
+            break;
+    }}
     delay(1);
 }}
 ");
@@ -184,6 +198,7 @@ function loop() {{
                     dEmulator.InitEmulator();
                     break;
                 case "build":
+                    CodeEditor.currentFile = null;
                     dEmulator.Show(dockPanel, DockState.DockRight);
                     dEmulator.InitEmulator();
                     dEmulator.BuildAll();

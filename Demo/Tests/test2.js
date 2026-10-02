@@ -5,3 +5,4 @@ printRight("DIALOG OK", WHITE);
 
 
 delay(4000);
+load("test3");

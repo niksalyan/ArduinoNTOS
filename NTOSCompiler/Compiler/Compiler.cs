@@ -11,7 +11,19 @@ namespace NTOSCompiler.Compiler
     {
         private static readonly Acornima.Parser _parser = new Acornima.Parser(new ParserOptions()
         {
-            AllowTopLevelUsing = true
+            EcmaVersion = EcmaVersion.ES2026,
+            AllowTopLevelUsing = true,
+
+
+
+            AllowReturnOutsideFunction = false,
+
+            AllowAwaitOutsideFunction = false,
+            AllowSuperCallOutsideConstructor = false,
+            AllowImportExportEverywhere = false,
+            AllowSuperOutsideMethod = false,
+            AllowNewTargetOutsideFunction = false,
+            AllowHashBang = false
         });
         private string _src;
 

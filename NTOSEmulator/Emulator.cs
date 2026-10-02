@@ -26,6 +26,8 @@ namespace NTOSEmulator
 
         private bool isUploading = false;
         private byte currentKey = 0;
+
+        private Dictionary<byte, bool> keyStates = new Dictionary<byte, bool>();
         private int currentNumber = -1;
 
         private Dictionary<int, object> EEPROM = new Dictionary<int, object>();
@@ -83,6 +85,12 @@ namespace NTOSEmulator
                 int number = currentNumber;
                 currentNumber = -1;
                 return number >= 0 && number <= 9 ? number : -1;
+            });
+
+            vmFunctions.AddFunction(6, "getKeyPressed", 1, VariableType.Bool, async (args) =>
+            {
+                byte key = (byte)args[0];
+                return keyStates.ContainsKey(key) ? keyStates[key] : false;
             });
 
             vmFunctions.AddFunction(31, "alert", 2, VariableType.Bool, async args =>
@@ -197,6 +205,7 @@ namespace NTOSEmulator
             
 
             numpadControl.KeyPressed += NumpadControl_KeyPressed;
+            numpadControl.KeyReleased += NumpadControl_KeyReleased;
             serial.DataReceived += Serial_DataReceived;
 
             compiler.ClearVariables();
@@ -205,8 +214,7 @@ namespace NTOSEmulator
 
         }
 
-
-
+        
 
         private void Emulator_Load(object sender, EventArgs e)
         {
@@ -223,9 +231,14 @@ namespace NTOSEmulator
         {
             currentKey = (byte)key;
             currentNumber = currentKey - '0';
+            keyStates[(byte)key] = true;
         }
 
-
+        private void NumpadControl_KeyReleased(object? sender, char key)
+        {
+            keyStates[(byte)key] = false;
+        }
+        
         public void ClearDebug()
         {
             BeginInvoke(() =>

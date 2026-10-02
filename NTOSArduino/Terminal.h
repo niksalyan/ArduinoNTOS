@@ -513,8 +513,11 @@ public:
   inline static EventHandler drawHandler = nullptr;
   inline static EventHandler updateHandler = nullptr;
 
+  inline static char pressedKey = 0;
+
 
   static void begin() {
+    
     uint16_t ID = tft.readID();
 
     if (ID == 0xD3D3) {
@@ -542,16 +545,22 @@ public:
   }
 
   static bool isPressed(char key) {
-    return keypad.isPressed(key);
+    return pressedKey == key;
   }
 
   static void update() {
     char sk = keypad.getKey();
+    if (keypad.getState() == RELEASED) {
+        pressedKey = 0;
+    }
     if(keypad.isPressed('*') && keypad.isPressed('#')) {
         sk = 27;
     }
-    if (sk > 0 && keyHandler) {
-        keyHandler(sk);
+    if (sk > 0) {
+        pressedKey = sk;
+        if (keyHandler) {
+            keyHandler(sk);
+        }
     }
 
     if (updateHandler) {

@@ -1,4 +1,5 @@
-﻿using NTOSCompiler;
+﻿using System;
+using NTOSCompiler;
 using NTOSCompiler.Compiler;
 
 namespace NTOSEmulator.Libs
@@ -88,10 +89,10 @@ namespace NTOSEmulator.Libs
                 g.DrawRectangle(
                     pen,
                     new Rectangle(
-                        (int)args[0],
-                        (int)args[1],
-                        (int)args[2],
-                        (int)args[3]));
+                        Convert.ToInt32(args[0]),
+                        Convert.ToInt32(args[1]),
+                        Convert.ToInt32(args[2]),
+                        Convert.ToInt32(args[3])));
 
                 OnInvalidate?.Invoke();
                 return null;
@@ -109,10 +110,10 @@ namespace NTOSEmulator.Libs
                 g.FillRectangle(
                     brush,
                     new Rectangle(
-                        (int)args[0],
-                        (int)args[1],
-                        (int)args[2],
-                        (int)args[3]));
+                        Convert.ToInt32(args[0]),
+                        Convert.ToInt32(args[1]),
+                        Convert.ToInt32(args[2]),
+                        Convert.ToInt32(args[3])));
 
                 OnInvalidate?.Invoke();
                 return null;
@@ -130,11 +131,11 @@ namespace NTOSEmulator.Libs
                 g.DrawRoundedRectangle(
                     pen,
                     new Rectangle(
-                        (int)args[0],
-                        (int)args[1],
-                        (int)args[2],
-                        (int)args[3]),
-                    new Size((int)args[4], (int)args[4])
+                        Convert.ToInt32(args[0]),
+                        Convert.ToInt32(args[1]),
+                        Convert.ToInt32(args[2]),
+                        Convert.ToInt32(args[3])),
+                    new Size(Convert.ToInt32(args[4]), Convert.ToInt32(args[4]))
                     );
 
                 OnInvalidate?.Invoke();
@@ -153,11 +154,11 @@ namespace NTOSEmulator.Libs
                 g.FillRoundedRectangle(
                     brush,
                     new Rectangle(
-                        (int)args[0],
-                        (int)args[1],
-                        (int)args[2],
-                        (int)args[3]),
-                    new Size((int)args[4], (int)args[4]));
+                        Convert.ToInt32(args[0]),
+                        Convert.ToInt32(args[1]),
+                        Convert.ToInt32(args[2]),
+                        Convert.ToInt32(args[3])),
+                    new Size(Convert.ToInt32(args[4]), Convert.ToInt32(args[4])));
 
                 OnInvalidate?.Invoke();
                 return null;
@@ -172,8 +173,8 @@ namespace NTOSEmulator.Libs
 
                 g.FillRectangle(
                     new SolidBrush(GetColor332((byte)args[2])),
-                    (int)args[0],
-                    (int)args[1],
+                    Convert.ToInt32(args[0]),
+                    Convert.ToInt32(args[1]),
                     1,
                     1);
 
@@ -192,10 +193,10 @@ namespace NTOSEmulator.Libs
 
                 g.DrawLine(
                     pen,
-                    (int)args[0],
-                    (int)args[1],
-                    (int)args[2],
-                    (int)args[3]);
+                    Convert.ToInt32(args[0]),
+                    Convert.ToInt32(args[1]),
+                    Convert.ToInt32(args[2]),
+                    Convert.ToInt32(args[3]));
 
                 OnInvalidate?.Invoke();
                 return null;
@@ -206,9 +207,9 @@ namespace NTOSEmulator.Libs
                 if (args.Length < 4)
                     return null;
 
-                int x = (int)args[0];
-                int y = (int)args[1];
-                int radius = (int)args[2];
+                int x = Convert.ToInt32(args[0]);
+                int y = Convert.ToInt32(args[1]);
+                int radius = Convert.ToInt32(args[2]);
 
                 using var g = Graphics.FromImage(buffer);
                 using var brush = new SolidBrush(
@@ -230,9 +231,9 @@ namespace NTOSEmulator.Libs
                 if (args.Length < 4)
                     return null;
 
-                int x = (int)args[0];
-                int y = (int)args[1];
-                int radius = (int)args[2];
+                int x = Convert.ToInt32(args[0]);
+                int y = Convert.ToInt32(args[1]);
+                int radius = Convert.ToInt32(args[2]);
 
                 using var g = Graphics.FromImage(buffer);
                 using var pen = new Pen(
@@ -302,6 +303,21 @@ namespace NTOSEmulator.Libs
                 textRenderer.SetCursor(textRenderer.CursorX - textRenderer.GetTextWidth(text), textRenderer.CursorY);
 
                 textRenderer.Print(text);
+                OnInvalidate?.Invoke();
+
+                return null;
+            });
+
+            vmFunctions.AddFunction(29, "drawSprite", 4, VariableType.None, async args =>
+            {
+                using var g = Graphics.FromImage(buffer);
+
+                SpriteRenderer.DrawSprite(
+                    g,
+                    (int)args[0],
+                    Convert.ToInt32(args[1]),
+                    Convert.ToInt32(args[2]),
+                    GetColor332((byte)args[3]));
                 OnInvalidate?.Invoke();
 
                 return null;

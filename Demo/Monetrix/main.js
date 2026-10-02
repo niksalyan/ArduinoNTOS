@@ -1,3 +1,7 @@
+/*
+    These variables are initialized only once and retain their values
+    when the view is opened again.
+*/
 using playersCount = 4;
 using playerBalance = [0, 2500, 2500, 2500, 2500, 2500, 2500];
 using playerNames = ["[BANK]", "P1", "P2", "P3", "P4", "P5", "P6"]; 
