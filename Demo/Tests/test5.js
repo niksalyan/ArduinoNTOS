@@ -1,34 +1,458 @@
-// Test 5 - simple animation in the lower area (leave top band untouched)
+    var test3_px = 240;
+    var test3_py = 160;
+
 cls();
-// make many frames (at least 50) by stepping in small increments
-var x = 0;
-while (x < 480) {
-    // clear only the lower area (preserve top band)
-    fillBox(0, 33, 480, 320 - 33, BLACK);
 
-    // moving circle (Y > 32)
-    drawCircle(x, 60, 8, BLUE);
 
-    // trailing dots
-    var t = 0;
-    while (t < 5) {
-        var tx = x - (t * 6);
-        if (tx >= 0) {
-            drawPixel(tx, 60, WHITE);
-        }
-        t = t + 1;
-    }
+// ============================================================
+// DRAWING TEST 3
+// ALIEN WORLD
+// ============================================================
 
-    // small decorative dashed line below the top band
-    var xx = 0;
-    while (xx < 480) {
-        drawLine(xx, 36, xx + 2, 36, YELLOW);
-        xx = xx + 12;
-    }
+dialog("DRAWING TEST 3");
 
-    delay(50);
-    x = x + 5;
+
+// ============================================================
+// SPACE
+// ============================================================
+
+fillBox(0, 32, 480, 288, BLACK);
+
+
+// ============================================================
+// STARS
+// ============================================================
+
+var test3_i = 0;
+
+for (test3_i = 0; test3_i < 600; test3_i++) {
+    drawPixel(
+        rnd() * 480,
+        32 + rnd() * 160,
+        WHITE
+    );
 }
 
-// return to main
+
+// ============================================================
+// DISTANT PLANET
+// ============================================================
+
+fillCircle(390, 105, 48, RED);
+drawCircle(390, 105, 50, WHITE);
+
+
+// Planet bands
+
+drawLine(
+    350,
+    90,
+    430,
+    90,
+    YELLOW
+);
+
+drawLine(
+    345,
+    108,
+    435,
+    108,
+    YELLOW
+);
+
+drawLine(
+    350,
+    125,
+    430,
+    125,
+    YELLOW
+);
+
+
+// ============================================================
+// DISTANT MOUNTAINS
+// ============================================================
+
+fillBox(0, 190, 480, 80, BLUE);
+
+// Mountain 1
+
+drawLine(0, 220, 55, 165, BLUE);
+drawLine(55, 165, 110, 220, BLUE);
+
+// Mountain 2
+
+drawLine(75, 220, 145, 150, BLUE);
+drawLine(145, 150, 215, 220, BLUE);
+
+// Mountain 3
+
+drawLine(180, 220, 255, 155, BLUE);
+drawLine(255, 155, 330, 220, BLUE);
+
+// Mountain 4
+
+drawLine(300, 220, 365, 160, BLUE);
+drawLine(365, 160, 430, 220, BLUE);
+
+// Mountain 5
+
+drawLine(405, 220, 455, 175, BLUE);
+drawLine(455, 175, 480, 205, BLUE);
+
+
+// ============================================================
+// MOUNTAIN HIGHLIGHTS
+// ============================================================
+
+drawLine(55, 165, 45, 178, WHITE);
+drawLine(55, 165, 65, 178, WHITE);
+
+drawLine(145, 150, 132, 165, WHITE);
+drawLine(145, 150, 158, 165, WHITE);
+
+drawLine(255, 155, 242, 168, WHITE);
+drawLine(255, 155, 268, 168, WHITE);
+
+drawLine(365, 160, 353, 174, WHITE);
+drawLine(365, 160, 377, 174, WHITE);
+
+
+// ============================================================
+// ALIEN GROUND
+// ============================================================
+
+fillBox(0, 220, 480, 100, GREEN);
+
+
+// Ground stripes
+
+for (test3_i = 0; test3_i < 16; test3_i = test3_i + 1) {
+
+    var test3_x = test3_i * 31;
+
+    drawLine(
+        test3_x,
+        240 + (test3_i % 3) * 8,
+        test3_x + 18,
+        240 + (test3_i % 3) * 8,
+        WHITE
+    );
+}
+
+
+// ============================================================
+// ALIEN PLANTS
+// ============================================================
+
+for (test3_i = 0; test3_i < 8; test3_i = test3_i + 1) {
+
+    var test3_x = 25 + test3_i * 60;
+
+    // Stem
+    drawLine(
+        test3_x,
+        270,
+        test3_x,
+        245,
+        YELLOW
+    );
+
+    // Left leaf
+    drawLine(
+        test3_x,
+        255,
+        test3_x - 12,
+        247,
+        YELLOW
+    );
+
+    // Right leaf
+    drawLine(
+        test3_x,
+        250,
+        test3_x + 12,
+        242,
+        YELLOW
+    );
+
+    // Flower
+    fillCircle(
+        test3_x,
+        240,
+        7,
+        RED
+    );
+}
+
+
+// ============================================================
+// SPACESHIP
+// ============================================================
+
+// Main body
+
+fillCircle(240, 145, 38, RED);
+
+fillBox(
+    205,
+    140,
+    70,
+    30,
+    RED
+);
+
+
+// Nose
+
+drawLine(
+    205,
+    140,
+    240,
+    115,
+    RED
+);
+
+drawLine(
+    240,
+    115,
+    275,
+    140,
+    RED
+);
+
+
+// Wings
+
+drawLine(
+    205,
+    155,
+    165,
+    185,
+    RED
+);
+
+drawLine(
+    165,
+    185,
+    215,
+    175,
+    RED
+);
+
+drawLine(
+    275,
+    155,
+    315,
+    185,
+    RED
+);
+
+drawLine(
+    315,
+    185,
+    265,
+    175,
+    RED
+);
+
+
+// Wing tips
+
+fillCircle(165, 185, 8, YELLOW);
+fillCircle(315, 185, 8, YELLOW);
+
+
+// ============================================================
+// COCKPIT
+// ============================================================
+
+fillCircle(240, 145, 20, BLUE);
+drawCircle(240, 145, 22, WHITE);
+
+fillCircle(233, 140, 4, WHITE);
+fillCircle(248, 140, 4, WHITE);
+
+
+// Cockpit reflection
+
+drawLine(
+    228,
+    132,
+    240,
+    127,
+    WHITE
+);
+
+
+// ============================================================
+// ENGINE
+// ============================================================
+
+fillBox(
+    215,
+    170,
+    18,
+    18,
+    BLACK
+);
+
+fillBox(
+    247,
+    170,
+    18,
+    18,
+    BLACK
+);
+
+
+// Engine flames
+
+drawLine(
+    224,
+    188,
+    215,
+    210,
+    YELLOW
+);
+
+drawLine(
+    224,
+    188,
+    224,
+    215,
+    RED
+);
+
+drawLine(
+    256,
+    188,
+    265,
+    210,
+    YELLOW
+);
+
+drawLine(
+    256,
+    188,
+    256,
+    215,
+    RED
+);
+
+
+// ============================================================
+// ANTENNA
+// ============================================================
+
+drawLine(
+    240,
+    115,
+    240,
+    95,
+    WHITE
+);
+
+fillCircle(
+    240,
+    92,
+    6,
+    YELLOW
+);
+
+
+// ============================================================
+// SHIP LIGHTS
+// ============================================================
+
+for (test3_i = 0; test3_i < 5; test3_i = test3_i + 1) {
+
+    test3_x = 210 + test3_i * 15;
+
+    fillCircle(
+        test3_x,
+        165,
+        3,
+        YELLOW
+    );
+}
+
+
+// ============================================================
+// FLYING PARTICLES
+// ============================================================
+
+for (test3_i = 0; test3_i < 15; test3_i = test3_i + 1) {
+
+    var test3_x = 110 + ((test3_i * 37) % 260);
+    var test3_y = 105 + ((test3_i * 29) % 105);
+
+    drawPixel(
+        test3_x,
+        test3_y,
+        YELLOW
+    );
+}
+
+
+// ============================================================
+// GROUND CRATERS
+// ============================================================
+
+for (test3_i = 0; test3_i < 7; test3_i = test3_i + 1) {
+
+    test3_x = 35 + test3_i * 68;
+
+    drawCircle(
+        test3_x,
+        292 + (test3_i % 2) * 8,
+        12,
+        BLACK
+    );
+}
+
+
+// ============================================================
+// SMALL ROCKS
+// ============================================================
+
+for (test3_i = 0; test3_i < 12; test3_i = test3_i + 1) {
+
+    test3_x = 10 + ((test3_i * 47) % 460);
+    test3_y = 265 + ((test3_i * 19) % 45);
+
+    fillBox(
+        test3_x,
+        test3_y,
+        6,
+        5,
+        BLUE
+    );
+}
+
+
+// ============================================================
+// FOREGROUND GRASS
+// ============================================================
+
+for (test3_i = 0; test3_i < 60; test3_i = test3_i + 1) {
+
+    test3_x = test3_i * 8;
+
+    drawLine(
+        test3_x,
+        320,
+        test3_x + 3,
+        310 - (test3_x % 7),
+        GREEN
+    );
+}
+
+
+// ============================================================
+// END
+// ============================================================
+
+delay(4000);
+
 load("main");

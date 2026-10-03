@@ -1,31 +1,404 @@
-// Test 4 - decorative patterns in lower area (leave top band untouched)
+var test2_px = 240;
+var test2_py = 160;
+
 cls();
-// small diagonal ticks and pixels starting below the top band
-var x = 0;
-while (x < 480) {
-    // small diagonal ticks
-    drawLine(x, 40 + (x % 6), x + 3, 40 + ((x + 3) % 6), GREEN);
-    drawPixel(x + 1, 46 + ((x / 5) % 10), WHITE);
-    x = x + 4;
+
+
+// ============================================================
+// DRAWING TEST 2
+// RAINY STREET
+// ============================================================
+
+dialog("DRAWING TEST 2");
+
+
+// ============================================================
+// SKY
+// ============================================================
+
+fillBox(0, 32, 480, 288, BLUE);
+
+
+// ============================================================
+// CLOUDS
+// ============================================================
+
+fillCircle(70, 70, 28, BLACK);
+fillCircle(100, 65, 35, BLACK);
+fillCircle(135, 72, 27, BLACK);
+
+fillCircle(315, 70, 30, BLACK);
+fillCircle(350, 62, 38, BLACK);
+fillCircle(390, 72, 28, BLACK);
+
+// Cloud highlights
+
+fillCircle(80, 65, 18, WHITE);
+fillCircle(110, 58, 20, WHITE);
+
+fillCircle(330, 65, 18, WHITE);
+fillCircle(355, 55, 22, WHITE);
+
+
+// ============================================================
+// RAIN
+// ============================================================
+
+var test2_i = 0;
+var test2_x = 0;
+var test2_y = 0;
+
+// Long rain
+
+for (test2_i = 0; test2_i < 21; test2_i = test2_i + 1) {
+
+    test2_x = 10 + test2_i * 23;
+    test2_y = 100 + ((test2_x * 17) % 100);
+
+    drawLine(
+        test2_x,
+        test2_y,
+        test2_x - 4,
+        test2_y + 16,
+        WHITE
+    );
 }
 
-// small repeating pattern further down
-var sx = 2;
-while (sx < 480) {
-    fillBox(sx, 60, 3, 3, BLUE);
-    sx = sx + 7;
+// Short rain
+
+for (test2_i = 0; test2_i < 16; test2_i = test2_i + 1) {
+
+    test2_x = 5 + test2_i * 31;
+    test2_y = 145 + ((test2_x * 11) % 90);
+
+    drawLine(
+        test2_x,
+        test2_y,
+        test2_x - 3,
+        test2_y + 12,
+        WHITE
+    );
 }
 
-// horizontal dashed lines in lower area
-var y = 40;
-while (y < 200) {
-    var xx = 0;
-    while (xx < 480) {
-        drawLine(xx, y, xx + 2, y, YELLOW);
-        xx = xx + 6;
-    }
-    y = y + 6;
+
+// ============================================================
+// BACKGROUND BUILDINGS
+// ============================================================
+
+fillBox(0,   135, 85,  125, BLACK);
+fillBox(95,  110, 95,  150, BLACK);
+fillBox(200, 145, 75,  115, BLACK);
+fillBox(285, 120, 100, 140, BLACK);
+fillBox(395, 145, 85,  115, BLACK);
+
+
+// ============================================================
+// BUILDING WINDOWS
+// ============================================================
+
+// Building 1
+
+for (test2_i = 0; test2_i < 3; test2_i = test2_i + 1) {
+
+    test2_x = 15 + test2_i * 25;
+
+    fillBox(test2_x, 150, 10, 12, YELLOW);
+    fillBox(test2_x, 180, 10, 12, YELLOW);
+    fillBox(test2_x, 210, 10, 12, YELLOW);
 }
 
-delay(2000);
+
+// Building 2
+
+for (test2_i = 0; test2_i < 3; test2_i = test2_i + 1) {
+
+    test2_x = 110 + test2_i * 30;
+
+    fillBox(test2_x, 125, 12, 14, YELLOW);
+    fillBox(test2_x, 155, 12, 14, YELLOW);
+    fillBox(test2_x, 185, 12, 14, YELLOW);
+    fillBox(test2_x, 215, 12, 14, YELLOW);
+}
+
+
+// Building 3
+
+for (test2_i = 0; test2_i < 2; test2_i = test2_i + 1) {
+
+    test2_x = 215 + test2_i * 30;
+
+    fillBox(test2_x, 160, 10, 12, YELLOW);
+    fillBox(test2_x, 190, 10, 12, YELLOW);
+    fillBox(test2_x, 220, 10, 12, YELLOW);
+}
+
+
+// Building 4
+
+for (test2_i = 0; test2_i < 3; test2_i = test2_i + 1) {
+
+    test2_x = 300 + test2_i * 30;
+
+    fillBox(test2_x, 140, 12, 14, YELLOW);
+    fillBox(test2_x, 170, 12, 14, YELLOW);
+    fillBox(test2_x, 200, 12, 14, YELLOW);
+    fillBox(test2_x, 230, 12, 14, YELLOW);
+}
+
+
+// Building 5
+
+for (test2_i = 0; test2_i < 2; test2_i = test2_i + 1) {
+
+    test2_x = 410 + test2_i * 30;
+
+    fillBox(test2_x, 160, 12, 12, YELLOW);
+    fillBox(test2_x, 190, 12, 12, YELLOW);
+    fillBox(test2_x, 220, 12, 12, YELLOW);
+}
+
+
+// ============================================================
+// SIDEWALK
+// ============================================================
+
+fillBox(0, 255, 480, 65, BLACK);
+
+
+// Sidewalk tiles
+
+for (test2_i = 0; test2_i < 10; test2_i = test2_i + 1) {
+
+    test2_x = test2_i * 50;
+
+    drawLine(
+        test2_x,
+        255,
+        test2_x + 25,
+        255,
+        WHITE
+    );
+}
+
+
+
+// ============================================================
+// STREET LAMP
+// ============================================================
+
+fillBox(65, 95, 7, 165, BLACK);
+
+drawLine(
+    68,
+    100,
+    100,
+    100,
+    BLACK
+);
+
+fillCircle(105, 105, 13, YELLOW);
+drawCircle(105, 105, 15, WHITE);
+
+
+// ============================================================
+// GIRL
+// ============================================================
+
+// Legs
+
+fillBox(205, 255, 13, 50, YELLOW);
+fillBox(225, 255, 13, 50, YELLOW);
+
+// Shoes
+
+fillBox(198, 300, 25, 9, RED);
+fillBox(222, 300, 25, 9, RED);
+
+
+// ============================================================
+// COAT
+// ============================================================
+
+fillBox(190, 205, 65, 60, RED);
+
+fillCircle(195, 215, 18, RED);
+fillCircle(250, 215, 18, RED);
+
+drawLine(
+    222,
+    210,
+    222,
+    260,
+    WHITE
+);
+
+
+// Coat buttons
+
+for (test2_i = 0; test2_i < 2; test2_i = test2_i + 1) {
+
+    test2_y = 230 + test2_i * 15;
+
+    fillCircle(215, test2_y, 3, YELLOW);
+    fillCircle(230, test2_y, 3, YELLOW);
+}
+
+
+// ============================================================
+// NECK
+// ============================================================
+
+fillBox(215, 180, 18, 25, YELLOW);
+
+
+// ============================================================
+// HEAD
+// ============================================================
+
+fillCircle(224, 155, 35, YELLOW);
+
+
+// ============================================================
+// HAIR
+// ============================================================
+
+fillCircle(215, 135, 35, RED);
+fillCircle(195, 150, 20, RED);
+fillCircle(250, 150, 20, RED);
+
+fillBox(190, 145, 15, 60, RED);
+fillBox(245, 145, 15, 55, RED);
+
+
+// Hair fringe
+
+drawLine(195, 140, 215, 155, RED);
+drawLine(205, 135, 222, 153, RED);
+drawLine(220, 132, 230, 150, RED);
+
+
+// ============================================================
+// EARS
+// ============================================================
+
+fillCircle(191, 157, 7, YELLOW);
+fillCircle(257, 157, 7, YELLOW);
+
+
+// ============================================================
+// EYES
+// ============================================================
+
+fillCircle(210, 158, 7, WHITE);
+fillCircle(238, 158, 7, WHITE);
+
+fillCircle(211, 159, 3, BLUE);
+fillCircle(237, 159, 3, BLUE);
+
+drawPixel(211, 158, WHITE);
+drawPixel(237, 158, WHITE);
+
+
+// ============================================================
+// NOSE
+// ============================================================
+
+drawLine(
+    224,
+    165,
+    220,
+    174,
+    RED
+);
+
+
+// ============================================================
+// SMILE
+// ============================================================
+
+drawLine(217, 181, 224, 185, RED);
+drawLine(224, 185, 232, 180, RED);
+
+
+// ============================================================
+// LEFT ARM
+// ============================================================
+
+drawLine(195, 215, 175, 245, YELLOW);
+drawLine(202, 220, 183, 250, YELLOW);
+
+fillCircle(180, 250, 9, YELLOW);
+
+
+// ============================================================
+// RIGHT ARM
+// ============================================================
+
+drawLine(250, 215, 270, 245, YELLOW);
+drawLine(243, 220, 264, 250, YELLOW);
+
+fillCircle(267, 252, 9, YELLOW);
+
+
+
+// ============================================================
+// FOREGROUND RAIN SPLASHES
+// ============================================================
+
+for (test2_i = 0; test2_i < 5; test2_i = test2_i + 1) {
+
+    test2_x = 100 + test2_i * 80;
+
+    drawLine(
+        test2_x,
+        275 + (test2_i % 2) * 10,
+        test2_x + 10,
+        275 + (test2_i % 2) * 10,
+        WHITE
+    );
+}
+
+
+// ============================================================
+// GRASS / SMALL PLANTS
+// ============================================================
+
+for (test2_i = 0; test2_i < 54; test2_i = test2_i + 1) {
+
+    test2_x = test2_i * 9;
+
+    drawLine(
+        test2_x,
+        320,
+        test2_x + 4,
+        310 - (test2_x % 10),
+        GREEN
+    );
+}
+
+
+// ============================================================
+// UMBRELLA HIGHLIGHT
+// ============================================================
+
+drawLine(175, 90, 200, 85, YELLOW);
+drawLine(205, 82, 230, 80, YELLOW);
+
+
+// ============================================================
+// FINAL DETAILS
+// ============================================================
+
+drawLine(20, 245, 16, 255, WHITE);
+drawLine(450, 230, 446, 240, WHITE);
+drawLine(375, 245, 371, 255, WHITE);
+drawLine(130, 235, 126, 245, WHITE);
+
+
+// ============================================================
+// END
+// ============================================================
+
+delay(4000);
+
 load("test5");

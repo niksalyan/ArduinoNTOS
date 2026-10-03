@@ -184,6 +184,144 @@ namespace NTOSEmulator
                 return null;
             });
 
+            vmFunctions.AddFunction(129, "abs", 1, VariableType.Float, async args =>
+            {
+                return Math.Abs(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(130, "min", 2, VariableType.Float, async args =>
+            {
+                return Math.Min(Convert.ToDouble(args[0]), Convert.ToDouble(args[1]));
+            });
+
+            vmFunctions.AddFunction(131, "max", 2, VariableType.Float, async args =>
+            {
+                return Math.Max(Convert.ToDouble(args[0]), Convert.ToDouble(args[1]));
+            });
+
+            vmFunctions.AddFunction(132, "clamp", 3, VariableType.Float, async args =>
+            {
+                double value = Convert.ToDouble(args[0]);
+                double min = Convert.ToDouble(args[1]);
+                double max = Convert.ToDouble(args[2]);
+
+                return Math.Clamp(value, min, max);
+            });
+
+            vmFunctions.AddFunction(133, "sign", 1, VariableType.Int, async args =>
+            {
+                double value = Convert.ToDouble(args[0]);
+                return Math.Sign(value);
+            });
+
+            vmFunctions.AddFunction(134, "sqrt", 1, VariableType.Float, async args =>
+            {
+                return Math.Sqrt(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(135, "pow", 2, VariableType.Float, async args =>
+            {
+                return Math.Pow(
+                    Convert.ToDouble(args[0]),
+                    Convert.ToDouble(args[1]));
+            });
+
+            vmFunctions.AddFunction(136, "hypot", 2, VariableType.Float, async args =>
+            {
+                return Math.Sqrt(
+                    Math.Pow(Convert.ToDouble(args[0]), 2) +
+                    Math.Pow(Convert.ToDouble(args[1]), 2));
+            });
+
+            vmFunctions.AddFunction(137, "sin", 1, VariableType.Float, async args =>
+            {
+                return Math.Sin(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(138, "cos", 1, VariableType.Float, async args =>
+            {
+                return Math.Cos(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(139, "tan", 1, VariableType.Float, async args =>
+            {
+                return Math.Tan(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(140, "asin", 1, VariableType.Float, async args =>
+            {
+                return Math.Asin(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(141, "acos", 1, VariableType.Float, async args =>
+            {
+                return Math.Acos(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(142, "atan", 1, VariableType.Float, async args =>
+            {
+                return Math.Atan(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(143, "atan2", 2, VariableType.Float, async args =>
+            {
+                return Math.Atan2(
+                    Convert.ToDouble(args[0]),
+                    Convert.ToDouble(args[1]));
+            });
+
+            vmFunctions.AddFunction(144, "floor", 1, VariableType.Float, async args =>
+            {
+                return Math.Floor(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(145, "ceil", 1, VariableType.Float, async args =>
+            {
+                return Math.Ceiling(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(146, "round", 1, VariableType.Float, async args =>
+            {
+                return Math.Round(Convert.ToDouble(args[0]));
+            });
+
+            vmFunctions.AddFunction(147, "fmod", 2, VariableType.Float, async args =>
+            {
+                return Convert.ToDouble(args[0]) %
+                       Convert.ToDouble(args[1]);
+            });
+
+            vmFunctions.AddFunction(148, "lerp", 3, VariableType.Float, async args =>
+            {
+                double a = Convert.ToDouble(args[0]);
+                double b = Convert.ToDouble(args[1]);
+                double t = Convert.ToDouble(args[2]);
+
+                return a + (b - a) * t;
+            });
+
+            vmFunctions.AddFunction(149, "map", 5, VariableType.Float, async args =>
+            {
+                double value = Convert.ToDouble(args[0]);
+                double inMin = Convert.ToDouble(args[1]);
+                double inMax = Convert.ToDouble(args[2]);
+                double outMin = Convert.ToDouble(args[3]);
+                double outMax = Convert.ToDouble(args[4]);
+
+                if (inMax == inMin)
+                    return outMin;
+
+                return outMin +
+                    (value - inMin) *
+                    (outMax - outMin) /
+                    (inMax - inMin);
+            });
+
+            vmFunctions.AddFunction(150, "rnd", 0, VariableType.Float, async args =>
+            {
+                return (float)Random.Shared.Next(10000000) / 10000000.0f;
+            });
+
 
             screen = new ScreenBuffer(vmFunctions);
 

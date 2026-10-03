@@ -264,7 +264,12 @@ namespace NTOSEmulator.Libs
             {
                 if (args.Length < 2) return null;
 
-                string text = args[0]?.ToString() ?? "";
+                string text = args[0] switch
+                {
+                    float f => f.ToString("0.00"),
+                    double d => d.ToString("0.00"),
+                    _ => args[0]?.ToString() ?? ""
+                };
 
                 using var g = Graphics.FromImage(buffer);
                 
@@ -279,7 +284,12 @@ namespace NTOSEmulator.Libs
             {
                 if (args.Length < 2) return null;
 
-                string text = args[0]?.ToString() ?? "";
+                string text = args[0] switch
+                {
+                    float f => f.ToString("0.00"),
+                    double d => d.ToString("0.00"),
+                    _ => args[0]?.ToString() ?? ""
+                };
 
                 using var g = Graphics.FromImage(buffer);
 
@@ -295,7 +305,12 @@ namespace NTOSEmulator.Libs
             {
                 if (args.Length < 2) return null;
 
-                string text = args[0]?.ToString() ?? "";
+                string text = args[0] switch
+                {
+                    float f => f.ToString("0.00"),
+                    double d => d.ToString("0.00"),
+                    _ => args[0]?.ToString() ?? ""
+                };
 
                 using var g = Graphics.FromImage(buffer);
 

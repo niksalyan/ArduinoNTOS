@@ -1766,6 +1766,304 @@ private:
 
           return true;
         }
+
+        // ========================================================
+        // Math
+        // ========================================================
+
+      case 129:  // abs
+        {
+          StackValue value = Pop();
+
+          if (value.type == StackValueType::Float) {
+            PushFloat(fabsf(StackValueToFloat(value)));
+          } else {
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(
+                     abs(static_cast<int32_t>(value.value))) });
+          }
+
+          return true;
+        }
+
+      case 130:  // min
+        {
+          StackValue b = Pop();
+          StackValue a = Pop();
+
+          if (a.type == StackValueType::Float || b.type == StackValueType::Float) {
+
+            float av = StackValueToFloat(a);
+            float bv = StackValueToFloat(b);
+
+            PushFloat(av < bv ? av : bv);
+          } else {
+            int32_t av = static_cast<int32_t>(a.value);
+            int32_t bv = static_cast<int32_t>(b.value);
+
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(av < bv ? av : bv) });
+          }
+
+          return true;
+        }
+
+      case 131:  // max
+        {
+          StackValue b = Pop();
+          StackValue a = Pop();
+
+          if (a.type == StackValueType::Float || b.type == StackValueType::Float) {
+
+            float av = StackValueToFloat(a);
+            float bv = StackValueToFloat(b);
+
+            PushFloat(av > bv ? av : bv);
+          } else {
+            int32_t av = static_cast<int32_t>(a.value);
+            int32_t bv = static_cast<int32_t>(b.value);
+
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(av > bv ? av : bv) });
+          }
+
+          return true;
+        }
+
+      case 132:  // clamp
+        {
+          StackValue maxValue = Pop();
+          StackValue minValue = Pop();
+          StackValue value = Pop();
+
+          if (value.type == StackValueType::Float || minValue.type == StackValueType::Float || maxValue.type == StackValueType::Float) {
+
+            float v = StackValueToFloat(value);
+            float minV = StackValueToFloat(minValue);
+            float maxV = StackValueToFloat(maxValue);
+
+            if (v < minV) v = minV;
+            if (v > maxV) v = maxV;
+
+            PushFloat(v);
+          } else {
+            int32_t v = static_cast<int32_t>(value.value);
+            int32_t minV = static_cast<int32_t>(minValue.value);
+            int32_t maxV = static_cast<int32_t>(maxValue.value);
+
+            if (v < minV) v = minV;
+            if (v > maxV) v = maxV;
+
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(v) });
+          }
+
+          return true;
+        }
+
+      case 133:  // sign
+        {
+          StackValue value = Pop();
+
+          if (value.type == StackValueType::Float) {
+            float v = StackValueToFloat(value);
+
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(
+                     (v > 0.0f) - (v < 0.0f)) });
+          } else {
+            int32_t v = static_cast<int32_t>(value.value);
+
+            Push({ StackValueType::Int,
+                   static_cast<uint32_t>(
+                     (v > 0) - (v < 0)) });
+          }
+
+          return true;
+        }
+
+      case 134:  // sqrt
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(sqrtf(value));
+
+          return true;
+        }
+
+      case 135:  // pow
+        {
+          float exponent = StackValueToFloat(Pop());
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(powf(value, exponent));
+
+          return true;
+        }
+
+      case 136:  // hypot
+        {
+          float y = StackValueToFloat(Pop());
+          float x = StackValueToFloat(Pop());
+
+          PushFloat(hypotf(x, y));
+
+          return true;
+        }
+
+        // --------------------------------------------------------
+        // Trigonometry
+        // --------------------------------------------------------
+
+      case 137:  // sin
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(sinf(value));
+
+          return true;
+        }
+
+      case 138:  // cos
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(cosf(value));
+
+          return true;
+        }
+
+      case 139:  // tan
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(tanf(value));
+
+          return true;
+        }
+
+      case 140:  // asin
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(asinf(value));
+
+          return true;
+        }
+
+      case 141:  // acos
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(acosf(value));
+
+          return true;
+        }
+
+      case 142:  // atan
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(atanf(value));
+
+          return true;
+        }
+
+      case 143:  // atan2
+        {
+          float x = StackValueToFloat(Pop());
+          float y = StackValueToFloat(Pop());
+
+          PushFloat(atan2f(y, x));
+
+          return true;
+        }
+
+        // --------------------------------------------------------
+        // Rounding
+        // --------------------------------------------------------
+
+      case 144:  // floor
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(floorf(value));
+
+          return true;
+        }
+
+      case 145:  // ceil
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(ceilf(value));
+
+          return true;
+        }
+
+      case 146:  // round
+        {
+          float value = StackValueToFloat(Pop());
+
+          PushFloat(roundf(value));
+
+          return true;
+        }
+
+      case 147:  // fmod
+        {
+          float b = StackValueToFloat(Pop());
+          float a = StackValueToFloat(Pop());
+
+          PushFloat(
+            b != 0.0f
+              ? fmodf(a, b)
+              : 0.0f);
+
+          return true;
+        }
+
+        // --------------------------------------------------------
+        // Interpolation
+        // --------------------------------------------------------
+
+      case 148:  // lerp
+        {
+          float t = StackValueToFloat(Pop());
+          float b = StackValueToFloat(Pop());
+          float a = StackValueToFloat(Pop());
+
+          PushFloat(
+            a + (b - a) * t);
+
+          return true;
+        }
+
+      case 149:  // map
+        {
+          float outMax = StackValueToFloat(Pop());
+          float outMin = StackValueToFloat(Pop());
+          float inMax = StackValueToFloat(Pop());
+          float inMin = StackValueToFloat(Pop());
+          float value = StackValueToFloat(Pop());
+
+          if (inMax == inMin) {
+            PushFloat(outMin);
+            return true;
+          }
+
+          PushFloat(
+            outMin + (value - inMin) * (outMax - outMin) / (inMax - inMin));
+
+          return true;
+        }
+
+      case 150:  // rnd()
+        {
+          PushFloat((float)random(10000000L) / 10000000.0f);
+          return true;
+        }
+
       default:
         Serial.print("[NTOS] Unknown function: ");
         Serial.println(functionIndex);

@@ -11,7 +11,7 @@ cls();
 // SKY
 // ================================
 
-dialog("DRAW TEST");
+dialog("DRAWING TEST");
 fillBox(0, 32, 480, 320 - 25, BLUE);
 
 
@@ -19,14 +19,14 @@ fillBox(0, 32, 480, 320 - 25, BLUE);
 // MOON
 // ================================
 
-fillCircle(380, 80, 45, YELLOW);
-drawCircle(380, 80, 47, WHITE);
+fillCircle(380, 90, 45, YELLOW);
+drawCircle(380, 90, 47, WHITE);
 
 // Moon craters
-fillCircle(360, 55, 6, WHITE);
-fillCircle(395, 45, 5, WHITE);
-fillCircle(405, 80, 8, WHITE);
-fillCircle(370, 90, 4, WHITE);
+fillCircle(360, 65, 6, WHITE);
+fillCircle(395, 55, 5, WHITE);
+fillCircle(405, 90, 8, WHITE);
+fillCircle(370, 100, 4, WHITE);
 
 // ================================
 // DISTANT CITY

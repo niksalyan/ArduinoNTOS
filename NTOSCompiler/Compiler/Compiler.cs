@@ -831,6 +831,9 @@ namespace NTOSCompiler.Compiler
             {
                 string name = identifier.Name;
 
+                if (name == "PI")
+                    return VariableType.Float;
+
                 if (_constants.ContainsKey(name))
                     return VariableType.Byte;
 
@@ -1128,6 +1131,12 @@ namespace NTOSCompiler.Compiler
         protected override object? VisitIdentifier(Identifier identifier)
         {
             string name = identifier.Name;
+
+            if (name == "PI")
+            {
+                Add(OpCode.PushFloat, (float)Math.PI);
+                return null;
+            }
 
             if (_constants.ContainsKey(name))
             {
