@@ -1,3 +1,6 @@
+var currentLevel = 0;
+var lives = 5;
+
 using level = [
 		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
 		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
@@ -71,6 +74,7 @@ printCentered("TO START", WHITE);
 function loop() {
 	var key = getKey();
 	if (key > 0) {
+		lives = 5;
 		load("level1");
 	}
 	delay(1);

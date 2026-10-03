@@ -21,6 +21,9 @@ update();
 cursor(20, 290, 2);
 print("* = BACK", CYAN);
 
+cursor(460, 290, 2);
+printRight("# = NEXT", CYAN);
+
 function loop(){
 	var num = getNumericKey();
 	var key = getKey();

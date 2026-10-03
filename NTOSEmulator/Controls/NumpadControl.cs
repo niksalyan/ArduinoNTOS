@@ -427,6 +427,20 @@ namespace NTOSEmulator.Controls
             }
         }
 
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+
+            char? key = ConvertKeyboardKey(e.KeyCode);
+
+            if (key.HasValue)
+            {
+                EmitKeyUp(key.Value);
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
         private char? ConvertKeyboardKey(Keys key)
         {
             return key switch

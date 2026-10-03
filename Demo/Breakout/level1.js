@@ -9,4 +9,6 @@ level = [
 		EMPTY, EMPTY, RED,    RED,    RED,    RED,    EMPTY, EMPTY,
 ];
 
+currentLevel = 1;
+
 load("game");

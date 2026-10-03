@@ -404,6 +404,10 @@ namespace NTOSEmulator
                     currentKey = 0;
                     currentNumber = -1;
                     vm.Initialized = initialized;
+                    if (name == "main" && !initialized)
+                    {
+                        vm.ClearMemory();
+                    }
                     await vm.Execute(bytecode); // TODO
                 }
                 catch (Exception ex)

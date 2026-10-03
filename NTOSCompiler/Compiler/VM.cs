@@ -32,6 +32,11 @@ public sealed class VirtualMachine
         _executionCts?.Cancel();
     }
 
+    public void ClearMemory()
+    {
+        Array.Clear(_memory, 0, _memory.Length);
+    }
+
     public async Task Execute(byte[] bytecode)
     {
         Stop();
