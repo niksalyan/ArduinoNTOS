@@ -12,10 +12,10 @@
 // ============================================================
 // NTOS VM configuration
 // ============================================================
-#define NTOS_BYTECODE_SIZE 2560
-#define NTOS_MEMORY_SIZE 1536
-#define NTOS_STACK_SIZE 96
-#define NTOS_CALL_STACK_SIZE 32
+#define NTOS_BYTECODE_SIZE 3072
+#define NTOS_MEMORY_SIZE 1024
+#define NTOS_STACK_SIZE 32
+#define NTOS_CALL_STACK_SIZE 16
 #define NTOS_DEBUG 0
 
 

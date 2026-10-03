@@ -188,7 +188,7 @@ namespace NTOSEmulator
             screen = new ScreenBuffer(vmFunctions);
 
             compiler = new Compiler(vmFunctions, screen.colors);
-            vm = new VirtualMachine(4096, vmFunctions);
+            vm = new VirtualMachine(3072, vmFunctions);
 
             screen.OnInvalidate += () =>
             {
@@ -367,14 +367,14 @@ namespace NTOSEmulator
             try
             {
                 bytecode = compiler.Compile(source);
-                // 2560
-                if (bytecode.Length > 2560)
+                // 3072
+                if (bytecode.Length > 3072)
                 {
-                    DebugError("Compiled " + bytecode.Length + "/2560b");
+                    DebugError("Compiled " + bytecode.Length + "/3072b");
 
                 } else
                 {
-                    DebugOutput("Compiled " + bytecode.Length + "/2560b");
+                    DebugOutput("Compiled " + bytecode.Length + "/3072b");
                 }
                 
             } catch (Exception ex)

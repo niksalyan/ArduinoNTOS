@@ -1439,6 +1439,7 @@ namespace NTOSCompiler.Compiler
             return variable.Type;
         }
 
+
         private void Load(Variable variable)
         {
             switch (variable.Type)
