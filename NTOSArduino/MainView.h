@@ -50,9 +50,8 @@ private:
     if (appCount == 0)
       return 1;
 
-    return
-      (appCount + APPS_PER_PAGE - 1)
-      / APPS_PER_PAGE;
+    return (appCount + APPS_PER_PAGE - 1)
+           / APPS_PER_PAGE;
   }
 
   static uint8_t pageStart() {
@@ -66,14 +65,12 @@ private:
 
   static int tileX(uint8_t column) {
 
-    return GRID_X +
-           column * (TILE_WIDTH + COL_GAP);
+    return GRID_X + column * (TILE_WIDTH + COL_GAP);
   }
 
   static int tileY(uint8_t row) {
 
-    return GRID_Y +
-           row * (TILE_HEIGHT + ROW_GAP);
+    return GRID_Y + row * (TILE_HEIGHT + ROW_GAP);
   }
 
   // ==================================================
@@ -85,7 +82,6 @@ private:
     appCount = 0;
 
     Storage::listApps([](const char* name) {
-
       if (appCount >= MAX_APPS)
         return;
 
@@ -167,7 +163,7 @@ private:
     buffer[bufferSize - 1] = '\0';
   }
 
-  
+
 
   // ==================================================
   // Draw application tile
@@ -178,8 +174,7 @@ private:
     uint8_t start = pageStart();
 
     if (
-      index < start ||
-      index >= start + APPS_PER_PAGE) {
+      index < start || index >= start + APPS_PER_PAGE) {
 
       return;
     }
@@ -205,7 +200,7 @@ private:
     // Icon
     // ------------------------------------------------
 
-    
+
 
     // ------------------------------------------------
     // Name
@@ -219,7 +214,7 @@ private:
       MAX_APP_NAME);
 
 
-    if(!Storage::drawImage(displayName, "icon", x + TILE_WIDTH / 2, y + TILE_HEIGHT / 3, 2, 2, 0)) {
+    if (!Storage::drawImage(displayName, "icon", x + TILE_WIDTH / 2, y + TILE_HEIGHT / 3, 2, 2, 0)) {
       NTOSUI::drawIcon(x + TILE_WIDTH / 2 - 14, y + 18);
     }
 
@@ -377,16 +372,6 @@ private:
         launchSelected();
         break;
 
-      // Previous page
-      case '*':
-        previousPage();
-        break;
-
-      // Next page
-      case '#':
-        nextPage();
-        break;
-
       default:
         break;
     }
@@ -407,8 +392,12 @@ private:
     uint8_t column =
       selectedApp % COLS;
 
-    if (column == 0)
+    if (column == 0) {
+      if (currentPage == 0)
+        return;
+      previousPage();
       return;
+    }
 
     selectedApp--;
 
@@ -434,8 +423,12 @@ private:
     uint8_t column =
       selectedApp % COLS;
 
-    if (column >= COLS - 1)
+    if (column >= COLS - 1) {
+      if (currentPage + 1 >= pageCount())
+        return;
+      nextPage();
       return;
+    }
 
     if (selectedApp + 1 >= appCount)
       return;
@@ -516,7 +509,7 @@ private:
     currentPage--;
 
     selectedApp =
-      currentPage * APPS_PER_PAGE;
+      currentPage * APPS_PER_PAGE + (APPS_PER_PAGE - 1);
 
     if (selectedApp >= appCount)
       selectedApp = appCount - 1;
@@ -556,8 +549,7 @@ private:
 
     // Selection crossed page
     if (
-      oldSelection / APPS_PER_PAGE !=
-      selectedApp / APPS_PER_PAGE) {
+      oldSelection / APPS_PER_PAGE != selectedApp / APPS_PER_PAGE) {
 
       draw();
 
@@ -591,11 +583,7 @@ private:
 // Static state
 // ======================================================
 
-char MainView::apps[
-  MainView::MAX_APPS
-][
-  MainView::MAX_APP_NAME
-];
+char MainView::apps[MainView::MAX_APPS][MainView::MAX_APP_NAME];
 
 uint8_t MainView::appCount = 0;
 

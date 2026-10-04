@@ -243,8 +243,8 @@ function updateBall() {
 			BALL_SIZE,
 			BALL_SIZE,
 			aiX,
-			AI_Y,
-			PADDLE_W + PADDLE_H / 2,
+			AI_Y + PADDLE_H / 2,
+			PADDLE_W,
 			PADDLE_H
 		)
 	) {
