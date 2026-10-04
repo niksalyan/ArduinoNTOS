@@ -1,7 +1,4 @@
-﻿
-using System.Drawing;
-
-namespace NTOSImage.Models
+﻿namespace NTOSImage.Models
 {
     public class InputModel
     {

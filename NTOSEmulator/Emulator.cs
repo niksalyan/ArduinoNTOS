@@ -1,172 +1,197 @@
-using NTOSCompiler;
+﻿using NTOSCompiler;
 using NTOSCompiler.Compiler;
 using NTOSEmulator.Libs;
-using System.Diagnostics;
-using System.IO.Ports;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
+using NTOSEmulator.Models;
+using System.ComponentModel;
 
 namespace NTOSEmulator
 {
-    public partial class Emulator : UserControl
+    public static class Emulator
     {
-        public VMFunctions vmFunctions { get; private set; } = new VMFunctions();
-        private VirtualMachine vm;
-        private Compiler compiler;
+        // Central static emulator state and helpers. No direct UI access here; views should bind to the BindingLists
+        // or subscribe to events below. Initialize() should be called from UI thread before usage so
+        // SynchronizationContext is captured for marshaling if available.
 
-        private ScreenBuffer screen;
+        public static VMFunctions VMFunctions { get; private set; } = new VMFunctions();
+        public static VirtualMachine VM { get; private set; }
+        public static Compiler Compiler { get; private set; }
+        internal static ScreenBuffer Screen { get; private set; }
+
+        // Public state
+        public static string AppPath { get; private set; } = string.Empty;
 
 
-        private string appPath;
-        private string lastBytecode;
 
-        private SerialPort serial = new SerialPort();
-        private readonly StringBuilder serialReceiveBuffer = new StringBuilder();
+        public static Dictionary<int, object> EEPROM { get; } = new Dictionary<int, object>();
 
-        private bool isUploading = false;
-        private byte currentKey = 0;
+        // Input state
+        public static byte CurrentKey { get; set; } = 0;
+        public static int CurrentNumber { get; set; } = -1;
+        public static Dictionary<byte, bool> KeyStates { get; } = new Dictionary<byte, bool>();
 
-        private Dictionary<byte, bool> keyStates = new Dictionary<byte, bool>();
-        private int currentNumber = -1;
+        // Bindable collections for views
+        public static BindingList<DebugLine> DebugLines { get; } = new BindingList<DebugLine>();
+        public static BindingList<Instruction> BytecodeList { get; } = new BindingList<Instruction>();
+        public static BindingList<Variable> VariablesList { get; } = new BindingList<Variable>();
 
-        private Dictionary<int, object> EEPROM = new Dictionary<int, object>();
+        // Events
+        public static event Action<string> DebugOutputAdded;
+        public static event Action<string> DebugErrorAdded;
+        public static event Action ScreenInvalidated;
 
-        public Emulator()
+        // internal
+        private static SynchronizationContext uiContext;
+    
+
+        static Emulator()
         {
-            InitializeComponent();
+            uiContext = SynchronizationContext.Current;
 
-            vmFunctions.AddFunction(0, "debug", 1, VariableType.None, async (args) =>
+            // Setup VM functions (mirror EmulatorControl behavior)
+            RegisterFunctions();
+
+            Screen = new ScreenBuffer(VMFunctions);
+            Compiler = new Compiler(VMFunctions, Screen.colors);
+            VM = new VirtualMachine(3072, VMFunctions);
+
+            Screen.OnInvalidate += () => ScreenInvalidated?.Invoke();
+        }
+
+        private static void RegisterFunctions()
+        {
+            // Clear any previous functions by replacing the object if needed
+            VMFunctions = VMFunctions ?? new VMFunctions();
+
+            VMFunctions.AddFunction(0, "debug", 1, VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
-                    DebugOutput(args[0]?.ToString() ?? "");
+                    AppendDebug(args[0]?.ToString() ?? "");
                 }
                 return null;
             });
 
-            vmFunctions.AddFunction(1, "load", 1, VariableType.None, async (args) =>
+            VMFunctions.AddFunction(1, "load", 1, VariableType.None, async (args) =>
             {
                 if (args.Length > 0)
                 {
-                    string file = appPath + args[0]?.ToString() + ".js";
-                    Debug.WriteLine(file);
-                    Execute(file, true);
+                    string file = AppPath + args[0]?.ToString() + ".js";
+                    // execute but do not touch UI here
+                    _ = ExecuteFile(file, true);
                 }
                 return null;
             });
 
-            
-
-            vmFunctions.AddFunction(2, "exit", 0, VariableType.None, async (args) =>
+            VMFunctions.AddFunction(2, "exit", 0, VariableType.None, async (args) =>
             {
-                vm?.Stop();
-                DebugOutput("Execution finished.");               
+                VM?.Stop();
+                AppendDebug("Execution finished.");
                 return null;
             });
 
-            vmFunctions.AddFunction(3, "delay", 1, VariableType.None, async (args) =>
+            VMFunctions.AddFunction(3, "delay", 1, VariableType.None, async (args) =>
             {
                 int d = (int)args[0];
-                await Task.Delay((int)d);
-                vm?.ResetStopwatch();
+                await Task.Delay(d);
+                VM?.ResetStopwatch();
                 return null;
             });
 
-            vmFunctions.AddFunction(4, "getKey", 0, VariableType.Byte, async (args) =>
+            VMFunctions.AddFunction(4, "getKey", 0, VariableType.Byte, async (args) =>
             {
-                byte key = currentKey;
-                currentKey = 0;
+                byte key = CurrentKey;
+                CurrentKey = 0;
                 return key;
             });
 
-            vmFunctions.AddFunction(5, "getNumericKey", 0, VariableType.Int, async (args) =>
+            VMFunctions.AddFunction(5, "getNumericKey", 0, VariableType.Int, async (args) =>
             {
-                int number = currentNumber;
-                currentNumber = -1;
+                int number = CurrentNumber;
+                CurrentNumber = -1;
                 return number >= 0 && number <= 9 ? number : -1;
             });
 
-            vmFunctions.AddFunction(6, "getKeyPressed", 1, VariableType.Bool, async (args) =>
+            VMFunctions.AddFunction(6, "getKeyPressed", 1, VariableType.Bool, async (args) =>
             {
                 byte key = (byte)args[0];
-                return keyStates.ContainsKey(key) ? keyStates[key] : false;
+                return KeyStates.ContainsKey(key) ? KeyStates[key] : false;
             });
 
-            vmFunctions.AddFunction(7, "sync", 1, VariableType.None, async (args) =>
+            VMFunctions.AddFunction(7, "sync", 1, VariableType.None, async (args) =>
             {
                 int d = (int)args[0];
-                await Task.Delay((int)d);
-                vm?.ResetStopwatch();
+                await Task.Delay(d);
+                VM?.ResetStopwatch();
                 return null;
             });
 
-            vmFunctions.AddFunction(31, "alert", 2, VariableType.Bool, async args =>
+            VMFunctions.AddFunction(31, "alert", 2, VariableType.Bool, async args =>
             {
-                Dialogs.Alert(args[0].ToString() ?? "", args[1].ToString() ?? "");
-                vm?.ResetStopwatch();
+                // Dialogs are UI; keep calling existing helper so host can show UI
+                NTOSEmulator.Libs.Dialogs.Alert(args[0].ToString() ?? "", args[1].ToString() ?? "");
+                VM?.ResetStopwatch();
                 return null;
             });
 
-            vmFunctions.AddFunction(32, "confirm", 1, VariableType.Bool, async args =>
+            VMFunctions.AddFunction(32, "confirm", 1, VariableType.Bool, async args =>
             {
-                var r =  Dialogs.Confirm(args[0].ToString() ?? "");
-                vm?.ResetStopwatch();
+                var r = NTOSEmulator.Libs.Dialogs.Confirm(args[0].ToString() ?? "");
+                VM?.ResetStopwatch();
                 return r;
             });
 
-            vmFunctions.AddFunction(33, "confirmNumber", 4, VariableType.Int, async args =>
+            VMFunctions.AddFunction(33, "confirmNumber", 4, VariableType.Int, async args =>
             {
-                var r = Dialogs.ConfirmNumber(args[0].ToString() ?? "", args[1].ToString() ?? "", (int)args[2], (int)args[3]);
-                vm?.ResetStopwatch();
+                var r = NTOSEmulator.Libs.Dialogs.ConfirmNumber(args[0].ToString() ?? "", args[1].ToString() ?? "", (int)args[2], (int)args[3]);
+                VM?.ResetStopwatch();
                 return r;
             });
 
-            vmFunctions.AddFunction(34, "editText", 3, VariableType.Bool, async args =>
+            VMFunctions.AddFunction(34, "editText", 3, VariableType.Bool, async args =>
             {
                 int memAddr = (int)args[1];
                 int maxStringSize = (int)args[2];
-                var text = vm.GetMemoryString((ushort)memAddr);
-                var r = Dialogs.EditText(args[0].ToString() ?? "", text, maxStringSize);
-                if (r != null) {
-                    vm.SetMemoryString((ushort)memAddr, r);
+                var text = VM?.GetMemoryString((ushort)memAddr);
+                var r = NTOSEmulator.Libs.Dialogs.EditText(args[0].ToString() ?? "", text, maxStringSize);
+                if (r != null)
+                {
+                    VM?.SetMemoryString((ushort)memAddr, r);
                 }
-                vm?.ResetStopwatch();
+                VM?.ResetStopwatch();
                 return r != null;
             });
 
-            vmFunctions.AddFunction(39, "addr", 3, VariableType.Int, async args =>
+            VMFunctions.AddFunction(39, "addr", 3, VariableType.Int, async args =>
             {
                 return (int)args[0] + (int)args[1] * (int)args[2];
             });
 
-            vmFunctions.AddFunction(40, "loadInt", 2, VariableType.Int, async args =>
+            VMFunctions.AddFunction(40, "loadInt", 2, VariableType.Int, async args =>
             {
                 int addr = (int)args[0];
                 return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
             });
 
-            vmFunctions.AddFunction(41, "saveInt", 2, VariableType.None, async args =>
+            VMFunctions.AddFunction(41, "saveInt", 2, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (int)args[1];
                 return null;
             });
 
-            vmFunctions.AddFunction(42, "loadFloat", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(42, "loadFloat", 2, VariableType.Float, async args =>
             {
                 int addr = (int)args[0];
                 return EEPROM.ContainsKey(addr) ? EEPROM[addr] : (int)args[1];
             });
 
-            vmFunctions.AddFunction(43, "saveFloat", 2, VariableType.None, async args =>
+            VMFunctions.AddFunction(43, "saveFloat", 2, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (int)args[1];
                 return null;
             });
 
-            vmFunctions.AddFunction(44, "loadStr", 4, VariableType.None, async args =>
+            VMFunctions.AddFunction(44, "loadStr", 4, VariableType.None, async args =>
             {
-                Debug.WriteLine("loadStr");
                 int eepromAddr = (int)args[0];
                 int memAddr = (int)args[1];
                 string defaultValue = (string)args[2];
@@ -179,35 +204,33 @@ namespace NTOSEmulator
                 if (value.Length > maxStringSize)
                     value = value[..maxStringSize];
 
-
-                Debug.WriteLine("WRITING INTO MEMORY: " + memAddr + " = " + value);
-                vm?.SetMemoryString((ushort)memAddr, value);
+                VM?.SetMemoryString((ushort)memAddr, value);
 
                 return null;
             });
 
-            vmFunctions.AddFunction(45, "saveStr", 3, VariableType.None, async args =>
+            VMFunctions.AddFunction(45, "saveStr", 3, VariableType.None, async args =>
             {
                 EEPROM[(int)args[0]] = (string)args[1];
                 return null;
             });
 
-            vmFunctions.AddFunction(129, "abs", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(129, "abs", 1, VariableType.Float, async args =>
             {
                 return Math.Abs(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(130, "min", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(130, "min", 2, VariableType.Float, async args =>
             {
                 return Math.Min(Convert.ToDouble(args[0]), Convert.ToDouble(args[1]));
             });
 
-            vmFunctions.AddFunction(131, "max", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(131, "max", 2, VariableType.Float, async args =>
             {
                 return Math.Max(Convert.ToDouble(args[0]), Convert.ToDouble(args[1]));
             });
 
-            vmFunctions.AddFunction(132, "clamp", 3, VariableType.Float, async args =>
+            VMFunctions.AddFunction(132, "clamp", 3, VariableType.Float, async args =>
             {
                 double value = Convert.ToDouble(args[0]);
                 double min = Convert.ToDouble(args[1]);
@@ -216,90 +239,90 @@ namespace NTOSEmulator
                 return Math.Clamp(value, min, max);
             });
 
-            vmFunctions.AddFunction(133, "sign", 1, VariableType.Int, async args =>
+            VMFunctions.AddFunction(133, "sign", 1, VariableType.Int, async args =>
             {
                 double value = Convert.ToDouble(args[0]);
                 return Math.Sign(value);
             });
 
-            vmFunctions.AddFunction(134, "sqrt", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(134, "sqrt", 1, VariableType.Float, async args =>
             {
                 return Math.Sqrt(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(135, "pow", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(135, "pow", 2, VariableType.Float, async args =>
             {
                 return Math.Pow(
                     Convert.ToDouble(args[0]),
                     Convert.ToDouble(args[1]));
             });
 
-            vmFunctions.AddFunction(136, "hypot", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(136, "hypot", 2, VariableType.Float, async args =>
             {
                 return Math.Sqrt(
                     Math.Pow(Convert.ToDouble(args[0]), 2) +
                     Math.Pow(Convert.ToDouble(args[1]), 2));
             });
 
-            vmFunctions.AddFunction(137, "sin", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(137, "sin", 1, VariableType.Float, async args =>
             {
                 return Math.Sin(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(138, "cos", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(138, "cos", 1, VariableType.Float, async args =>
             {
                 return Math.Cos(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(139, "tan", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(139, "tan", 1, VariableType.Float, async args =>
             {
                 return Math.Tan(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(140, "asin", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(140, "asin", 1, VariableType.Float, async args =>
             {
                 return Math.Asin(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(141, "acos", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(141, "acos", 1, VariableType.Float, async args =>
             {
                 return Math.Acos(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(142, "atan", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(142, "atan", 1, VariableType.Float, async args =>
             {
                 return Math.Atan(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(143, "atan2", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(143, "atan2", 2, VariableType.Float, async args =>
             {
                 return Math.Atan2(
                     Convert.ToDouble(args[0]),
                     Convert.ToDouble(args[1]));
             });
 
-            vmFunctions.AddFunction(144, "floor", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(144, "floor", 1, VariableType.Float, async args =>
             {
                 return Math.Floor(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(145, "ceil", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(145, "ceil", 1, VariableType.Float, async args =>
             {
                 return Math.Ceiling(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(146, "round", 1, VariableType.Float, async args =>
+            VMFunctions.AddFunction(146, "round", 1, VariableType.Float, async args =>
             {
                 return Math.Round(Convert.ToDouble(args[0]));
             });
 
-            vmFunctions.AddFunction(147, "fmod", 2, VariableType.Float, async args =>
+            VMFunctions.AddFunction(147, "fmod", 2, VariableType.Float, async args =>
             {
                 return Convert.ToDouble(args[0]) %
                        Convert.ToDouble(args[1]);
             });
 
-            vmFunctions.AddFunction(148, "lerp", 3, VariableType.Float, async args =>
+            VMFunctions.AddFunction(148, "lerp", 3, VariableType.Float, async args =>
             {
                 double a = Convert.ToDouble(args[0]);
                 double b = Convert.ToDouble(args[1]);
@@ -308,7 +331,7 @@ namespace NTOSEmulator
                 return a + (b - a) * t;
             });
 
-            vmFunctions.AddFunction(149, "map", 5, VariableType.Float, async args =>
+            VMFunctions.AddFunction(149, "map", 5, VariableType.Float, async args =>
             {
                 double value = Convert.ToDouble(args[0]);
                 double inMin = Convert.ToDouble(args[1]);
@@ -325,155 +348,159 @@ namespace NTOSEmulator
                     (inMax - inMin);
             });
 
-            vmFunctions.AddFunction(150, "rnd", 0, VariableType.Float, async args =>
+            VMFunctions.AddFunction(150, "rnd", 0, VariableType.Float, async args =>
             {
                 return (float)Random.Shared.Next(10000000) / 10000000.0f;
             });
-
-
-            screen = new ScreenBuffer(vmFunctions);
-
-            compiler = new Compiler(vmFunctions, screen.colors);
-            vm = new VirtualMachine(3072, vmFunctions);
-
-            screen.OnInvalidate += () =>
-            {
-                screenContainer.Invalidate();
-            };
-
-            typeof(Panel)
-            .GetProperty(
-                "DoubleBuffered",
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic)
-            ?.SetValue(screenContainer, true);
-
-            
-
-            numpadControl.KeyPressed += NumpadControl_KeyPressed;
-            numpadControl.KeyReleased += NumpadControl_KeyReleased;
-            serial.DataReceived += Serial_DataReceived;
-
-            compiler.ClearVariables();
-
-            
-
         }
 
-        
-
-        private void Emulator_Load(object sender, EventArgs e)
+        public static void AppendDebug(string line)
         {
-            string[] ports = SerialPort.GetPortNames();
-            comPortsList.Items.Clear();
-            foreach (var port in ports)
+            if (uiContext != null)
             {
-                comPortsList.Items.Add(port);
+                uiContext.Post(_ =>
+                {
+                    DebugLines.Add(new DebugLine(line));
+                    DebugOutputAdded?.Invoke(line);
+                }, null);
             }
-            UpdateConsole();
-        }
-
-        private void NumpadControl_KeyPressed(object? sender, char key)
-        {
-            currentKey = (byte)key;
-            currentNumber = currentKey - '0';
-            keyStates[(byte)key] = true;
-        }
-
-        private void NumpadControl_KeyReleased(object? sender, char key)
-        {
-            keyStates[(byte)key] = false;
-        }
-        
-        public void ClearDebug()
-        {
-            BeginInvoke(() =>
+            else
             {
-                debugOutput.ForeColor = SystemColors.WindowText;
-                debugOutput.Text = "";
-            });
-            
+                DebugLines.Add(new DebugLine(line));
+                DebugOutputAdded?.Invoke(line);
+            }
         }
 
-        public void DebugStart(string output)
+        public static void ClearDebug()
         {
+            if (uiContext != null)
+            {
+                uiContext.Post(_ => DebugLines.Clear(), null);
+            }
+            else
+            {
+                DebugLines.Clear();
+            }
+        }
+
+        public static async Task ExecuteFile(string file, bool initialized = false)
+        {
+            if (!File.Exists(file))
+            {
+                AppendDebug("File not found: " + file);
+                return;
+            }
+
+            AppPath = Path.GetDirectoryName(file) + "\\";
+            string name = Path.GetFileNameWithoutExtension(file);
+            string source = File.ReadAllText(file);
+
+
+
             ClearDebug();
-            BeginInvoke(() =>
-            {
-                tabControl.SelectTab(1);
-                debugOutput.Text = output + Environment.NewLine;
-            });
-            
-        }
+            BytecodeList.Clear();
+            VariablesList.Clear();
 
-        public void DebugOutput(string output)
-        {
-            BeginInvoke(() => {
-                debugOutput.ForeColor = SystemColors.WindowText;
-                debugOutput.Text += output + Environment.NewLine;
-            });
-            
-
-        }
-        public void DebugError(string error)
-        {
-            DebugStart(error);
-            BeginInvoke(() =>
-            {
-                debugOutput.ForeColor = Color.Red;
-            });
-        }
-
-        public void BuildAll()
-        {
-            DebugStart("STARTS BUILDING");
-            compiler.ClearVariables();
+            byte[] bytecode = null;
             try
             {
-                PrepareDirectory(appPath + "build");
-                string[] files = Directory.GetFiles(appPath, "*.js")
+                bytecode = Compiler.Compile(source);
+                if (bytecode.Length > 3072)
+                {
+                    AppendDebug($"Compiled {bytecode.Length}/3072b - too large");
+                }
+                else
+                {
+                    AppendDebug($"Compiled {bytecode.Length}/3072b");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendDebug(ex.Message);
+                return;
+            }
+
+            // populate bindable lists
+            foreach (var instr in Compiler.Instructions)
+                BytecodeList.Add(instr);
+            foreach (var v in Compiler.Variables)
+                VariablesList.Add(v);
+
+            if (bytecode != null)
+            {
+                try
+                {
+                    CurrentKey = 0;
+                    CurrentNumber = -1;
+                    VM.Initialized = initialized;
+                    if (name == "main" && !initialized)
+                    {
+                        VM.ClearMemory();
+                    }
+                    await VM.Execute(bytecode);
+                }
+                catch (Exception ex)
+                {
+                    AppendDebug(ex.Message);
+                }
+            }
+        }
+
+        public static void BuildAll()
+        {
+            AppendDebug("STARTS BUILDING");
+            Compiler.ClearVariables();
+            try
+            {
+                if (string.IsNullOrEmpty(AppPath))
+                {
+                    AppendDebug("AppPath not set");
+                    return;
+                }
+
+                Directory.CreateDirectory(Path.Combine(AppPath, "build"));
+
+                string[] files = Directory.GetFiles(AppPath, "*.js")
                     .OrderBy(f => Path.GetFileName(f).Equals("main.js", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
                     .ToArray();
+
                 foreach (string file in files)
                 {
                     if (File.Exists(file))
                     {
-
                         string name = Path.GetFileNameWithoutExtension(file);
                         string source = File.ReadAllText(file);
                         byte[] bytecode;
                         try
                         {
-                            bytecode = compiler.Compile(source);
-                            File.WriteAllBytes(appPath + "build\\" + name + ".ntx", bytecode);
-                            DebugOutput("Build: " + name + " OK (" + bytecode.Length + "b) !");
-                        } catch (Exception ex)
-                        {
-                            bytecode = null;
-                            DebugOutput("Build: " + name + " : " + ex.Message);
+                            bytecode = Compiler.Compile(source);
+                            File.WriteAllBytes(Path.Combine(AppPath, "build", name + ".ntx"), bytecode);
+                            AppendDebug($"Build: {name} OK ({bytecode.Length}b) !");
                         }
-                        
-
+                        catch (Exception ex)
+                        {
+                            AppendDebug($"Build: {name} : {ex.Message}");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                DebugError(ex.Message);
+                AppendDebug(ex.Message);
             }
         }
 
-        public void CopyNtiFiles()
+        public static void CopyNtiFiles()
         {
-            DebugStart("COPYING IMAGES");
+            AppendDebug("COPYING IMAGES");
 
             try
             {
-                string buildPath = Path.Combine(appPath, "build");
+                string buildPath = Path.Combine(AppPath, "build");
 
                 Directory.CreateDirectory(buildPath);
 
-                string[] files = Directory.GetFiles(appPath, "*.nti");
+                string[] files = Directory.GetFiles(AppPath, "*.nti");
 
                 foreach (string file in files)
                 {
@@ -484,266 +511,14 @@ namespace NTOSEmulator
 
                         File.Copy(file, destination, true);
 
-                        DebugOutput("Copy: " + name + " OK !");
+                        AppendDebug($"Copy: {name} OK !");
                     }
                 }
             }
             catch (Exception ex)
             {
-                DebugOutput("Copy NTI: " + ex.Message);
+                AppendDebug("Copy NTI: " + ex.Message);
             }
-        }
-
-
-        public async void Execute(string file, bool initialized = false)
-        {
-            appPath = Path.GetDirectoryName(file) + "\\";
-            string name = Path.GetFileNameWithoutExtension(file);
-            string source = File.ReadAllText(file);
-
-            lastBytecode = name;
-
-            ClearDebug();
-            bytecodeGrid.DataSource = null;
-            variablesGrid.DataSource = null;
-            //bytecodeOutput.Text = "";
-
-            
-            byte[] bytecode = null;
-            try
-            {
-                bytecode = compiler.Compile(source);
-                // 3072
-                if (bytecode.Length > 3072)
-                {
-                    DebugError("Compiled " + bytecode.Length + "/3072b");
-
-                } else
-                {
-                    DebugOutput("Compiled " + bytecode.Length + "/3072b");
-                }
-                
-            } catch (Exception ex)
-            {
-                bytecode = null;
-                DebugError(ex.Message);
-            }
-
-            BeginInvoke(() =>
-            {
-                bytecodeGrid.DataSource = compiler.Instructions;
-                variablesGrid.DataSource = compiler.Variables;
-            });
-
-            //bytecodeOutput.Text = app.ToArduinoArray(name);
-            /* // TODO
-                        if (error != null)
-                        {
-                            DebugError(error);
-                            return;
-                        }
-            */
-
-            if (bytecode != null) {
-                try
-                {
-                    currentKey = 0;
-                    currentNumber = -1;
-                    vm.Initialized = initialized;
-                    if (name == "main" && !initialized)
-                    {
-                        vm.ClearMemory();
-                    }
-                    await vm.Execute(bytecode); // TODO
-                }
-                catch (Exception ex)
-                {
-                    DebugError(ex.Message);
-                }
-            }
-        }
-
-
-        private void Emulator_Resize(object sender, EventArgs e)
-        {
-            screenContainer.Height = (int)Math.Round(Width * 0.666f);
-            screenContainer.Invalidate();
-        }
-
-        private void screenContainer_Paint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.DrawImage(screen.GetBuffer(), new Rectangle(0, 0, screenContainer.Width, screenContainer.Height));
-        }
-
-        private void UpdateConsole()
-        {
-            BeginInvoke(() =>
-            {
-                uploadButton.Enabled = serial.IsOpen;
-                comPortsList.Enabled = !serial.IsOpen;
-                connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
-                uploadButton.Enabled = !isUploading;
-                showBytecode.Visible = false; // TODO
-			});
-            
-        }
-
-        private async Task DoUpload()
-        {
-            if (isUploading) return;
-
-            isUploading = true;
-            UpdateConsole();
-
-            try
-            {
-                BuildAll();
-                CopyNtiFiles();
-                string appName = new DirectoryInfo(appPath).Name;
-
-                string[] files =
-                    Directory.GetFiles(appPath + "build")
-                        .Where(f =>
-                            f.EndsWith(".ntx", StringComparison.OrdinalIgnoreCase) ||
-                            f.EndsWith(".nti", StringComparison.OrdinalIgnoreCase))
-                        .ToArray();
-
-                DebugStart("UPLOADING: " + appName);
-                foreach (string file in files)
-                {
-                    if (File.Exists(file))
-                    {
-
-                        string name = Path.GetFileName(file);
-                        byte[] bytecode = File.ReadAllBytes(file);
-                        var sb = new StringBuilder();
-
-                        for (int i = 0; i < bytecode.Length; i++)
-                        {
-                            sb.Append($"{bytecode[i]:X2}");
-                        }
-
-                        DebugOutput("-> " + name + " (" + bytecode.Length + "b)");
-
-                        var sbHex = sb.ToString();
-
-                        string cmd1 = "U " + appName + " " + name;
-                        serial.WriteLine(cmd1);
-
-                        await Task.Delay(1000);
-
-
-                        string cmd2 = "<" + sbHex + ">";
-                        serial.WriteLine(cmd2);
-
-                        await Task.Delay(2000);
-
-
-
-
-                    }
-                }
-
-                await Task.Delay(2000);
-                DebugOutput("DONE");
-
-
-            }
-            catch (Exception ex)
-            {
-                DebugOutput("Upload Error");
-            }
-            finally
-            {
-                isUploading = false;
-                UpdateConsole();
-            }
-        }
-
-        private void Serial_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                string data = serial.ReadExisting();
-
-                lock (serialReceiveBuffer)
-                {
-                    serialReceiveBuffer.Append(data);
-
-                    while (true)
-                    {
-                        string buffer = serialReceiveBuffer.ToString();
-
-                        int newlineIndex = buffer.IndexOf('\n');
-
-                        if (newlineIndex < 0)
-                            break;
-
-                        string line = buffer[..newlineIndex];
-
-                        // Remove the processed line including \n
-                        serialReceiveBuffer.Remove(0, newlineIndex + 1);
-
-                        // Handle possible \r\n
-                        line = line.TrimEnd('\r');
-
-                        DebugOutput("[SERIAL] " + line);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugError("Serial receive error: " + ex.Message);
-            }
-        }
-
-        private void connectButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (!serial.IsOpen)
-                {
-                    serial.PortName = comPortsList.Text;
-                    serial.BaudRate = 4800;
-                    serial.Open();
-                    DebugOutput("Connected to: " + comPortsList.Text);
-                } else
-                {
-                    serial.Close();
-                }
-                
-            } catch (Exception ex)
-            {
-                DebugError(ex.Message);
-            }
-            UpdateConsole();
-        }
-
-        private void showBytecode_Click(object sender, EventArgs e)
-        {
-            // DebugStart(app.ToArduinoArray(lastBytecode));
-        }
-
-        private async void uploadButton_Click(object sender, EventArgs e)
-        {
-
-            Task.Run(DoUpload);
-        }
-
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-            ClearDebug();
-        }
-
-        static void PrepareDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-
-            foreach (string file in Directory.GetFiles(path))
-                File.Delete(file);
-
-            foreach (string directory in Directory.GetDirectories(path))
-                Directory.Delete(directory, recursive: true);
         }
     }
 }

@@ -1,23 +1,16 @@
 ﻿using NTOSDev.Components;
 using NTOSDev.Controls;
-using NTOSDev.Libs;
-using NTOSImage;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using NTOSEmulator;
 using System.Diagnostics;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace NTOSDev
 {
     public partial class Main : Form
     {
-        
-        public ProjectExplorer projectExplorer = new ProjectExplorer() { 
+
+        public ProjectExplorer projectExplorer = new ProjectExplorer()
+        {
             HideOnClose = true
         };
 
@@ -36,11 +29,44 @@ namespace NTOSDev
             HideOnClose = true
         };
 
+        public Instructions dInstructions = new Instructions()
+        {
+            HideOnClose = true
+        };
+
+        public Variables dVariables = new Variables()
+        {
+            HideOnClose = true
+        };
+
+        public Terminal dTerminal = new Terminal()
+        {
+            HideOnClose = true
+        };
+
+        public ComUploader comUploader = new ComUploader()
+        {
+            HideOnClose = true
+        };
+
+        private string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        private string appLayoutFile;
+
         public Main()
         {
             NTOS.Main = this;
+            appLayoutFile = Path.Combine(appDataPath, "NTOSDev", "layout.xml");
+            Directory.CreateDirectory(Path.GetDirectoryName(appLayoutFile));
+            Debug.WriteLine($"Layout file path: {appLayoutFile}");
             InitializeComponent();
             dockPanel.Theme = NTOS.Theme;
+            try
+            {
+                var deserializeDockContent = new DeserializeDockContent(GetContentFromPersistString);
+                dockPanel.LoadFromXml(appLayoutFile, deserializeDockContent);
+            }
+            catch { } // Ignore if layout file doesn't exist or is invalid
+
             AttachMenuHandlers(menuStrip.Items);
         }
 
@@ -51,12 +77,12 @@ namespace NTOSDev
 
             NTOS.Reload += (s) =>
             {
-                CloseAllPanels();
+                CloseAllPanels(typeof(CodeEditor));
                 projectExplorer.LoadFolder(s);
                 DoAction("projectExplorer");
                 DoAction("runEmulator");
 
-
+                string appName = new DirectoryInfo(s).Name;
                 try
                 {
                     if (!string.IsNullOrWhiteSpace(NTOS.LastProject) && Directory.Exists(NTOS.LastProject))
@@ -71,7 +97,7 @@ function init() {{
 }}
 
 function draw() {{
-    dialog(""Hello, World!"");
+    dialog(""{appName}"");
 }}
 
 draw();
@@ -98,12 +124,13 @@ function loop() {{
                         }
                         projectExplorer.LoadFolder(NTOS.LastProject);
                     }
-                } catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex.ToString());
                 }
-                
-                
+
+
 
             };
 
@@ -155,30 +182,91 @@ function loop() {{
                 DoAction(item.Name.Replace("ToolStripMenuItem", ""));
         }
 
+        private IDockContent GetContentFromPersistString(string persistString)
+        {
+            // Tool windows: return existing instances so state is preserved
+            if (persistString == typeof(ProjectExplorer).ToString()) return projectExplorer;
+            if (persistString == typeof(DEmulator).ToString()) return dEmulator;
+            if (persistString == typeof(DImage).ToString()) return dImage;
+            if (persistString == typeof(SpriteViewer).ToString()) return spriteViewer;
+            if (persistString == typeof(Instructions).ToString()) return dInstructions;
+            if (persistString == typeof(Variables).ToString()) return dVariables;
+            if (persistString == typeof(Terminal).ToString()) return dTerminal;
+            if (persistString == typeof(ComUploader).ToString()) return comUploader;
+
+            // Documents: try to extract a file path after a separator (comma or pipe)
+            try
+            {
+                if (persistString.StartsWith(typeof(Controls.CodeEditor).ToString()) || persistString.Contains("CodeEditor"))
+                {
+                    string path = null;
+                    int idx = persistString.IndexOf(',');
+                    if (idx >= 0 && persistString.Length > idx + 1)
+                        path = persistString.Substring(idx + 1).Trim();
+                    else
+                    {
+                        idx = persistString.IndexOf('|');
+                        if (idx >= 0 && persistString.Length > idx + 1)
+                            path = persistString.Substring(idx + 1).Trim();
+                    }
+
+                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                        return new Controls.CodeEditor(path);
+                    return null;
+                }
+
+                if (persistString.StartsWith(typeof(Components.FileViewer).ToString()) || persistString.Contains("FileViewer"))
+                {
+                    string path = null;
+                    int idx = persistString.IndexOf(',');
+                    if (idx >= 0 && persistString.Length > idx + 1)
+                        path = persistString.Substring(idx + 1).Trim();
+                    else
+                    {
+                        idx = persistString.IndexOf('|');
+                        if (idx >= 0 && persistString.Length > idx + 1)
+                            path = persistString.Substring(idx + 1).Trim();
+                    }
+
+                    if (!string.IsNullOrEmpty(path) && File.Exists(path))
+                        return new Components.FileViewer(path);
+                    return null;
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
 
         public void OpenFile(string filePath)
         {
             if (Path.GetExtension(filePath)?.ToLower() == ".js" || Path.GetExtension(filePath)?.ToLower() == ".ntx")
             {
                 new CodeEditor(filePath).Show(dockPanel, DockState.Document);
-            } else
+            }
+            else
             {
                 new FileViewer(filePath).Show(dockPanel, DockState.Document);
             }
-            
+
         }
 
-        public void CloseAllPanels()
+        public void CloseAllPanels(Type type = null)
         {
             var contents = dockPanel.Contents.ToArray();
             foreach (DockContent p in contents)
             {
-                if (p.HideOnClose)
+                if (type == null || p.GetType() == type)
                 {
-                    p.Hide();
-                } else
-                {
-                    p.Close();
+                    if (p.HideOnClose)
+                    {
+                        p.Hide();
+                    }
+                    else
+                    {
+                        p.Close();
+                    }
                 }
             }
         }
@@ -190,7 +278,7 @@ function loop() {{
 
         public void DoAction(string action)
         {
-            switch(action)
+            switch (action)
             {
                 case "openProject":
                     NTOS.OpenProject();
@@ -215,8 +303,20 @@ function loop() {{
                 case "spriteViewer":
                     spriteViewer.Show(dockPanel, DockState.Document);
                     break;
+                case "instructions":
+                    dInstructions.Show(dockPanel, DockState.DockRight);
+                    break;
+                case "variables":
+                    dVariables.Show(dockPanel, DockState.DockRight);
+                    break;
+                case "debugOutput":
+                    dTerminal.Show(dockPanel, DockState.DockBottom);
+                    break;
                 case "about":
                     new AboutForm().ShowDialog();
+                    break;
+                case "upload":
+                    comUploader.Show(dockPanel, DockState.DockBottom);
                     break;
                 case "exit":
                     Close();
@@ -226,10 +326,15 @@ function loop() {{
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
+            try
+            {
+                dockPanel.SaveAsXml(appLayoutFile);
+            }
+            catch { }
 #if !DEBUG
             if (TBMessageBox.Confirm(this, "Project is not saved!", "Do you want to save this project?") == DialogResult.Yes)
             {
-                DoAction("save");
+                // DoAction("save");
             }
 #else
             DoAction("save");

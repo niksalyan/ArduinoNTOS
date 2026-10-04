@@ -1,5 +1,4 @@
-﻿using System;
-using NTOSCompiler;
+﻿using NTOSCompiler;
 using NTOSCompiler.Compiler;
 
 namespace NTOSEmulator.Libs
@@ -61,7 +60,7 @@ namespace NTOSEmulator.Libs
 
         private void SetupFunctions(VMFunctions vmFunctions)
         {
-            
+
 
             vmFunctions.AddFunction(9, "cls", 0, VariableType.None, async args =>
             {
@@ -272,7 +271,7 @@ namespace NTOSEmulator.Libs
                 };
 
                 using var g = Graphics.FromImage(buffer);
-                
+
                 textRenderer.SetGraphics(g);
                 textRenderer.SetTextColor(GetColor332((byte)args[1]));
                 textRenderer.Print(text);
@@ -341,11 +340,11 @@ namespace NTOSEmulator.Libs
 
             vmFunctions.AddFunction(30, "dialog", 1, VariableType.None, async args =>
             {
-                
+
                 string text = args[0]?.ToString() ?? "";
 
                 using var g = Graphics.FromImage(buffer);
-                
+
                 g.Clear(Color.Black);
                 g.FillRectangle(
                     new SolidBrush(Color.FromArgb(25, 28, 24)),
@@ -355,7 +354,7 @@ namespace NTOSEmulator.Libs
                     32);
 
                 textRenderer.SetGraphics(g);
-                
+
                 textRenderer.SetTextSize(2);
 
 

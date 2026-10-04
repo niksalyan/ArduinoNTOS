@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            emulator = new NTOSEmulator.Emulator();
+            emulator = new NTOSEmulator.EmulatorControl();
             SuspendLayout();
             // 
             // emulator
@@ -51,6 +51,6 @@
 
         #endregion
 
-        private NTOSEmulator.Emulator emulator;
+        private NTOSEmulator.EmulatorControl emulator;
     }
 }

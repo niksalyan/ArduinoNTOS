@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+﻿using NTOSImage.Libs;
 using WeifenLuo.WinFormsUI.Docking;
-using NTOSImage.Libs;
 
 namespace NTOSDev.Components
 {
@@ -22,7 +15,7 @@ namespace NTOSDev.Components
                 this.filePath = filePath;
                 UpdateFileName();
                 LoadFile();
-                
+
 
             }
         }
@@ -33,7 +26,8 @@ namespace NTOSDev.Components
             {
                 pictureBox1.Image = Image.FromFile(filePath);
                 return;
-            } catch { }
+            }
+            catch { }
 
             try
             {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NTOSEmulator.Libs
+﻿namespace NTOSEmulator.Libs
 {
     public class Dialogs
     {

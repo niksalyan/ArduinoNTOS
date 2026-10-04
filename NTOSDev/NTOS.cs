@@ -16,7 +16,7 @@ namespace NTOSDev
         public static string LastProject { get => RegistryHelper.ReadRegistry("NTOSLastProject"); set => RegistryHelper.WriteRegistry("NTOSLastProject", value); }
 
 
-
+        
         public static void OpenProject()
         {
             using (var dialog = new FolderBrowserDialog())

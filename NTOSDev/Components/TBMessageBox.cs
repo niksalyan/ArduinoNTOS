@@ -33,7 +33,7 @@ namespace NTOSDev.Libs
                 Heading = heading,
                 Text = message
             };
-            
+
             page.Buttons.Add(TaskDialogButton.OK);
 
             TaskDialog.ShowDialog(owner, page);

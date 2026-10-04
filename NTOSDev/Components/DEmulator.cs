@@ -1,17 +1,7 @@
-﻿using NTOSCompiler;
-using NTOSCompiler.Compiler;
-using NTOSDev.Controls;
-using ScintillaNet.Abstractions.Classes.Lexers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using NTOSDev.Controls;
+using NTOSEmulator;
 using System.Diagnostics;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NTOSDev.Components
 {
@@ -30,14 +20,14 @@ namespace NTOSDev.Components
             InitEmulator();
         }
 
-        public static void RefreshEmulator ()
+        public static void RefreshEmulator()
         {
             instance?.InitEmulator();
         }
 
         public void BuildAll()
         {
-            emulator.BuildAll();
+            Emulator.BuildAll();
         }
 
         public void InitEmulator()
@@ -46,7 +36,7 @@ namespace NTOSDev.Components
             {
                 if (File.Exists(CodeEditor.currentFile))
                 {
-                    emulator.Execute(CodeEditor.currentFile);
+                    Emulator.ExecuteFile(CodeEditor.currentFile);
 
                 }
             }

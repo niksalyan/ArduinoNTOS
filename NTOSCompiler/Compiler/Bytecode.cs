@@ -1,6 +1,5 @@
 using NTOSCompiler.Compiler;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text;
 
 namespace NTOSCompiler;
@@ -13,7 +12,7 @@ public enum OpCode : byte
     PushStr,
 
     PushByte,
-    
+
 
     LoadInt,
     StoreInt,
@@ -91,7 +90,8 @@ public class Instruction
     }
 }
 
-public enum VariableType { 
+public enum VariableType
+{
     None, // Just in case, we can remove this if not needed
     Int,
     Float,
@@ -224,7 +224,7 @@ public class BytecodeApp
 public class BytecodeProgram
 {
     private List<Variable> _variables;
-    
+
 
     public List<Instruction> Instructions { get; set; } = new();
 
@@ -462,7 +462,7 @@ public class BytecodeProgram
         {
             return variable;
         }
-        
+
         variable = new Variable(
             name,
             type,

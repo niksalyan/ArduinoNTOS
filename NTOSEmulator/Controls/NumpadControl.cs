@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿using System.ComponentModel;
 using System.Drawing.Drawing2D;
-using System.Text;
-using System.Windows.Forms;
 
 namespace NTOSEmulator.Controls
 {
@@ -32,23 +26,59 @@ namespace NTOSEmulator.Controls
 
         public char LastKey => _lastKey;
 
+        [Category("Layout")]
+        [Description("Spacing between individual keys.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public int KeySpacing { get; set; } = 8;
 
+        private Padding _buttonsPadding = new Padding(12);
+
+        [Category("Layout")]
+        [Description("Padding between the control border and the button area.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+        public Padding ButtonsPadding
+        {
+            get => _buttonsPadding;
+            set
+            {
+                _buttonsPadding = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Appearance")]
+        [Description("Background color of the control.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color BackgroundColor { get; set; } =
             Color.FromArgb(24, 27, 32);
 
+        [Category("Appearance")]
+        [Description("Default key color.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color KeyColor { get; set; } =
             Color.FromArgb(45, 49, 58);
 
+        [Category("Appearance")]
+        [Description("Key color when hovered.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color KeyHoverColor { get; set; } =
             Color.FromArgb(58, 64, 75);
 
+        [Category("Appearance")]
+        [Description("Key color when pressed.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color KeyPressedColor { get; set; } =
             Color.FromArgb(70, 125, 175);
 
+        [Category("Appearance")]
+        [Description("Primary key text color.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color KeyTextColor { get; set; } =
             Color.FromArgb(235, 238, 242);
 
+        [Category("Appearance")]
+        [Description("Secondary key text color.")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public Color SecondaryTextColor { get; set; } =
             Color.FromArgb(145, 153, 165);
 
@@ -253,14 +283,14 @@ namespace NTOSEmulator.Controls
 
             int availableWidth =
                 ClientSize.Width -
-                Padding.Left -
-                Padding.Right -
+                ButtonsPadding.Left -
+                ButtonsPadding.Right -
                 KeySpacing * 3;
 
             int availableHeight =
                 ClientSize.Height -
-                Padding.Top -
-                Padding.Bottom -
+                ButtonsPadding.Top -
+                ButtonsPadding.Bottom -
                 KeySpacing * 3;
 
             int keyWidth = availableWidth / 4;
@@ -271,11 +301,11 @@ namespace NTOSEmulator.Controls
                 for (int column = 0; column < 4; column++)
                 {
                     int x =
-                        Padding.Left +
+                        ButtonsPadding.Left +
                         column * (keyWidth + KeySpacing);
 
                     int y =
-                        Padding.Top +
+                        ButtonsPadding.Top +
                         row * (keyHeight + KeySpacing);
 
                     result[row, column] =

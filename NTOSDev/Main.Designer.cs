@@ -37,23 +37,28 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
             projectExplorerToolStripMenuItem = new ToolStripMenuItem();
-            toolsToolStripMenuItem = new ToolStripMenuItem();
-            imageConverterToolStripMenuItem = new ToolStripMenuItem();
             projectToolStripMenuItem = new ToolStripMenuItem();
             runEmulatorToolStripMenuItem = new ToolStripMenuItem();
             buildToolStripMenuItem = new ToolStripMenuItem();
+            uploadToolStripMenuItem = new ToolStripMenuItem();
+            toolsToolStripMenuItem = new ToolStripMenuItem();
+            imageConverterToolStripMenuItem = new ToolStripMenuItem();
+            spriteViewerToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem3 = new ToolStripSeparator();
+            instructionsToolStripMenuItem = new ToolStripMenuItem();
+            variablesToolStripMenuItem = new ToolStripMenuItem();
+            debugOutputToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             documentationToolStripMenuItem = new ToolStripMenuItem();
             aboutToolStripMenuItem = new ToolStripMenuItem();
             dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            spriteViewerToolStripMenuItem = new ToolStripMenuItem();
             menuStrip.SuspendLayout();
             SuspendLayout();
             // 
             // menuStrip
             // 
             menuStrip.ImageScalingSize = new Size(20, 20);
-            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, toolsToolStripMenuItem, projectToolStripMenuItem, helpToolStripMenuItem });
+            menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, projectToolStripMenuItem, toolsToolStripMenuItem, helpToolStripMenuItem });
             menuStrip.Location = new Point(0, 0);
             menuStrip.Name = "menuStrip";
             menuStrip.Size = new Size(1280, 28);
@@ -70,24 +75,24 @@
             // openProjectToolStripMenuItem
             // 
             openProjectToolStripMenuItem.Name = "openProjectToolStripMenuItem";
-            openProjectToolStripMenuItem.Size = new Size(178, 26);
+            openProjectToolStripMenuItem.Size = new Size(224, 26);
             openProjectToolStripMenuItem.Text = "Open Project";
             // 
             // preferencesToolStripMenuItem
             // 
             preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            preferencesToolStripMenuItem.Size = new Size(178, 26);
+            preferencesToolStripMenuItem.Size = new Size(224, 26);
             preferencesToolStripMenuItem.Text = "Preferences";
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(175, 6);
+            toolStripMenuItem1.Size = new Size(221, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(178, 26);
+            exitToolStripMenuItem.Size = new Size(224, 26);
             exitToolStripMenuItem.Text = "Exit";
             // 
             // viewToolStripMenuItem
@@ -103,22 +108,9 @@
             projectExplorerToolStripMenuItem.Size = new Size(197, 26);
             projectExplorerToolStripMenuItem.Text = "Project Explorer";
             // 
-            // toolsToolStripMenuItem
-            // 
-            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem, spriteViewerToolStripMenuItem });
-            toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            toolsToolStripMenuItem.Size = new Size(58, 24);
-            toolsToolStripMenuItem.Text = "Tools";
-            // 
-            // imageConverterToolStripMenuItem
-            // 
-            imageConverterToolStripMenuItem.Name = "imageConverterToolStripMenuItem";
-            imageConverterToolStripMenuItem.Size = new Size(224, 26);
-            imageConverterToolStripMenuItem.Text = "Image Converter";
-            // 
             // projectToolStripMenuItem
             // 
-            projectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildToolStripMenuItem });
+            projectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildToolStripMenuItem, uploadToolStripMenuItem });
             projectToolStripMenuItem.Name = "projectToolStripMenuItem";
             projectToolStripMenuItem.Size = new Size(69, 24);
             projectToolStripMenuItem.Text = "Project";
@@ -134,6 +126,54 @@
             buildToolStripMenuItem.Name = "buildToolStripMenuItem";
             buildToolStripMenuItem.Size = new Size(181, 26);
             buildToolStripMenuItem.Text = "Rebuild";
+            // 
+            // uploadToolStripMenuItem
+            // 
+            uploadToolStripMenuItem.Name = "uploadToolStripMenuItem";
+            uploadToolStripMenuItem.Size = new Size(181, 26);
+            uploadToolStripMenuItem.Text = "Upload";
+            // 
+            // toolsToolStripMenuItem
+            // 
+            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem, spriteViewerToolStripMenuItem, toolStripMenuItem3, instructionsToolStripMenuItem, variablesToolStripMenuItem, debugOutputToolStripMenuItem });
+            toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            toolsToolStripMenuItem.Size = new Size(58, 24);
+            toolsToolStripMenuItem.Text = "Tools";
+            // 
+            // imageConverterToolStripMenuItem
+            // 
+            imageConverterToolStripMenuItem.Name = "imageConverterToolStripMenuItem";
+            imageConverterToolStripMenuItem.Size = new Size(202, 26);
+            imageConverterToolStripMenuItem.Text = "Image Converter";
+            // 
+            // spriteViewerToolStripMenuItem
+            // 
+            spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
+            spriteViewerToolStripMenuItem.Size = new Size(202, 26);
+            spriteViewerToolStripMenuItem.Text = "Sprite Viewer";
+            // 
+            // toolStripMenuItem3
+            // 
+            toolStripMenuItem3.Name = "toolStripMenuItem3";
+            toolStripMenuItem3.Size = new Size(199, 6);
+            // 
+            // instructionsToolStripMenuItem
+            // 
+            instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
+            instructionsToolStripMenuItem.Size = new Size(202, 26);
+            instructionsToolStripMenuItem.Text = "Instructions";
+            // 
+            // variablesToolStripMenuItem
+            // 
+            variablesToolStripMenuItem.Name = "variablesToolStripMenuItem";
+            variablesToolStripMenuItem.Size = new Size(202, 26);
+            variablesToolStripMenuItem.Text = "Variables";
+            // 
+            // debugOutputToolStripMenuItem
+            // 
+            debugOutputToolStripMenuItem.Name = "debugOutputToolStripMenuItem";
+            debugOutputToolStripMenuItem.Size = new Size(202, 26);
+            debugOutputToolStripMenuItem.Text = "Debug Output";
             // 
             // helpToolStripMenuItem
             // 
@@ -161,12 +201,6 @@
             dockPanel.Name = "dockPanel";
             dockPanel.Size = new Size(1280, 692);
             dockPanel.TabIndex = 1;
-            // 
-            // spriteViewerToolStripMenuItem
-            // 
-            spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
-            spriteViewerToolStripMenuItem.Size = new Size(224, 26);
-            spriteViewerToolStripMenuItem.Text = "Sprite Viewer";
             // 
             // Main
             // 
@@ -209,5 +243,10 @@
         private ToolStripMenuItem documentationToolStripMenuItem;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem spriteViewerToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem3;
+        private ToolStripMenuItem instructionsToolStripMenuItem;
+        private ToolStripMenuItem variablesToolStripMenuItem;
+        private ToolStripMenuItem debugOutputToolStripMenuItem;
+        private ToolStripMenuItem uploadToolStripMenuItem;
     }
 }

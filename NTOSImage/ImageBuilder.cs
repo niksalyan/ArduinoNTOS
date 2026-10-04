@@ -1,12 +1,4 @@
-﻿using NTOSImage.Libs;
-using NTOSImage.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+﻿using NTOSImage.Models;
 
 namespace NTOSImage
 {

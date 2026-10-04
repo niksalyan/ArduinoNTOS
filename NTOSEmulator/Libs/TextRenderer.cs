@@ -1,7 +1,4 @@
-﻿using System;
-using System.Drawing;
-
-namespace NTOSEmulator.Libs
+﻿namespace NTOSEmulator.Libs
 {
     /// <summary>
     /// Renders the classic Adafruit GFX 5x7 font.
@@ -159,7 +156,7 @@ namespace NTOSEmulator.Libs
 
         public TextRenderer()
         {
-            
+
             if (font.Length < 128 * 5)
                 throw new ArgumentException(
                     "Adafruit GFX font must contain at least 640 bytes.",

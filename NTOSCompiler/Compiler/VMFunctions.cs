@@ -33,7 +33,8 @@ namespace NTOSCompiler.Compiler
                     throw new Exception("Invalid arguments count");
                 }
                 return await _functions[index](args);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Drawing;
-
-namespace NTOSEmulator.Libs
+﻿namespace NTOSEmulator.Libs
 {
     public static class SpriteRenderer
     {

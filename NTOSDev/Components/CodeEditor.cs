@@ -2,18 +2,8 @@
 using NTOSDev.Components;
 using ScintillaNet.Abstractions.Classes;
 using ScintillaNet.Abstractions.Enumerations;
-using ScintillaNet.Abstractions.Extensions;
 using ScintillaNet.WinForms;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NTOSDev.Controls
 {
@@ -43,15 +33,15 @@ namespace NTOSDev.Controls
                     scintillaEditor.ReadOnly = true;
                     fileSaved = true;
                     UpdateFileName();
-                } else
+                }
+                else
                 {
                     this.filePath = filePath;
                     scintillaEditor.Text = File.ReadAllText(filePath);
-
                     fileSaved = true;
                     UpdateFileName();
                 }
-               
+
             }
 
             scintillaEditor.GotFocus += ScintillaEditor_GotFocus;
@@ -141,13 +131,15 @@ namespace NTOSDev.Controls
             scintillaEditor.Styles[10].ForeColor =
                 Color.FromArgb(220, 220, 170);
 
+
+
             // C++ lexer keywords, but populated with our NTOS/JS vocabulary
             scintillaEditor.SetKeywords(
                 0,
                 @$"
 using break case const continue debug default delete do else export extends false finally for
 from function get if import in instanceof let new null of return set static super switch this
-throw true try typeof var void while with yield
+throw true try typeof var void while with yield loop init
 drawBox fillBox cursor print printCentered printRight delay sync confirm alert confirmNumber editText dialog loadStr saveStr
 cls fillCircle drawCircle drawPixel drawLine load drawSprite collision
 abs min max clamp sign sqrt pow hypot sin cos tan asin acos atan2 floor ceil round fmod lerp map rnd

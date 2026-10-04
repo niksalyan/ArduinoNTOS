@@ -16,7 +16,6 @@
 // * = Clear
 // ========================================
 
-
 function init() {
     var current = 0;
     var left = 0;
