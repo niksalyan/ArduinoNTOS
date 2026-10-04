@@ -389,23 +389,40 @@ private:
     uint8_t oldSelection =
       selectedApp;
 
-    uint8_t column =
-      selectedApp % COLS;
+    uint8_t start = pageStart();
+    uint8_t localIndex = selectedApp - start;
+    uint8_t column = localIndex % COLS;
+    uint8_t row = localIndex / COLS;
 
+    // If at first column, move to previous page and keep same row/column position
     if (column == 0) {
       if (currentPage == 0)
         return;
-      previousPage();
+
+      uint8_t prevPage = currentPage - 1;
+      uint8_t newLocal = row * COLS + (COLS - 1);
+      uint8_t newIndex = prevPage * APPS_PER_PAGE + newLocal;
+
+      if (newIndex >= appCount) {
+        // Clamp to last available app on previous page
+        uint8_t prevStart = prevPage * APPS_PER_PAGE;
+        uint8_t prevEnd = prevStart + APPS_PER_PAGE;
+        if (prevEnd > appCount) prevEnd = appCount;
+        if (prevEnd == prevStart) return;
+        selectedApp = prevEnd - 1;
+      } else {
+        selectedApp = newIndex;
+      }
+
+      currentPage = prevPage;
+      draw();
       return;
     }
 
+    // Normal move within page
     selectedApp--;
-
-    currentPage =
-      selectedApp / APPS_PER_PAGE;
-
-    redrawSelection(
-      oldSelection);
+    currentPage = selectedApp / APPS_PER_PAGE;
+    redrawSelection(oldSelection);
   }
 
   // ==================================================
@@ -420,26 +437,41 @@ private:
     uint8_t oldSelection =
       selectedApp;
 
-    uint8_t column =
-      selectedApp % COLS;
+    uint8_t start = pageStart();
+    uint8_t localIndex = selectedApp - start;
+    uint8_t column = localIndex % COLS;
+    uint8_t row = localIndex / COLS;
 
+    // If at last column, move to next page keeping same row
     if (column >= COLS - 1) {
       if (currentPage + 1 >= pageCount())
         return;
-      nextPage();
+
+      uint8_t nextPage = currentPage + 1;
+      uint8_t newLocal = row * COLS; // first column on next page
+      uint8_t newIndex = nextPage * APPS_PER_PAGE + newLocal;
+
+      if (newIndex >= appCount) {
+        // Clamp to last available app on next page
+        uint8_t nextStart = nextPage * APPS_PER_PAGE;
+        if (nextStart >= appCount) return;
+        selectedApp = appCount - 1;
+      } else {
+        selectedApp = newIndex;
+      }
+
+      currentPage = nextPage;
+      draw();
       return;
     }
 
+    // Normal move within page
     if (selectedApp + 1 >= appCount)
       return;
 
     selectedApp++;
-
-    currentPage =
-      selectedApp / APPS_PER_PAGE;
-
-    redrawSelection(
-      oldSelection);
+    currentPage = selectedApp / APPS_PER_PAGE;
+    redrawSelection(oldSelection);
   }
 
   // ==================================================
@@ -454,16 +486,40 @@ private:
     uint8_t oldSelection =
       selectedApp;
 
-    if (selectedApp < COLS)
+    uint8_t start = pageStart();
+    uint8_t localIndex = selectedApp - start;
+    uint8_t column = localIndex % COLS;
+    uint8_t row = localIndex / COLS;
+
+    // If in top row, move to previous page same column
+    if (row == 0) {
+      if (currentPage == 0)
+        return;
+
+      uint8_t prevPage = currentPage - 1;
+      uint8_t newLocal = (ROWS - 1) * COLS + column; // bottom row, same column
+      uint8_t newIndex = prevPage * APPS_PER_PAGE + newLocal;
+
+      if (newIndex >= appCount) {
+        // Clamp to last app on previous page
+        uint8_t prevStart = prevPage * APPS_PER_PAGE;
+        uint8_t prevEnd = prevStart + APPS_PER_PAGE;
+        if (prevEnd > appCount) prevEnd = appCount;
+        if (prevEnd == prevStart) return;
+        selectedApp = prevEnd - 1;
+      } else {
+        selectedApp = newIndex;
+      }
+
+      currentPage = prevPage;
+      draw();
       return;
+    }
 
+    // Normal move up within page
     selectedApp -= COLS;
-
-    currentPage =
-      selectedApp / APPS_PER_PAGE;
-
-    redrawSelection(
-      oldSelection);
+    currentPage = selectedApp / APPS_PER_PAGE;
+    redrawSelection(oldSelection);
   }
 
   // ==================================================
@@ -478,20 +534,42 @@ private:
     uint8_t oldSelection =
       selectedApp;
 
-    uint8_t next =
-      selectedApp + COLS;
+    uint8_t start = pageStart();
+    uint8_t localIndex = selectedApp - start;
+    uint8_t column = localIndex % COLS;
+    uint8_t row = localIndex / COLS;
+
+    uint8_t next = selectedApp + COLS;
+
+    // If in bottom row, move to next page same column
+    if (row + 1 >= ROWS) {
+      if (currentPage + 1 >= pageCount())
+        return;
+
+      uint8_t nextPage = currentPage + 1;
+      uint8_t newLocal = column; // top row, same column on next page
+      uint8_t newIndex = nextPage * APPS_PER_PAGE + newLocal;
+
+      if (newIndex >= appCount) {
+        // Clamp to last app on next page
+        uint8_t nextStart = nextPage * APPS_PER_PAGE;
+        if (nextStart >= appCount) return;
+        selectedApp = appCount - 1;
+      } else {
+        selectedApp = newIndex;
+      }
+
+      currentPage = nextPage;
+      draw();
+      return;
+    }
 
     if (next >= appCount)
       return;
 
-    selectedApp =
-      next;
-
-    currentPage =
-      selectedApp / APPS_PER_PAGE;
-
-    redrawSelection(
-      oldSelection);
+    selectedApp = next;
+    currentPage = selectedApp / APPS_PER_PAGE;
+    redrawSelection(oldSelection);
   }
 
   // ==================================================
