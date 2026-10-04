@@ -44,6 +44,7 @@
             toolsToolStripMenuItem = new ToolStripMenuItem();
             imageConverterToolStripMenuItem = new ToolStripMenuItem();
             spriteViewerToolStripMenuItem = new ToolStripMenuItem();
+            colorPickerToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem3 = new ToolStripSeparator();
             instructionsToolStripMenuItem = new ToolStripMenuItem();
             variablesToolStripMenuItem = new ToolStripMenuItem();
@@ -75,24 +76,24 @@
             // openProjectToolStripMenuItem
             // 
             openProjectToolStripMenuItem.Name = "openProjectToolStripMenuItem";
-            openProjectToolStripMenuItem.Size = new Size(224, 26);
+            openProjectToolStripMenuItem.Size = new Size(178, 26);
             openProjectToolStripMenuItem.Text = "Open Project";
             // 
             // preferencesToolStripMenuItem
             // 
             preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            preferencesToolStripMenuItem.Size = new Size(224, 26);
+            preferencesToolStripMenuItem.Size = new Size(178, 26);
             preferencesToolStripMenuItem.Text = "Preferences";
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(221, 6);
+            toolStripMenuItem1.Size = new Size(175, 6);
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(224, 26);
+            exitToolStripMenuItem.Size = new Size(178, 26);
             exitToolStripMenuItem.Text = "Exit";
             // 
             // viewToolStripMenuItem
@@ -135,7 +136,7 @@
             // 
             // toolsToolStripMenuItem
             // 
-            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem, spriteViewerToolStripMenuItem, toolStripMenuItem3, instructionsToolStripMenuItem, variablesToolStripMenuItem, debugOutputToolStripMenuItem });
+            toolsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { imageConverterToolStripMenuItem, spriteViewerToolStripMenuItem, colorPickerToolStripMenuItem, toolStripMenuItem3, instructionsToolStripMenuItem, variablesToolStripMenuItem, debugOutputToolStripMenuItem });
             toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             toolsToolStripMenuItem.Size = new Size(58, 24);
             toolsToolStripMenuItem.Text = "Tools";
@@ -143,36 +144,42 @@
             // imageConverterToolStripMenuItem
             // 
             imageConverterToolStripMenuItem.Name = "imageConverterToolStripMenuItem";
-            imageConverterToolStripMenuItem.Size = new Size(202, 26);
+            imageConverterToolStripMenuItem.Size = new Size(224, 26);
             imageConverterToolStripMenuItem.Text = "Image Converter";
             // 
             // spriteViewerToolStripMenuItem
             // 
             spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
-            spriteViewerToolStripMenuItem.Size = new Size(202, 26);
+            spriteViewerToolStripMenuItem.Size = new Size(224, 26);
             spriteViewerToolStripMenuItem.Text = "Sprite Viewer";
+            // 
+            // colorPickerToolStripMenuItem
+            // 
+            colorPickerToolStripMenuItem.Name = "colorPickerToolStripMenuItem";
+            colorPickerToolStripMenuItem.Size = new Size(224, 26);
+            colorPickerToolStripMenuItem.Text = "Color Selector";
             // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(199, 6);
+            toolStripMenuItem3.Size = new Size(221, 6);
             // 
             // instructionsToolStripMenuItem
             // 
             instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
-            instructionsToolStripMenuItem.Size = new Size(202, 26);
+            instructionsToolStripMenuItem.Size = new Size(224, 26);
             instructionsToolStripMenuItem.Text = "Instructions";
             // 
             // variablesToolStripMenuItem
             // 
             variablesToolStripMenuItem.Name = "variablesToolStripMenuItem";
-            variablesToolStripMenuItem.Size = new Size(202, 26);
+            variablesToolStripMenuItem.Size = new Size(224, 26);
             variablesToolStripMenuItem.Text = "Variables";
             // 
             // debugOutputToolStripMenuItem
             // 
             debugOutputToolStripMenuItem.Name = "debugOutputToolStripMenuItem";
-            debugOutputToolStripMenuItem.Size = new Size(202, 26);
+            debugOutputToolStripMenuItem.Size = new Size(224, 26);
             debugOutputToolStripMenuItem.Text = "Debug Output";
             // 
             // helpToolStripMenuItem
@@ -248,5 +255,6 @@
         private ToolStripMenuItem variablesToolStripMenuItem;
         private ToolStripMenuItem debugOutputToolStripMenuItem;
         private ToolStripMenuItem uploadToolStripMenuItem;
+        private ToolStripMenuItem colorPickerToolStripMenuItem;
     }
 }

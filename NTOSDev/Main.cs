@@ -1,6 +1,7 @@
 ﻿using NTOSDev.Components;
 using NTOSDev.Controls;
 using NTOSEmulator;
+using NTOSEmulator.Libs;
 using System.Diagnostics;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -317,6 +318,13 @@ function loop() {{
                     break;
                 case "upload":
                     comUploader.Show(dockPanel, DockState.DockBottom);
+                    break;
+                case "colorPicker":
+                    var colorDialog = new ColorDialog();
+                    if (colorDialog.ShowDialog() == DialogResult.OK) {
+                        Clipboard.SetText($"0x{ScreenBuffer.GetColor332(colorDialog.Color):X2}");
+                    }
+                    colorDialog.Dispose();
                     break;
                 case "exit":
                     Close();

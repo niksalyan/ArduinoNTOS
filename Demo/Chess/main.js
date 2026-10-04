@@ -28,7 +28,7 @@ function init() {
 function drawBoard() {
     for(var y = 0; y < 8; y++) {
 		for(var x = 0; x < 8; x++) {
-			fillBox(1 + x * 40, 1 + y * 40, 38, 38, (x + y) % 2 == 0 ? rgb666 : rgb333);
+			fillBox(1 + x * 40, 1 + y * 40, 38, 38, (x + y) % 2 == 0 ? GRAY : DARKGRAY);
 			var figure = board[x + y * 8];
 			switch(figure) {
 				case 'p':
@@ -89,7 +89,6 @@ function clearCursor() {
 
 cls();
 cursor(330, 10, 2);
-print("SHAXMAD", WHITE);
 drawBoard();
 drawCursor();
 

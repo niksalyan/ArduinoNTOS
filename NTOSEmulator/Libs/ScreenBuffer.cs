@@ -3,7 +3,7 @@ using NTOSCompiler.Compiler;
 
 namespace NTOSEmulator.Libs
 {
-    internal class ScreenBuffer
+    public class ScreenBuffer
     {
         private readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
         private TextRenderer textRenderer = new TextRenderer();
@@ -400,6 +400,18 @@ namespace NTOSEmulator.Libs
 
 
 
+        }
+
+        public static byte GetColor332(Color color)
+        {
+            int r = color.R * 7 / 255;
+            int g = color.G * 7 / 255;
+            int b = color.B * 3 / 255;
+
+            return (byte)(
+                (r << 5) |
+                (g << 2) |
+                b);
         }
 
         public static Color GetColor332(byte color)
