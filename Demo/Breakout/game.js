@@ -112,5 +112,5 @@ function loop() {
 				break;
 		}
 	}
-    delay(20);
+    sync(30);
 }

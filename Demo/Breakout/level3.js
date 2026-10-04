@@ -11,4 +11,4 @@ level = [
 
 currentLevel = 3;
 
-load("game");
+load("lives");

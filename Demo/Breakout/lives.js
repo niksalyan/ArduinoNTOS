@@ -1,9 +1,15 @@
 lives--;
 cls();
 if (lives > 0) {
-	cursor(240, 100, 2);
+
+	cursor(240, 80, 2);
+	printCentered("LEVEL", WHITE);
+	cursor(230, 110, 4);
+	print(currentLevel, GREEN);
+
+	cursor(240, 150, 2);
 	printCentered("LIVES", WHITE);
-	cursor(230, 150, 4);
+	cursor(230, 180, 4);
 	print(lives, GREEN);
 } else {
 	cursor(240, 150, 3);

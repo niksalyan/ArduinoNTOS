@@ -154,6 +154,7 @@ public:
     _callSp = 0;
     _running = true;
     _delay = 0;
+    _millis = millis();
     currentKey = 0;
     currentNumber = -1;
 #if NTOS_DEBUG
@@ -1440,14 +1441,21 @@ private:
                  Terminal::isPressed(key) });
           return true;
         }
-      case 7:  // sync
+      case 7:
         {
-          int32_t delayValue = (int32_t)Pop().value;
-          _delay = constrain(delayValue - (millis() - _millis), 0, delayValue);
-          _millis = millis();
+          int32_t frameTime = (int32_t)Pop().value;
+
+          uint32_t now = millis();
+
+          _delay = constrain(
+            frameTime - (now - _millis),
+            0,
+            frameTime);
+
+          _millis = now;
+
           break;
         }
-
 
       case 9:  // cls
         {
