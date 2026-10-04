@@ -1,2 +1,3 @@
 
-var ttt23 = 0x02; 
+var tt = 7; 
+debug(tt); 

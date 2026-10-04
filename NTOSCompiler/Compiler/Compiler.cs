@@ -690,10 +690,19 @@ namespace NTOSCompiler.Compiler
                 }
 
                 // var: always assign.
-                CompileExpression(
-                    variableDeclarator.Init);
+                if (variableDeclarator.Init is ArrayExpression array2)
+                {
+                    CompileArrayInitializer(
+                        existing,
+                        array2);
+                }
+                else
+                {
+                    CompileExpression(
+                        variableDeclarator.Init);
 
-                Store(existing);
+                    Store(existing);
+                }
 
                 return;
             }
@@ -778,6 +787,7 @@ namespace NTOSCompiler.Compiler
     Variable variable,
     ArrayExpression array)
         {
+
             int elementSize =
                 variable.GetElementSize();
 
@@ -836,6 +846,7 @@ namespace NTOSCompiler.Compiler
 
                 if (_constants.ContainsKey(name))
                     return VariableType.Byte;
+
 
                 if (name.Length > 1 && name[0] == '$')
                     return VariableType.Int;
@@ -1018,14 +1029,11 @@ namespace NTOSCompiler.Compiler
             if (literal.Value is double)
             {
                 string text = GetText(literal.Range);
-                Debug.WriteLine("SRAB:" + text);
-
                 if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase) &&
     literal.Value is double hexValue &&
     hexValue >= 0 &&
     hexValue <= 255)
                 {
-                    Debug.WriteLine("TOBISH BYTE");
                     return VariableType.Byte;
                 }
 

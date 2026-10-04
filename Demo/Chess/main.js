@@ -1,11 +1,4 @@
 
-
-
-var cursorX = 5;
-var cursorY = 5;
-var movePosX = -1;
-var movePosY = -1; 
-
 var board =
 [
     'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r',
@@ -19,6 +12,15 @@ var board =
     'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
     'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'
 ];
+
+
+
+var cursorX = 5;
+var cursorY = 5;
+var movePosX = -1;
+var movePosY = -1; 
+
+
 
 // NTOS Main executable file
 function init() {
