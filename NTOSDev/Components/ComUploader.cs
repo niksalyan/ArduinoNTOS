@@ -68,6 +68,7 @@ namespace NTOSDev.Components
 
         private void uploadButton_Click(object sender, EventArgs e)
         {
+            uploadLog.Clear();
             Task.Run(DoUpload);
         }
 
@@ -80,8 +81,8 @@ namespace NTOSDev.Components
 
             try
             {
-                Emulator.BuildAll();
-                Emulator.CopyNtiFiles();
+                Emulator.BuildAll(true);
+                Emulator.CopyNtiFiles(true);
                 string appName = new DirectoryInfo(Emulator.AppPath).Name;
 
                 string[] files =

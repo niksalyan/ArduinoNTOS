@@ -446,9 +446,12 @@ namespace NTOSEmulator
             }
         }
 
-        public static void BuildAll()
+        public static void BuildAll(bool silent = false)
         {
-            AppendDebug("STARTS BUILDING");
+            if (!silent) {
+                AppendDebug("STARTS BUILDING");
+            }
+            
             Compiler.ClearVariables();
             try
             {
@@ -475,24 +478,36 @@ namespace NTOSEmulator
                         {
                             bytecode = Compiler.Compile(source);
                             File.WriteAllBytes(Path.Combine(AppPath, "build", name + ".ntx"), bytecode);
-                            AppendDebug($"Build: {name} OK ({bytecode.Length}b) !");
+                            if (!silent)
+                            {
+                                AppendDebug($"Build: {name} OK ({bytecode.Length}b) !");
+                            }
                         }
                         catch (Exception ex)
                         {
-                            AppendDebug($"Build: {name} : {ex.Message}");
+                            if (!silent)
+                            {
+                                AppendDebug($"Build: {name} : {ex.Message}");
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                AppendDebug(ex.Message);
+                if (!silent)
+                {
+                    AppendDebug(ex.Message);
+                }
             }
         }
 
-        public static void CopyNtiFiles()
+        public static void CopyNtiFiles(bool silent = false)
         {
-            AppendDebug("COPYING IMAGES");
+            if (!silent)
+            {
+                AppendDebug("COPYING IMAGES");
+            }
 
             try
             {
@@ -510,14 +525,19 @@ namespace NTOSEmulator
                         string destination = Path.Combine(buildPath, name);
 
                         File.Copy(file, destination, true);
-
-                        AppendDebug($"Copy: {name} OK !");
+                        if (!silent)
+                        {
+                            AppendDebug($"Copy: {name} OK !");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                AppendDebug("Copy NTI: " + ex.Message);
+                if (!silent)
+                {
+                    AppendDebug("Copy NTI: " + ex.Message);
+                }
             }
         }
     }
