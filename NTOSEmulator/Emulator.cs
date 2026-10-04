@@ -93,6 +93,14 @@ namespace NTOSEmulator
                 return keyStates.ContainsKey(key) ? keyStates[key] : false;
             });
 
+            vmFunctions.AddFunction(3, "sync", 1, VariableType.None, async (args) =>
+            {
+                int d = (int)args[0];
+                await Task.Delay((int)d);
+                vm?.ResetStopwatch();
+                return null;
+            });
+
             vmFunctions.AddFunction(31, "alert", 2, VariableType.Bool, async args =>
             {
                 Dialogs.Alert(args[0].ToString() ?? "", args[1].ToString() ?? "");

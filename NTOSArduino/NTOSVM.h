@@ -61,10 +61,8 @@ private:
 
   inline static bool _running = false;
   inline static int32_t _delay = 0;
+  inline static unsigned long _millis;
   inline static char* appName = "";
-
-
-
 
 
 public:
@@ -1441,6 +1439,13 @@ private:
           Push({ StackValueType::Bool,
                  Terminal::isPressed(key) });
           return true;
+        }
+      case 7:  // sync
+        {
+          int32_t delayValue = (int32_t)Pop().value;
+          _delay = constrain(delayValue - (millis() - _millis), 0, delayValue);
+          _millis = millis();
+          break;
         }
 
 
