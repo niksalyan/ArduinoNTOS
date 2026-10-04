@@ -1,22 +1,12 @@
+
 var currentLevel = 0;
 var lives = 5;
+var level = byte[64];
 
-using level = [
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-		EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-];
-
-
-
-// ----------------------------------------
+// ---------------------------------------- 
 // Title
 // ----------------------------------------
+
 
 cls();
 
@@ -72,6 +62,8 @@ cursor(240, 280, 1);
 printCentered("TO START", WHITE);
 
 function loop() {
+	
+
 	var key = getKey();
 	if (key > 0) {
 		lives = 5;

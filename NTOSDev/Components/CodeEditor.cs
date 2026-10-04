@@ -140,7 +140,7 @@ namespace NTOSDev.Controls
 using break case const continue debug default delete do else export extends false finally for
 from function get if import in instanceof let new null of return set static super switch this
 throw true try typeof var void while with yield loop init
-drawBox fillBox cursor print printCentered printRight delay sync confirm alert confirmNumber editText dialog loadStr saveStr
+drawBox fillBox drawRoundBox fillRoundBox cursor print printCentered printRight delay sync confirm alert confirmNumber editText dialog loadStr saveStr
 cls fillCircle drawCircle drawPixel drawLine load drawSprite collision
 abs min max clamp sign sqrt pow hypot sin cos tan asin acos atan2 floor ceil round fmod lerp map rnd
 "

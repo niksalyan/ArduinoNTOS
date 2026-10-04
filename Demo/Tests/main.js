@@ -1,7 +1,5 @@
-function init(){
-	var px = 240;
-	var py = 160;
-}
+var px = 240;
+var py = 160;
 
 cls();
 

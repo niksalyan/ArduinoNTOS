@@ -9,21 +9,9 @@ namespace NTOSCompiler.Compiler
 
     public class Compiler : AstVisitor
     {
-        private static readonly Acornima.Parser _parser = new Acornima.Parser(new ParserOptions()
+        private static readonly Parser _parser = new Parser(new ParserOptions()
         {
-            EcmaVersion = EcmaVersion.ES2026,
-            AllowTopLevelUsing = true,
-
-
-
-            AllowReturnOutsideFunction = false,
-
-            AllowAwaitOutsideFunction = false,
-            AllowSuperCallOutsideConstructor = false,
-            AllowImportExportEverywhere = false,
-            AllowSuperOutsideMethod = false,
-            AllowNewTargetOutsideFunction = false,
-            AllowHashBang = false
+            AllowTopLevelUsing = true
         });
         private string _src;
 
@@ -657,8 +645,16 @@ namespace NTOSCompiler.Compiler
             if (variableDeclarator.Init == null)
                 return;
 
+            bool isTypedArray =
+                TryGetTypedArrayInitializer(
+                    variableDeclarator.Init,
+                    out VariableType typedArrayType,
+                    out int typedArrayLength);
+
             VariableType type =
-                GetExpressionType(variableDeclarator.Init);
+                isTypedArray
+                    ? typedArrayType
+                    : GetExpressionType(variableDeclarator.Init);
 
             // Existing variable.
             if (existing != null)
@@ -667,6 +663,21 @@ namespace NTOSCompiler.Compiler
                     throw new InvalidOperationException(
                         $"Variable '{name}' is {existing.Type}, " +
                         $"but initializer is {type}.");
+
+                if (isTypedArray)
+                {
+                    if (!existing.IsArray)
+                        throw new InvalidOperationException(
+                            $"Variable '{name}' is not an array.");
+
+                    if (existing.Length != typedArrayLength)
+                        throw new InvalidOperationException(
+                            $"Variable '{name}' already has length " +
+                            $"{existing.Length}, requested {typedArrayLength}.");
+
+                    // Memory is already allocated.
+                    return;
+                }
 
                 if (varibleKind == VariableDeclarationKind.Using)
                 {
@@ -708,11 +719,15 @@ namespace NTOSCompiler.Compiler
             }
 
             // New variable.
-            bool isArray = false;
-            int length = 1;
+            bool isArray = isTypedArray;
+            int length = isTypedArray
+                ? typedArrayLength
+                : 1;
+
             int maxStringLength = 0;
 
-            if (variableDeclarator.Init is ArrayExpression array)
+            if (!isTypedArray &&
+                variableDeclarator.Init is ArrayExpression array)
             {
                 isArray = true;
                 length = array.Elements.Count;
@@ -746,6 +761,9 @@ namespace NTOSCompiler.Compiler
                     isArray,
                     length,
                     maxStringLength);
+
+            if (isTypedArray)
+                return;
 
             // let: declare the variable normally,
             // but skip its initializer once initialized.
@@ -783,9 +801,46 @@ namespace NTOSCompiler.Compiler
             }
         }
 
+        private bool TryGetTypedArrayInitializer(
+    Expression expression,
+    out VariableType type,
+    out int length)
+        {
+            type = VariableType.None;
+            length = 0;
+
+            if (expression is not MemberExpression member ||
+                !member.Computed ||
+                member.Object is not Identifier identifier ||
+                member.Property is not Literal literal ||
+                literal.Value is not double lengthValue)
+            {
+                return false;
+            }
+
+            type = identifier.Name switch
+            {
+                "int" => VariableType.Int,
+                "float" => VariableType.Float,
+                "byte" => VariableType.Byte,
+                _ => VariableType.None
+            };
+
+            if (type == VariableType.None)
+                return false;
+
+            length = (int)lengthValue;
+
+            if (length <= 0)
+                throw new InvalidOperationException(
+                    "Array length must be greater than zero.");
+
+            return true;
+        }
+
         private void CompileArrayInitializer(
-    Variable variable,
-    ArrayExpression array)
+                Variable variable,
+                ArrayExpression array)
         {
 
             int elementSize =

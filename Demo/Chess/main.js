@@ -13,7 +13,7 @@ var board =
     'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'
 ];
 
-
+debug(board);
 
 var cursorX = 5;
 var cursorY = 5;

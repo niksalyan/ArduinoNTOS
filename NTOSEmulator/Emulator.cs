@@ -3,6 +3,8 @@ using NTOSCompiler.Compiler;
 using NTOSEmulator.Libs;
 using NTOSEmulator.Models;
 using System.ComponentModel;
+using System.Globalization;
+using System.Text.Json;
 
 namespace NTOSEmulator
 {
@@ -62,12 +64,40 @@ namespace NTOSEmulator
             // Clear any previous functions by replacing the object if needed
             VMFunctions = VMFunctions ?? new VMFunctions();
 
-            VMFunctions.AddFunction(0, "debug", 1, VariableType.None, async (args) =>
+            VMFunctions.AddFunction(0, "debug", 1, VariableType.None, async args =>
             {
-                if (args.Length > 0)
+                string FormatDebugValue(object? value)
                 {
-                    AppendDebug(args[0]?.ToString() ?? "");
+                    if (value == null)
+                        return "null";
+
+                    return value switch
+                    {
+                        string s => $"\"{s}\"",
+
+                        float f => f.ToString("0.0###############", CultureInfo.InvariantCulture),
+                        double d => d.ToString("0.0###############", CultureInfo.InvariantCulture),
+                        decimal m => m.ToString("0.0###############", CultureInfo.InvariantCulture),
+
+                        int i => i.ToString(CultureInfo.InvariantCulture),
+                        long l => l.ToString(CultureInfo.InvariantCulture),
+                        short s => s.ToString(CultureInfo.InvariantCulture),
+
+                        bool b => b ? "true" : "false",
+
+                        byte b => $"byte({b})",
+                        sbyte b => $"sbyte({b})",
+                        ushort s => $"ushort({s})",
+                        uint i => $"uint({i})",
+                        ulong l => $"ulong({l})",
+
+                        char c => $"char('{c}')",
+
+                        _ => $"{value.GetType().Name}({value})"
+                    };
                 }
+
+                AppendDebug(FormatDebugValue(args[0]));
                 return null;
             });
 
@@ -354,19 +384,19 @@ namespace NTOSEmulator
             });
         }
 
-        public static void AppendDebug(string line)
+        public static void AppendDebug(string line, bool error= false)
         {
             if (uiContext != null)
             {
                 uiContext.Post(_ =>
                 {
-                    DebugLines.Add(new DebugLine(line));
+                    DebugLines.Add(new DebugLine(line, error));
                     DebugOutputAdded?.Invoke(line);
                 }, null);
             }
             else
             {
-                DebugLines.Add(new DebugLine(line));
+                DebugLines.Add(new DebugLine(line, error));
                 DebugOutputAdded?.Invoke(line);
             }
         }
@@ -407,7 +437,7 @@ namespace NTOSEmulator
                 bytecode = Compiler.Compile(source);
                 if (bytecode.Length > 3072)
                 {
-                    AppendDebug($"Compiled {bytecode.Length}/3072b - too large");
+                    AppendDebug($"Compiled {bytecode.Length}/3072b - too large", true);
                 }
                 else
                 {
@@ -416,7 +446,7 @@ namespace NTOSEmulator
             }
             catch (Exception ex)
             {
-                AppendDebug(ex.Message);
+                AppendDebug(ex.Message, true);
                 return;
             }
 
@@ -441,7 +471,7 @@ namespace NTOSEmulator
                 }
                 catch (Exception ex)
                 {
-                    AppendDebug(ex.Message);
+                    AppendDebug(ex.Message, true);
                 }
             }
         }
@@ -457,7 +487,7 @@ namespace NTOSEmulator
             {
                 if (string.IsNullOrEmpty(AppPath))
                 {
-                    AppendDebug("AppPath not set");
+                    AppendDebug("AppPath not set", true);
                     return;
                 }
 
@@ -487,7 +517,7 @@ namespace NTOSEmulator
                         {
                             if (!silent)
                             {
-                                AppendDebug($"Build: {name} : {ex.Message}");
+                                AppendDebug($"Build: {name} : {ex.Message}", true);
                             }
                         }
                     }
@@ -497,7 +527,7 @@ namespace NTOSEmulator
             {
                 if (!silent)
                 {
-                    AppendDebug(ex.Message);
+                    AppendDebug(ex.Message, true);
                 }
             }
         }
@@ -536,7 +566,7 @@ namespace NTOSEmulator
             {
                 if (!silent)
                 {
-                    AppendDebug("Copy NTI: " + ex.Message);
+                    AppendDebug("Copy NTI: " + ex.Message, true);
                 }
             }
         }

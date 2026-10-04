@@ -1,4 +1,3 @@
-lives--;
 cls();
 if (lives > 0) {
 
@@ -11,16 +10,11 @@ if (lives > 0) {
 	printCentered("LIVES", WHITE);
 	cursor(230, 180, 4);
 	print(lives, GREEN);
+	delay(2000);
+	load("game");
 } else {
 	cursor(240, 150, 3);
 	printCentered("GAME OVER", RED);
-}
-
-
-
-delay(2000);
-if (lives <= 0) {
+	delay(2000);
 	load("main");
-} else {
-	load("game");
 }

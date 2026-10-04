@@ -36,7 +36,7 @@ function updateBall() {
 	if (ballX > 470 && ballSX > 0) {ballSX = -ballSX;}
 	if (ballX < 10 && ballSX < 0) {ballSX = -ballSX;}
 	
-	if (ballY > 310 && ballSY > 0) {load("lives");}
+	if (ballY > 310 && ballSY > 0) {lives--;load("lives");}
 	if (ballY < 10 && ballSY < 0) {ballSY = -ballSY;}
 
 	if (collision(ballX, ballY, 9, 9, playerX, 305, 100, 10) && ballSY > 0) {
