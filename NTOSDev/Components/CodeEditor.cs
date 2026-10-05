@@ -3,6 +3,7 @@ using NTOSDev.Components;
 using ScintillaNet.Abstractions.Classes;
 using ScintillaNet.Abstractions.Enumerations;
 using ScintillaNet.WinForms;
+using System.Diagnostics;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace NTOSDev.Controls
@@ -10,11 +11,14 @@ namespace NTOSDev.Controls
     public partial class CodeEditor : DockContent
     {
 
-        private Scintilla scintillaEditor;
+        private Scintilla scintilla;
         private bool fileSaved = false;
         public string filePath;
 
         public static string currentFile = string.Empty;
+        public static Dictionary<string, CodeEditor> codeViews = new Dictionary<string, CodeEditor>();
+
+        public static CodeEditor? CurrentView => !string.IsNullOrWhiteSpace(currentFile) && codeViews.ContainsKey(currentFile) ? codeViews[currentFile] : null;
 
         private bool allowSaving = true;
 
@@ -22,29 +26,30 @@ namespace NTOSDev.Controls
         {
             InitializeComponent();
             InitializeScintilla();
-            scintillaEditor.TextChanged += ScintillaEditor_TextChanged;
+            InitializeErrorDisplay();
+            scintilla.TextChanged += ScintillaEditor_TextChanged;
             if (File.Exists(filePath))
             {
                 if (Path.GetExtension(filePath).ToLower() == ".ntx")
                 {
                     allowSaving = false;
                     this.filePath = filePath;
-                    scintillaEditor.Text = BytecodeApp.ToArduinoArray(File.ReadAllBytes(filePath), 16);
-                    scintillaEditor.ReadOnly = true;
+                    scintilla.Text = BytecodeApp.ToArduinoArray(File.ReadAllBytes(filePath), 16);
+                    scintilla.ReadOnly = true;
                     fileSaved = true;
                     UpdateFileName();
                 }
                 else
                 {
                     this.filePath = filePath;
-                    scintillaEditor.Text = File.ReadAllText(filePath);
+                    scintilla.Text = File.ReadAllText(filePath);
                     fileSaved = true;
                     UpdateFileName();
                 }
 
             }
 
-            scintillaEditor.GotFocus += ScintillaEditor_GotFocus;
+            scintilla.GotFocus += ScintillaEditor_GotFocus;
 
         }
 
@@ -58,6 +63,7 @@ namespace NTOSDev.Controls
             if (!allowSaving) return;
             if (currentFile == filePath && !force) return;
             currentFile = filePath;
+            codeViews[filePath] = this;
             DEmulator.RefreshEmulator();
         }
 
@@ -74,67 +80,67 @@ namespace NTOSDev.Controls
 
         private void InitializeScintilla()
         {
-            scintillaEditor = new Scintilla();
-            scintillaEditor.BorderStyle = BorderStyle.None;
-            scintillaEditor.Dock = DockStyle.Fill;
+            scintilla = new Scintilla();
+            scintilla.BorderStyle = BorderStyle.None;
+            scintilla.Dock = DockStyle.Fill;
 
-            scintillaEditor.WrapMode = WrapMode.None;
-            scintillaEditor.IndentWidth = 4;
-            scintillaEditor.TabWidth = 4;
-            scintillaEditor.UseTabs = true;
+            scintilla.WrapMode = WrapMode.None;
+            scintilla.IndentWidth = 4;
+            scintilla.TabWidth = 4;
+            scintilla.UseTabs = true;
 
-            scintillaEditor.Margins[0].Type = MarginType.Number;
-            scintillaEditor.Margins[0].Width = 40;
+            scintilla.Margins[0].Type = MarginType.Number;
+            scintilla.Margins[0].Width = 40;
 
-            scintillaEditor.Styles[StyleConstants.Default].Font = "Consolas";
-            scintillaEditor.Styles[StyleConstants.Default].Size = 11;
-            scintillaEditor.Styles[StyleConstants.Default].ForeColor =
+            scintilla.Styles[StyleConstants.Default].Font = "Consolas";
+            scintilla.Styles[StyleConstants.Default].Size = 11;
+            scintilla.Styles[StyleConstants.Default].ForeColor =
                 Color.FromArgb(220, 220, 220);
-            scintillaEditor.Styles[StyleConstants.Default].BackColor =
+            scintilla.Styles[StyleConstants.Default].BackColor =
                 Color.FromArgb(30, 30, 30);
 
             // Your Scintilla build has the C++ lexer
-            scintillaEditor.LexerName = "cpp";
+            scintilla.LexerName = "cpp";
 
-            scintillaEditor.StyleClearAll();
+            scintilla.StyleClearAll();
 
             // Default
-            scintillaEditor.Styles[0].ForeColor =
+            scintilla.Styles[0].ForeColor =
                 Color.FromArgb(220, 220, 220);
-            scintillaEditor.Styles[0].BackColor =
+            scintilla.Styles[0].BackColor =
                 Color.FromArgb(30, 30, 30);
 
             // Comments
-            scintillaEditor.Styles[1].ForeColor =
+            scintilla.Styles[1].ForeColor =
                 Color.FromArgb(106, 153, 85);
 
-            scintillaEditor.Styles[2].ForeColor =
+            scintilla.Styles[2].ForeColor =
                 Color.FromArgb(106, 153, 85);
 
             // Numbers
-            scintillaEditor.Styles[4].ForeColor =
+            scintilla.Styles[4].ForeColor =
                 Color.FromArgb(181, 206, 168);
 
             // Keywords
-            scintillaEditor.Styles[5].ForeColor =
+            scintilla.Styles[5].ForeColor =
                 Color.FromArgb(86, 156, 214);
 
             // Strings
-            scintillaEditor.Styles[6].ForeColor =
+            scintilla.Styles[6].ForeColor =
                 Color.FromArgb(206, 145, 120);
 
             // Character
-            scintillaEditor.Styles[7].ForeColor =
+            scintilla.Styles[7].ForeColor =
                 Color.FromArgb(206, 145, 120);
 
             // Operators
-            scintillaEditor.Styles[10].ForeColor =
+            scintilla.Styles[10].ForeColor =
                 Color.FromArgb(220, 220, 170);
 
 
 
             // C++ lexer keywords, but populated with our NTOS/JS vocabulary
-            scintillaEditor.SetKeywords(
+            scintilla.SetKeywords(
                 0,
                 @$"
 using break case const continue debug default delete do else export extends false finally for
@@ -151,31 +157,30 @@ abs min max clamp sign sqrt pow hypot sin cos tan asin acos atan2 floor ceil rou
             // Cursor
             // ---------------------------------------------------------
 
-            scintillaEditor.CaretForeColor =
+            scintilla.CaretForeColor =
                 Color.FromArgb(255, 255, 255);
 
-            scintillaEditor.CaretWidth = 2;
+            scintilla.CaretWidth = 2;
 
             // Do not highlight the entire current line.
-            scintillaEditor.CaretLineVisible = false;
+            scintilla.CaretLineVisible = false;
 
 
             // ---------------------------------------------------------
             // Line number bar
             // ---------------------------------------------------------
 
-            scintillaEditor.Styles[StyleConstants.LineNumber].ForeColor =
+            scintilla.Styles[StyleConstants.LineNumber].ForeColor =
                 Color.FromArgb(64, 64, 64);
 
-            scintillaEditor.Styles[StyleConstants.LineNumber].BackColor =
+            scintilla.Styles[StyleConstants.LineNumber].BackColor =
                 Color.FromArgb(30, 30, 30);
 
-            scintillaEditor.Styles[StyleConstants.LineNumber].Size = 9;
+            scintilla.Styles[StyleConstants.LineNumber].Size = 9;
 
 
 
-
-            this.Controls.Add(scintillaEditor);
+            this.Controls.Add(scintilla);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -196,7 +201,7 @@ abs min max clamp sign sqrt pow hypot sin cos tan asin acos atan2 floor ceil rou
 
             try
             {
-                File.WriteAllText(filePath, scintillaEditor.Text);
+                File.WriteAllText(filePath, scintilla.Text);
                 fileSaved = true;
                 UpdateFileName();
                 ReloadEmulator(true);
@@ -207,5 +212,91 @@ abs min max clamp sign sqrt pow hypot sin cos tan asin acos atan2 floor ceil rou
             }
         }
 
+        private const int ErrorIndicator = 8;
+        private const int ErrorAnnotationStyle = 30;
+
+        private void InitializeErrorDisplay()
+        {
+            // Error underline
+            scintilla.Indicators[ErrorIndicator].Style =
+                IndicatorStyle.Squiggle;
+
+            scintilla.Indicators[ErrorIndicator].ForeColor =
+                Color.Red;
+
+            // Error annotation style
+            scintilla.Styles[ErrorAnnotationStyle].ForeColor =
+                Color.Red;
+
+            scintilla.Styles[ErrorAnnotationStyle].BackColor =
+                Color.FromArgb(255, 240, 240);
+
+            scintilla.Styles[ErrorAnnotationStyle].Bold = true;
+
+            scintilla.AnnotationVisible = Annotation.Standard;
+        }
+
+        public void ShowError(int line, int character, string error)
+        {
+            int lineIndex = line - 1;
+
+            if (lineIndex < 0 || lineIndex >= scintilla.Lines.Count)
+                return;
+
+            int lineStart = scintilla.Lines[lineIndex].Position;
+            int position = lineStart + character - 1;
+
+            // Red squiggly underline
+            scintilla.IndicatorCurrent = ErrorIndicator;
+            scintilla.IndicatorFillRange(position, 1);
+
+            // Error message
+            scintilla.Lines[lineIndex].AnnotationText = error;
+
+            // Apply our error style to the annotation.
+            scintilla.Lines[lineIndex].AnnotationStyle =
+                ErrorAnnotationStyle;
+
+            // Scroll to the error without changing the selection.
+            scintilla.ScrollRange(position, position);
+        }
+
+
+
+        private void ClearErrors()
+        {
+            try
+            {
+                scintilla.IndicatorCurrent = ErrorIndicator;
+                scintilla.IndicatorClearRange(0, scintilla.TextLength);
+
+                scintilla.AnnotationClearAll();
+            }
+            catch { } // clear silently
+        }
+
+        public static void ClearAllErrors()
+        {
+            foreach (var c in codeViews)
+            {
+                c.Value?.ClearErrors();
+            }
+        }
+
+        public void InsertTextAtCaret(string text)
+        {
+            ClearErrors();
+            scintilla.ReplaceSelection(text);
+        }
+
+        private void CodeEditor_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            var item = codeViews.FirstOrDefault(x => x.Value == this);
+
+            if (!string.IsNullOrWhiteSpace(item.Key))
+            {
+                codeViews.Remove(item.Key);
+            }
+        }
     }
 }

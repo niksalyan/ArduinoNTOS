@@ -12,3 +12,4 @@ level = [
 currentLevel = 3;
 
 load("lives");
+

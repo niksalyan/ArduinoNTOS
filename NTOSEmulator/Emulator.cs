@@ -21,6 +21,7 @@ namespace NTOSEmulator
 
         // Public state
         public static string AppPath { get; private set; } = string.Empty;
+        public static string CurrentFile = string.Empty;
 
 
 
@@ -53,7 +54,34 @@ namespace NTOSEmulator
             RegisterFunctions();
 
             Screen = new ScreenBuffer(VMFunctions);
-            Compiler = new Compiler(VMFunctions, Screen.colors);
+
+            Dictionary<string, object> constants = new Dictionary<string, object>();
+            foreach(var c in Screen.colors)
+            {
+                constants[c.Key] = c.Value;
+            }
+            constants["NONE"] = (byte)0;
+            constants["EMPTY"] = (byte)0;
+            constants["LOW"] = (byte)0;
+            constants["HIGH"] = (byte)0x1;
+            constants["PI"] = (float)Math.PI;
+
+            for(int r = 0; r < 8; r++)
+            {
+                for (int g = 0; g < 8; g++)
+                {
+                    for (int b = 0; b < 8; b++)
+                    {
+                        Color c = Color.FromArgb(255, r * 36, g * 36, b * 36);
+                        constants["C" + r + g + b] = ScreenBuffer.GetColor332(c);
+                    }
+                }
+            }
+
+            
+
+
+            Compiler = new Compiler(VMFunctions, constants);
             VM = new VirtualMachine(3072, VMFunctions);
 
             Screen.OnInvalidate += () => ScreenInvalidated?.Invoke();
@@ -382,6 +410,12 @@ namespace NTOSEmulator
             {
                 return (float)Random.Shared.Next(10000000) / 10000000.0f;
             });
+            VMFunctions.AddFunction(151, "scroll", 1, VariableType.None, async args =>
+            {
+                Screen.tftScroll = Convert.ToInt32(args[0]);
+                ScreenInvalidated?.Invoke();
+                return null;
+            });
         }
 
         public static void AppendDebug(string line, bool error= false)
@@ -391,13 +425,26 @@ namespace NTOSEmulator
                 uiContext.Post(_ =>
                 {
                     DebugLines.Add(new DebugLine(line, error));
-                    DebugOutputAdded?.Invoke(line);
+                    if (error)
+                    {
+                        DebugErrorAdded?.Invoke(line);
+                    } else
+                    {
+                        DebugOutputAdded?.Invoke(line);
+                    }
                 }, null);
             }
             else
             {
                 DebugLines.Add(new DebugLine(line, error));
-                DebugOutputAdded?.Invoke(line);
+                if (error)
+                {
+                    DebugErrorAdded?.Invoke(line);
+                }
+                else
+                {
+                    DebugOutputAdded?.Invoke(line);
+                }
             }
         }
 
@@ -422,6 +469,7 @@ namespace NTOSEmulator
             }
 
             AppPath = Path.GetDirectoryName(file) + "\\";
+            CurrentFile = file;
             string name = Path.GetFileNameWithoutExtension(file);
             string source = File.ReadAllText(file);
 

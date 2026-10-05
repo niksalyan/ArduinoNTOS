@@ -34,10 +34,11 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(282, 253);
+            ClientSize = new Size(777, 478);
             DoubleBuffered = true;
             Name = "SpriteViewer";
-            Text = "Sprite Viewer";
+            ShowIcon = false;
+            Text = "Select Sprite";
             ResumeLayout(false);
         }
 

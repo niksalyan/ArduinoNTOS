@@ -52,6 +52,10 @@ public:
     tft.fastFillRectBlack(0, HEADER_HEIGHT, tft.width(), tft.height() - HEADER_HEIGHT);
   }
 
+  static void scroll(int16_t scroll = 0) {
+    tft.vertScroll(0, tft.width(), -scroll);
+  }
+
   static void alert(char* title, char* message) {
     drawPopupMessage(title, message);
     waitForKey(1000);

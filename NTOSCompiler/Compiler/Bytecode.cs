@@ -1,3 +1,4 @@
+using Acornima.Ast;
 using NTOSCompiler.Compiler;
 using System.ComponentModel;
 using System.Text;
@@ -106,10 +107,13 @@ public class Variable
     public string Name { get; }
 
     [DisplayName("Type")]
-    public string DisplayType => Type.ToString() + (IsArray ? "[" + Length + "]" : "");
+    public string DisplayType => Kind.ToString() + "." + Type.ToString() + (IsArray ? "[" + Length + "]" : "");
 
     [Browsable(false)]
     public VariableType Type { get; }
+
+    [Browsable(false)]
+    public VariableDeclarationKind Kind { get; }
 
     public int Address { get; set; }
 
@@ -122,6 +126,7 @@ public class Variable
     public Variable(
         string name,
         VariableType type,
+        VariableDeclarationKind kind,
         bool isArray = false,
         int length = 1,
         int maxStringLength = 0
@@ -129,6 +134,7 @@ public class Variable
     {
         Name = name;
         Type = type;
+        Kind = kind;
         IsArray = isArray;
         Length = length;
         MaxStringLength = maxStringLength;
@@ -453,6 +459,7 @@ public class BytecodeProgram
     public Variable DeclareVariable(
     string name,
     VariableType type,
+    VariableDeclarationKind kind,
     bool isArray = false,
     int length = 1,
     int maxStringLength = 0)
@@ -466,6 +473,7 @@ public class BytecodeProgram
         variable = new Variable(
             name,
             type,
+            kind,
             isArray,
             length,
             maxStringLength);

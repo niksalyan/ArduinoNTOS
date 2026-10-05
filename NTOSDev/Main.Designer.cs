@@ -151,13 +151,13 @@
             // 
             spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
             spriteViewerToolStripMenuItem.Size = new Size(224, 26);
-            spriteViewerToolStripMenuItem.Text = "Sprite Viewer";
+            spriteViewerToolStripMenuItem.Text = "Insert Sprite";
             // 
             // colorPickerToolStripMenuItem
             // 
             colorPickerToolStripMenuItem.Name = "colorPickerToolStripMenuItem";
             colorPickerToolStripMenuItem.Size = new Size(224, 26);
-            colorPickerToolStripMenuItem.Text = "Color Selector";
+            colorPickerToolStripMenuItem.Text = "Insert Color";
             // 
             // toolStripMenuItem3
             // 

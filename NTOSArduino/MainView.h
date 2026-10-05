@@ -261,6 +261,8 @@ public:
 
     NTOSUI::setHandler(handler);
 
+    tft.fillScreenBlack();
+    NTOSUI::scroll(0);
     draw();
   }
 

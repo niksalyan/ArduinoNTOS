@@ -1462,6 +1462,7 @@ private:
           tft.setTextSize(2);
           tft.setCursor(0, 0);
           tft.fillScreenBlack();
+          NTOSUI::scroll(0);
           break;
         }
 
@@ -2076,7 +2077,11 @@ private:
           PushFloat((float)random(10000000L) / 10000000.0f);
           return true;
         }
-
+      case 151:  // scroll
+        {
+          NTOSUI::scroll(PopInt());
+          break;
+        }
       default:
         Serial.print("[NTOS] Unknown function: ");
         Serial.println(functionIndex);

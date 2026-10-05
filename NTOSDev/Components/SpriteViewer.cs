@@ -3,10 +3,10 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace NTOSDev.Components
 {
-    public partial class SpriteViewer : DockContent
+    public partial class SpriteViewer : Form
     {
         private const int SpriteSize = 32;
-        private const int Columns = 16;
+        private int Columns => Width / CellHeight;
 
         private const int CellWidth = 48;
         private const int CellHeight = 52;
@@ -24,9 +24,7 @@ namespace NTOSDev.Components
             AutoScroll = true;
             BackColor = Color.FromArgb(30, 30, 30);
 
-            AutoScrollMinSize = new Size(
-                Columns * CellWidth,
-                GetRowCount() * CellHeight);
+            
         }
 
         private int GetRowCount()
@@ -37,6 +35,7 @@ namespace NTOSDev.Components
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
+            e.Graphics.Clear(BackColor);
 
             e.Graphics.TranslateTransform(
                 AutoScrollPosition.X,
@@ -156,6 +155,20 @@ namespace NTOSDev.Components
             selectedSprite = spriteIndex;
 
             Invalidate();
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            AutoScrollMinSize = new Size(
+                Columns * CellWidth,
+                GetRowCount() * CellHeight);
+            Invalidate();
+        }
+
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        {
+            DialogResult = selectedSprite >= 0 ? DialogResult.OK : DialogResult.None;
+            Close();
         }
     }
 }

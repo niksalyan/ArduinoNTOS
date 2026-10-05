@@ -3,6 +3,7 @@ using NTOSDev.Controls;
 using NTOSEmulator;
 using NTOSEmulator.Libs;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace NTOSDev
@@ -21,11 +22,6 @@ namespace NTOSDev
         };
 
         public DImage dImage = new DImage()
-        {
-            HideOnClose = true
-        };
-
-        public SpriteViewer spriteViewer = new SpriteViewer()
         {
             HideOnClose = true
         };
@@ -83,6 +79,9 @@ namespace NTOSDev
                 DoAction("projectExplorer");
                 DoAction("runEmulator");
 
+                Emulator.VM.ClearMemory();
+                Emulator.Compiler.ClearVariables();
+
                 string appName = new DirectoryInfo(s).Name;
                 try
                 {
@@ -130,6 +129,29 @@ function loop() {{
                 {
                     Debug.WriteLine(ex.ToString());
                 }
+
+
+
+                Emulator.DebugOutputAdded += (log) =>  {
+                    CodeEditor.ClearAllErrors();
+                };
+
+                Emulator.DebugErrorAdded += (error) => {
+                    CodeEditor.ClearAllErrors();
+                    if (CodeEditor.CurrentView != null && CodeEditor.currentFile == Emulator.CurrentFile && CodeEditor.codeViews.ContainsKey(CodeEditor.currentFile))
+                    {
+                        if (TryParseErrorPosition(error, out int line, out int character))
+                        {
+                            CodeEditor.codeViews[CodeEditor.currentFile].ShowError(line, character, error);
+                        } else
+                        {
+                            DoAction("debugOutput");
+                        }
+                        
+                        
+                    }
+                };
+
 
 
 
@@ -189,7 +211,6 @@ function loop() {{
             if (persistString == typeof(ProjectExplorer).ToString()) return projectExplorer;
             if (persistString == typeof(DEmulator).ToString()) return dEmulator;
             if (persistString == typeof(DImage).ToString()) return dImage;
-            if (persistString == typeof(SpriteViewer).ToString()) return spriteViewer;
             if (persistString == typeof(Instructions).ToString()) return dInstructions;
             if (persistString == typeof(Variables).ToString()) return dVariables;
             if (persistString == typeof(Terminal).ToString()) return dTerminal;
@@ -302,7 +323,15 @@ function loop() {{
                     dImage.Show(dockPanel, DockState.Document);
                     break;
                 case "spriteViewer":
-                    spriteViewer.Show(dockPanel, DockState.Document);
+                    if (CodeEditor.CurrentView != null)
+                    {
+                        var spriteViewer = new SpriteViewer();
+                        if (spriteViewer.ShowDialog(this) == DialogResult.OK)
+                        {
+                            CodeEditor.CurrentView.InsertTextAtCaret($"drawSprite({spriteViewer.SelectedSprite}, 0, 0, WHITE);");
+                        }
+                        spriteViewer.Dispose();
+                    }
                     break;
                 case "instructions":
                     dInstructions.Show(dockPanel, DockState.DockRight);
@@ -320,11 +349,15 @@ function loop() {{
                     comUploader.Show(dockPanel, DockState.DockBottom);
                     break;
                 case "colorPicker":
-                    var colorDialog = new ColorDialog();
-                    if (colorDialog.ShowDialog() == DialogResult.OK) {
-                        Clipboard.SetText($"0x{ScreenBuffer.GetColor332(colorDialog.Color):X2}");
+                    if (CodeEditor.CurrentView != null)
+                    {
+                        var colorDialog = new ColorDialog();
+                        if (colorDialog.ShowDialog(this) == DialogResult.OK)
+                        {
+                            CodeEditor.CurrentView.InsertTextAtCaret("C" + (colorDialog.Color.R / 36) + (colorDialog.Color.G / 36) + (colorDialog.Color.B / 36));
+                        }
+                        colorDialog.Dispose();
                     }
-                    colorDialog.Dispose();
                     break;
                 case "exit":
                     Close();
@@ -347,6 +380,25 @@ function loop() {{
 #else
             DoAction("save");
 #endif
+        }
+
+        private static bool TryParseErrorPosition(
+    string error,
+    out int line,
+    out int character)
+        {
+            line = 0;
+            character = 0;
+
+            Match match = Regex.Match(error, @"\((\d+):(\d+)\)$");
+
+            if (!match.Success)
+                return false;
+
+            line = int.Parse(match.Groups[1].Value);
+            character = int.Parse(match.Groups[2].Value);
+
+            return true;
         }
 
         private void Main_FormClosed(object sender, FormClosedEventArgs e)

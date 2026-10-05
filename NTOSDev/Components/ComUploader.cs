@@ -160,6 +160,7 @@ namespace NTOSDev.Components
                 comPortsList.Enabled = !serial.IsOpen;
                 connectButton.Text = serial.IsOpen ? "Disconnect" : "Connect";
                 uploadButton.Enabled = !isUploading && serial.IsOpen;
+                uploadButton.Text = isUploading ? "Uploading" : "Upload";
             });
 
         }

@@ -14,6 +14,7 @@ public:
     NTOSUI::setHandler(handler);
 
     tft.fillScreenBlack();
+    NTOSUI::scroll(0);
     tft.setTextSize(2);
     tft.setCursor(0, 0);
 

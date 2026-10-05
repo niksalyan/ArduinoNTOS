@@ -23,7 +23,6 @@ function init() {
     var newInput = 1;
 }
 
-
 // ========================================
 // DRAW CALCULATOR
 // ========================================
@@ -44,7 +43,7 @@ function update() {
 
 function draw() {
     // Background
-    fillBox(0, 33, 480, 285, rgb023);
+    fillBox(0, 33, 480, 285, DARKBLUE);
 
 
     update();

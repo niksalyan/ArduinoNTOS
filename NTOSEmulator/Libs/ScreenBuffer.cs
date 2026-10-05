@@ -6,17 +6,15 @@ namespace NTOSEmulator.Libs
     public class ScreenBuffer
     {
         private readonly Bitmap buffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+        private readonly Bitmap screenBuffer = new Bitmap(480, 320, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
         private TextRenderer textRenderer = new TextRenderer();
+
+        public int tftScroll = 0;
 
         public Action OnInvalidate;
 
         public readonly Dictionary<string, byte> colors = new Dictionary<string, byte>
         {
-            ["EMPTY"] = 0x00,
-            ["LOW"] = 0x00,
-            ["HIGH"] = 0x1,
-
-
             ["BLACK"] = 0x00,
             ["WHITE"] = 0xFF,
 
@@ -55,7 +53,14 @@ namespace NTOSEmulator.Libs
 
         public Bitmap GetBuffer()
         {
-            return buffer;
+            int scroll = ((tftScroll % 480) + 480) % 480;
+
+            using (Graphics g = Graphics.FromImage(screenBuffer))
+            {
+                g.DrawImageUnscaled(buffer, scroll, 0);
+                g.DrawImageUnscaled(buffer, -480 + scroll, 0);
+            }
+            return screenBuffer;
         }
 
         private void SetupFunctions(VMFunctions vmFunctions)
@@ -68,7 +73,7 @@ namespace NTOSEmulator.Libs
                 textRenderer.SetTextSize(2);
                 using var g = Graphics.FromImage(buffer);
                 g.Clear(Color.Black);
-
+                tftScroll = 0;
                 OnInvalidate?.Invoke();
                 return null;
             });

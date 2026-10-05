@@ -16,7 +16,8 @@ namespace NTOSCompiler.Compiler
         private string _src;
 
         private readonly VMFunctions _vmFunctions;
-        private Dictionary<string, byte> _constants;
+        private Dictionary<string, object> _constantsDefault;
+        private Dictionary<string, object> _constants;
 
         private List<Variable> _variables = new List<Variable>();
         private List<Instruction> _instructions = new List<Instruction>();
@@ -27,15 +28,29 @@ namespace NTOSCompiler.Compiler
         public List<Instruction> Instructions => _instructions;
 
 
-        public Compiler(VMFunctions vmFunctions, Dictionary<string, byte>? constants)
+        public Compiler(VMFunctions vmFunctions, Dictionary<string, object>? constantsDefault)
         {
             _vmFunctions = vmFunctions ?? new VMFunctions();
-            _constants = constants ?? new();
+            _constantsDefault = constantsDefault ?? new();
         }
 
         public void ClearVariables()
         {
             _variables.Clear();
+            _constants = new Dictionary<string, object>(_constantsDefault);
+        }
+
+        private void ClearTrailingVarVariables()
+        {
+            while (_variables.Count > 0)
+            {
+                Variable variable = _variables[^1];
+
+                if (variable.Kind != VariableDeclarationKind.Var)
+                    break;
+
+                _variables.RemoveAt(_variables.Count - 1);
+            }
         }
 
         public byte[] Compile(string src)
@@ -43,7 +58,9 @@ namespace NTOSCompiler.Compiler
             _instructions.Clear();
             _functions.Clear();
             _breakJumps.Clear();
+            ClearTrailingVarVariables();
             _src = src;
+            _constants = _constants ?? new Dictionary<string, object>(_constantsDefault);
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
 
@@ -620,7 +637,7 @@ namespace NTOSCompiler.Compiler
         }
 
         protected override object? VisitVariableDeclaration(
-    VariableDeclaration variableDeclaration)
+                VariableDeclaration variableDeclaration)
         {
             foreach (var declaration in variableDeclaration.Declarations)
             {
@@ -637,6 +654,21 @@ namespace NTOSCompiler.Compiler
                     "Only simple variable declarations are supported.");
 
             string name = identifier.Name;
+
+            if (varibleKind == VariableDeclarationKind.Const)
+            {
+                if (variableDeclarator.Init == null)
+                    throw new InvalidOperationException(
+                        $"Constant '{name}' must have an initializer.");
+
+
+                object value = GetConstantValue(variableDeclarator.Init);
+
+                Debug.WriteLine("Adding const: " + name + " = " + value + " " + value.GetType().Name);
+                _constants[name] = value;
+
+                return;
+            }
 
             Variable? existing = _variables
                 .FirstOrDefault(x => x.Name == name);
@@ -758,6 +790,7 @@ namespace NTOSCompiler.Compiler
                 DeclareVariable(
                     name,
                     type,
+                    varibleKind,
                     isArray,
                     length,
                     maxStringLength);
@@ -885,6 +918,34 @@ namespace NTOSCompiler.Compiler
             }
         }
 
+        private VariableType GetValueType(object value)
+        {
+            return value switch
+            {
+                byte => VariableType.Byte,
+                int => VariableType.Int,
+                float => VariableType.Float,
+                string => VariableType.Str,
+                bool => VariableType.Bool,
+
+                _ => throw new InvalidOperationException(
+                    $"Unsupported constant type: {value.GetType().Name}")
+            };
+        }
+
+        private OpCode GetValueOpcode(object value)
+        {
+            return value switch
+            {
+                byte => OpCode.PushByte,
+                int => OpCode.PushInt,
+                float => OpCode.PushFloat,
+                
+                _ => throw new InvalidOperationException(
+                    $"Unsupported constant type: {value.GetType().Name}")
+            };
+        }
+
         private VariableType GetExpressionType(Expression expression)
         {
             if (expression is Literal literal)
@@ -896,15 +957,15 @@ namespace NTOSCompiler.Compiler
             {
                 string name = identifier.Name;
 
-                if (name == "PI")
-                    return VariableType.Float;
-
                 if (_constants.ContainsKey(name))
-                    return VariableType.Byte;
-
+                {
+                    return GetValueType(_constants[name]);
+                }
 
                 if (name.Length > 1 && name[0] == '$')
+                {
                     return VariableType.Int;
+                }
 
                 Variable variable =
                     GetVariable(name);
@@ -1202,15 +1263,9 @@ namespace NTOSCompiler.Compiler
         {
             string name = identifier.Name;
 
-            if (name == "PI")
-            {
-                Add(OpCode.PushFloat, (float)Math.PI);
-                return null;
-            }
-
             if (_constants.ContainsKey(name))
             {
-                Add(OpCode.PushByte, _constants[name]);
+                Add(GetValueOpcode(_constants[name]), _constants[name]);
                 return null;
             }
             else if (name.Length > 1 && name[0] == '$')
@@ -1568,6 +1623,7 @@ namespace NTOSCompiler.Compiler
         public Variable DeclareVariable(
         string name,
         VariableType type,
+        VariableDeclarationKind kind,
         bool isArray = false,
         int length = 1,
         int maxStringLength = 0)
@@ -1581,6 +1637,7 @@ namespace NTOSCompiler.Compiler
             variable = new Variable(
                 name,
                 type,
+                kind,
                 isArray,
                 length,
                 maxStringLength);
@@ -1591,7 +1648,27 @@ namespace NTOSCompiler.Compiler
             return variable;
         }
 
+        private object GetConstantValue(Expression expression)
+        {
+            if (expression is not Literal literal)
+                throw new InvalidOperationException(
+                    "Constants must be initialized with literal values.");
 
+            VariableType literalType = GetLiteralType(literal);
+
+            return literalType switch
+            {
+                VariableType.Int => Convert.ToInt32(literal.Value),
+                VariableType.Float => Convert.ToSingle(literal.Value),
+                VariableType.Bool => Convert.ToBoolean(literal.Value),
+                VariableType.Byte => Convert.ToByte(literal.Value),
+                VariableType.Str => Convert.ToString(literal.Value)
+                    ?? string.Empty,
+
+                _ => throw new InvalidOperationException(
+                    $"Unsupported constant type: {literalType}.")
+            };
+        }
         private void UpdateAddresses()
         {
             int address = 0;

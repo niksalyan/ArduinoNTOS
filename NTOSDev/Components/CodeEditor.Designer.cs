@@ -36,6 +36,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(602, 360);
             Name = "CodeEditor";
+            FormClosing += CodeEditor_FormClosing;
             ResumeLayout(false);
         }
 

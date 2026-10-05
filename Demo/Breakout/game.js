@@ -1,10 +1,10 @@
 
-let playerX = 240.0;
-let ballX = 240.0;
-let ballY = 300.0;
-let ballSX = 1.0;
-let ballSY = -15.0;
-let bricksLeft = 0;
+var playerX = 240.0;
+var ballX = 240.0;
+var ballY = 300.0;
+var ballSX = 1.0;
+var ballSY = -15.0;
+var bricksLeft = 0;
 
 
 
