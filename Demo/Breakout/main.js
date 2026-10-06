@@ -1,7 +1,9 @@
 
 let currentLevel = 0;
+var mijinot = 15;
 let lives = 5;
 let level = byte[64];
+using ankapot = 15;
 
 // ---------------------------------------- 
 // Title
@@ -21,21 +23,21 @@ cls();
 cursor(240, 60, 5);
 
 
-drawSprite(918, 150, 70, C730);
+drawSprite(918, 150, 70, C730, NONE);
 delay(100);
-drawSprite(970, 171, 70, C700);
+drawSprite(970, 171, 70, C700, NONE);
 delay(100);
-drawSprite(921, 192, 70, C730);
+drawSprite(921, 192, 70, C730, NONE);
 delay(100);
-drawSprite(917, 213, 70, C700);
+drawSprite(917, 213, 70, C700, NONE);
 delay(100);
-drawSprite(927, 234, 70, C730);
+drawSprite(927, 234, 70, C730, NONE);
 delay(100);
-drawSprite(967, 255, 70, C700);
+drawSprite(967, 255, 70, C700, NONE);
 delay(100);
-drawSprite(973, 276, 70, C730);
+drawSprite(973, 276, 70, C730, NONE);
 delay(100);
-drawSprite(972, 297, 70, C700);
+drawSprite(972, 297, 70, C700, NONE);
 delay(100);
 
 

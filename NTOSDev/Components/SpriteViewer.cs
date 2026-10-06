@@ -94,7 +94,7 @@ namespace NTOSDev.Components
                 spriteIndex,
                 x + 8,
                 y + 2,
-                Color.White);
+                Color.White, 0);
 
             // Index
             string text = spriteIndex.ToString();

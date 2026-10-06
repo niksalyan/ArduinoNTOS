@@ -34,7 +34,7 @@ namespace NTOSDev.Controls
                 {
                     allowSaving = false;
                     this.filePath = filePath;
-                    scintilla.Text = BytecodeApp.ToArduinoArray(File.ReadAllBytes(filePath), 16);
+                    scintilla.Text = BytecodeProgram.ToArduinoArray(File.ReadAllBytes(filePath), 16);
                     scintilla.ReadOnly = true;
                     fileSaved = true;
                     UpdateFileName();

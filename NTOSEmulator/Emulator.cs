@@ -5,6 +5,7 @@ using NTOSEmulator.Models;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace NTOSEmulator
 {
@@ -55,11 +56,7 @@ namespace NTOSEmulator
 
             Screen = new ScreenBuffer(VMFunctions);
 
-            Dictionary<string, object> constants = new Dictionary<string, object>();
-            foreach(var c in Screen.colors)
-            {
-                constants[c.Key] = c.Value;
-            }
+            var constants = Screen.GetConstants();
             constants["NONE"] = (byte)0;
             constants["EMPTY"] = (byte)0;
             constants["LOW"] = (byte)0;
@@ -482,7 +479,7 @@ namespace NTOSEmulator
             byte[] bytecode = null;
             try
             {
-                bytecode = Compiler.Compile(source);
+                bytecode = Compiler.CompileSingle(source);
                 if (bytecode.Length > 3072)
                 {
                     AppendDebug($"Compiled {bytecode.Length}/3072b - too large", true);
@@ -541,35 +538,31 @@ namespace NTOSEmulator
 
                 Directory.CreateDirectory(Path.Combine(AppPath, "build"));
 
-                string[] files = Directory.GetFiles(AppPath, "*.js")
-                    .OrderBy(f => Path.GetFileName(f).Equals("main.js", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-                    .ToArray();
+                string[] files = Directory.GetFiles(AppPath, "*.js");
 
+                var fileSources = new Dictionary<string, string>();
                 foreach (string file in files)
                 {
                     if (File.Exists(file))
                     {
                         string name = Path.GetFileNameWithoutExtension(file);
                         string source = File.ReadAllText(file);
-                        byte[] bytecode;
-                        try
-                        {
-                            bytecode = Compiler.Compile(source);
-                            File.WriteAllBytes(Path.Combine(AppPath, "build", name + ".ntx"), bytecode);
-                            if (!silent)
-                            {
-                                AppendDebug($"Build: {name} OK ({bytecode.Length}b) !");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (!silent)
-                            {
-                                AppendDebug($"Build: {name} : {ex.Message}", true);
-                            }
-                        }
+                        fileSources[name] = source;
                     }
                 }
+
+                var compiled = Compiler.CompileMultiple(fileSources);
+
+                foreach (var c in compiled)
+                {
+                    var bytecode = c.PrepareBytecode();
+                    File.WriteAllBytes(Path.Combine(AppPath, "build", c.Name + ".ntx"), bytecode);
+                    if (!silent)
+                    {
+                        AppendDebug($"Build: {c.Name} OK ({bytecode.Length}b) !");
+                    }
+                }
+
             }
             catch (Exception ex)
             {

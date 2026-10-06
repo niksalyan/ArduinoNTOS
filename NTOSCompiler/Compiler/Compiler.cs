@@ -53,9 +53,64 @@ namespace NTOSCompiler.Compiler
             }
         }
 
-        public byte[] Compile(string src)
+        private void MoveVarVariablesToEnd()
         {
-            _instructions.Clear();
+            int insertIndex = 0;
+
+            for (int i = 0; i < _variables.Count; i++)
+            {
+                if (_variables[i].Kind != VariableDeclarationKind.Var)
+                {
+                    if (i != insertIndex)
+                    {
+                        Variable variable = _variables[i];
+
+                        for (int j = i; j > insertIndex; j--)
+                            _variables[j] = _variables[j - 1];
+
+                        _variables[insertIndex] = variable;
+                    }
+
+                    insertIndex++;
+                }
+            }
+        }
+
+        public byte[] CompileSingle(string src)
+        {
+            var input = new Dictionary<string, string>() { { "", src } };
+            var output = CompileMultiple(input);
+            return output[0].PrepareBytecode();
+        }
+
+        public List<BytecodeProgram> CompileMultiple(Dictionary<string, string> sourcesDict) 
+        {
+            var sources = sourcesDict
+                    .OrderBy(x => !string.Equals(x.Key, "main", StringComparison.OrdinalIgnoreCase));
+            var programs = new List<BytecodeProgram>();
+            // pass 1
+            foreach (var src in sources)
+            {
+                CompileInstructions(src.Value);
+            }
+
+            MoveVarVariablesToEnd();
+
+            // pass 2
+            foreach (var src in sources)
+            {
+                CompileInstructions(src.Value);
+                var program = new BytecodeProgram(src.Key, _variables, _instructions);
+                program.PrepareBytecode(true); //  We do 2 pass bytecode generation first pass assigns addresses to the instructions
+                programs.Add(program);
+            }
+
+            return programs;
+        }
+
+        private void CompileInstructions(string src)
+        {
+            _instructions = new List<Instruction>();
             _functions.Clear();
             _breakJumps.Clear();
             ClearTrailingVarVariables();
@@ -64,11 +119,7 @@ namespace NTOSCompiler.Compiler
             Node ast = _parser.ParseScript(_src);
             Visit(ast);
 
-            Add(OpCode.End);
-
-            var program = new BytecodeProgram(_variables, _instructions);
-            program.PrepareBytecode(true); //  We do 2 pass bytecode generation first pass assigns addresses to the instructions
-            return program.PrepareBytecode();
+            Add(OpCode.End);            
         }
 
         // ------------------------------------------------------------

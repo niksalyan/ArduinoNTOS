@@ -752,28 +752,57 @@ public:
     uint16_t spriteIndex,
     int16_t x,
     int16_t y,
-    uint16_t color) {
-    for (uint8_t row = 0; row < SPRITE_SIZE; row++) {
-      uint8_t left =
-        readSpriteByte(spriteIndex, row * 2);
+    uint16_t color,
+    uint8_t transform) {
 
-      uint8_t right =
-        readSpriteByte(spriteIndex, row * 2 + 1);
+    uint8_t rotation = (transform >> 2) & 0x03;
+    bool flipX = (transform & 0x01) != 0;
+    bool flipY = (transform & 0x02) != 0;
 
-      for (uint8_t bit = 0; bit < 8; bit++) {
-        if (left & (1 << (7 - bit))) {
-          tft.fastFillRect(
-            x + bit * SPRITE_SCALE,
-            y + row * SPRITE_SCALE,
-            SPRITE_SCALE,
-            SPRITE_SCALE,
-            color);
+    for (uint8_t destY = 0; destY < SPRITE_SIZE; destY++) {
+      for (uint8_t destX = 0; destX < SPRITE_SIZE; destX++) {
+
+        uint8_t srcX;
+        uint8_t srcY;
+
+        switch (rotation) {
+
+          case 0:  // 0°
+            srcX = destX;
+            srcY = destY;
+            break;
+
+          case 1:  // 90°
+            srcX = destY;
+            srcY = SPRITE_SIZE - 1 - destX;
+            break;
+
+          case 2:  // 180°
+            srcX = SPRITE_SIZE - 1 - destX;
+            srcY = SPRITE_SIZE - 1 - destY;
+            break;
+
+          case 3:  // 270°
+            srcX = SPRITE_SIZE - 1 - destY;
+            srcY = destX;
+            break;
         }
 
-        if (right & (1 << (7 - bit))) {
+        if (flipX)
+          srcX = SPRITE_SIZE - 1 - srcX;
+
+        if (flipY)
+          srcY = SPRITE_SIZE - 1 - srcY;
+
+        uint8_t spriteByte =
+          readSpriteByte(spriteIndex, srcY * 2 + (srcX >= 8 ? 1 : 0));
+
+        uint8_t bit = 7 - (srcX & 7);
+
+        if (spriteByte & (1 << bit)) {
           tft.fastFillRect(
-            x + (8 + bit) * SPRITE_SCALE,
-            y + row * SPRITE_SCALE,
+            x + destX * SPRITE_SCALE,
+            y + destY * SPRITE_SCALE,
             SPRITE_SCALE,
             SPRITE_SCALE,
             color);

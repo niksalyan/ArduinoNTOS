@@ -38,32 +38,32 @@ function draw() {
 			i = level[x + y * 15];
 			switch(i) {
 				case COIN:
-					drawSprite(218, x * 32, y * 32, YELLOW);
+					drawSprite(218, x * 32, y * 32, YELLOW, NONE);
 					break;
 				case TREE:
-					drawSprite(54, x * 32, y * 32, C030);
+					drawSprite(54, x * 32, y * 32, C030, NONE);
 					break;
 				case PLATFORM:
-					drawSprite(19, x * 32, y * 32, C300);
+					drawSprite(19, x * 32, y * 32, C300, NONE);
 					break;
 				case DOOR:
-					drawSprite(444, x * 32, y * 32, GRAY);
+					drawSprite(444, x * 32, y * 32, GRAY, NONE);
 					break;
 				case ENEMY:
-					drawSprite(126, x * 32, y * 32, RED);
+					drawSprite(126, x * 32, y * 32, RED, NONE);
 					break;
 				case LADDER:
-					drawSprite(70, x * 32, y * 32, DARKGRAY);
+					drawSprite(70, x * 32, y * 32, DARKGRAY, NONE);
 					break;
 				case PLAYER:
-					drawSprite(76, x * 32, y * 32, WHITE);
+					drawSprite(76, x * 32, y * 32, WHITE, NONE);
 					break;
 				case GROUND:
-					drawSprite(558, x * 32, y * 32, C301);
+					drawSprite(558, x * 32, y * 32, C301, NONE);
 					break;
 				case WATER:
 					fillBox(x * 32, y * 32, 32, 32, BLUE);
-					drawSprite(7, x * 32, y * 32, BLACK);
+					drawSprite(7, x * 32, y * 32, BLACK, NONE);
 					break;
 			}
 		}

@@ -1,6 +1,8 @@
 cls();
 scroll(-200); 
 
+let janimKarevorFunkcja = 45.5;
+
 function preScroll() {
 	for(var i = -200; i <= 0; i+=10) {
 		scroll(i);

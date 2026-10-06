@@ -13,7 +13,7 @@ namespace NTOSEmulator.Libs
 
         public Action OnInvalidate;
 
-        public readonly Dictionary<string, byte> colors = new Dictionary<string, byte>
+        public readonly Dictionary<string, byte> _constants = new Dictionary<string, byte>
         {
             ["BLACK"] = 0x00,
             ["WHITE"] = 0xFF,
@@ -42,13 +42,42 @@ namespace NTOSEmulator.Libs
             ["LIME"] = 0x3C,
             ["NAVY"] = 0x02,
             ["TEAL"] = 0x12,
-            ["OLIVE"] = 0xB0
+            ["OLIVE"] = 0xB0,
+
+            ["FLIP_X"] = (byte)0x01,
+            ["FLIP_Y"] = (byte)0x02,
+            ["FLIP_XY"] = (byte)0x03,
+
+            ["ROT_90"] = (byte)0x04,
+            ["ROT_90_FLIP_X"] = (byte)0x05,
+            ["ROT_90_FLIP_Y"] = (byte)0x06,
+            ["ROT_90_FLIP_XY"] = (byte)0x07,
+
+            ["ROT_180"] = (byte)0x08,
+            ["ROT_180_FLIP_X"] = (byte)0x09,
+            ["ROT_180_FLIP_Y"] = (byte)0x0A,
+            ["ROT_180_FLIP_XY"] = (byte)0x0B,
+
+            ["ROT_270"] = (byte)0x0C,
+            ["ROT_270_FLIP_X"] = (byte)0x0D,
+            ["ROT_270_FLIP_Y"] = (byte)0x0E,
+            ["ROT_270_FLIP_XY"] = (byte)0x0F
         };
 
 
         public ScreenBuffer(VMFunctions vmFunctions)
         {
             SetupFunctions(vmFunctions);
+        }
+
+        public Dictionary<string, object> GetConstants()
+        {
+            var constantsCopy = new Dictionary<string, object>();
+            foreach (var c in _constants)
+            {
+                constantsCopy[c.Key] = c.Value;
+            }
+            return constantsCopy;
         }
 
         public Bitmap GetBuffer()
@@ -328,7 +357,7 @@ namespace NTOSEmulator.Libs
                 return null;
             });
 
-            vmFunctions.AddFunction(29, "drawSprite", 4, VariableType.None, async args =>
+            vmFunctions.AddFunction(29, "drawSprite", 5, VariableType.None, async args =>
             {
                 using var g = Graphics.FromImage(buffer);
 
@@ -337,7 +366,7 @@ namespace NTOSEmulator.Libs
                     (int)args[0],
                     Convert.ToInt32(args[1]),
                     Convert.ToInt32(args[2]),
-                    GetColor332((byte)args[3]));
+                    GetColor332((byte)args[3]), (byte)args[4]);
                 OnInvalidate?.Invoke();
 
                 return null;

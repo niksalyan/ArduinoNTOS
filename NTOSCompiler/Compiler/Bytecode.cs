@@ -164,71 +164,9 @@ public class Variable
     }
 }
 
-public class BytecodeApp
-{
-    private List<Variable> _variables = new();
-    private List<Instruction> _instructions;
-
-    public List<Variable> Variables => _variables;
-    public List<Instruction> Instructions => _instructions;
-    private Dictionary<string, byte[]> _bytecodes = new();
-    private VMFunctions _vmFunctions;
-    private Dictionary<string, byte> _constants;
-
-    public BytecodeApp(VMFunctions vmFunctions, Dictionary<string, byte>? constants)
-    {
-        _vmFunctions = vmFunctions ?? new VMFunctions();
-        _constants = constants ?? new();
-    }
-
-    public byte[] GetBytecode(string name)
-    {
-        return _bytecodes.ContainsKey(name) && _bytecodes[name].Length > 0 ? _bytecodes[name] : new byte[1];
-    }
-
-    public static string ToArduinoArray(byte[] bytecode, int columns = 8)
-    {
-        var sb = new StringBuilder();
-
-        for (int i = 0; i < bytecode.Length; i++)
-        {
-            sb.Append($"0x{bytecode[i]:X2}");
-
-            if (i < bytecode.Length - 1)
-            {
-                sb.Append(',');
-            }
-
-            if ((i + 1) % columns == 0)
-            {
-                sb.AppendLine();
-            }
-        }
-
-        return sb.ToString();
-    }
-
-    public static string ToComArray(byte[] bytecode)
-    {
-        var sb = new StringBuilder();
-
-        for (int i = 0; i < bytecode.Length; i++)
-        {
-            sb.Append($"{bytecode[i]:X2}");
-        }
-
-        return sb.ToString();
-    }
-
-    public void Reset()
-    {
-        _variables.Clear();
-        _bytecodes.Clear();
-    }
-}
-
 public class BytecodeProgram
 {
+    public string Name { get; }
     private List<Variable> _variables;
 
 
@@ -238,8 +176,9 @@ public class BytecodeProgram
 
     public byte[] Bytecode => _bytecode;
 
-    public BytecodeProgram(List<Variable> sharedVariables = null, List<Instruction> instructions = null)
+    public BytecodeProgram(string name, List<Variable> sharedVariables = null, List<Instruction> instructions = null)
     {
+        Name = name;
         _variables = sharedVariables ?? new();
         Instructions = instructions ?? Instructions;
     }
@@ -484,7 +423,7 @@ public class BytecodeProgram
         return variable;
     }
 
-    private void UpdateAddresses()
+    public void UpdateAddresses()
     {
         int address = 0;
         foreach (var variable in _variables)
@@ -492,5 +431,39 @@ public class BytecodeProgram
             variable.Address = address;
             address += variable.GetSize();
         }
+    }
+
+    public static string ToArduinoArray(byte[] bytecode, int columns = 8)
+    {
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < bytecode.Length; i++)
+        {
+            sb.Append($"0x{bytecode[i]:X2}");
+
+            if (i < bytecode.Length - 1)
+            {
+                sb.Append(',');
+            }
+
+            if ((i + 1) % columns == 0)
+            {
+                sb.AppendLine();
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    public static string ToComArray(byte[] bytecode)
+    {
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < bytecode.Length; i++)
+        {
+            sb.Append($"{bytecode[i]:X2}");
+        }
+
+        return sb.ToString();
     }
 }

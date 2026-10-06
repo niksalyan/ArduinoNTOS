@@ -2169,40 +2169,85 @@
     int spriteIndex,
     int x,
     int y,
-    Color color)
+    Color color,
+    byte transform)
         {
             const int SpriteSize = 16;
             const int SpriteBytes = 32;
+            const int PixelSize = 2;
 
             int offset = spriteIndex * SpriteBytes;
 
             if (offset < 0 || offset + SpriteBytes > sprites.Length)
                 return;
 
+            // Lower 4 bits:
+            // bit 0 = Flip X
+            // bit 1 = Flip Y
+            // bits 2-3 = Rotation
+            //
+            // 00 =   0°
+            // 01 =  90°
+            // 10 = 180°
+            // 11 = 270°
+
+            int rotation = (transform >> 2) & 0x03;
+            bool flipX = (transform & 0x01) != 0;
+            bool flipY = (transform & 0x02) != 0;
+
             using var brush = new SolidBrush(color);
 
-            for (int row = 0; row < 16; row++)
+            for (int destY = 0; destY < SpriteSize; destY++)
             {
-                byte left = sprites[offset + row * 2];
-                byte right = sprites[offset + row * 2 + 1];
-
-                for (int bit = 0; bit < 8; bit++)
+                for (int destX = 0; destX < SpriteSize; destX++)
                 {
-                    if ((left & (1 << (7 - bit))) != 0)
-                        g.FillRectangle(
-                            brush,
-                            x + bit * 2,
-                            y + row * 2,
-                            2,
-                            2);
+                    int srcX;
+                    int srcY;
 
-                    if ((right & (1 << (7 - bit))) != 0)
-                        g.FillRectangle(
-                            brush,
-                            x + (8 + bit) * 2,
-                            y + row * 2,
-                            2,
-                            2);
+                    switch (rotation)
+                    {
+                        case 0: // 0°
+                            srcX = destX;
+                            srcY = destY;
+                            break;
+
+                        case 1: // 90°
+                            srcX = destY;
+                            srcY = SpriteSize - 1 - destX;
+                            break;
+
+                        case 2: // 180°
+                            srcX = SpriteSize - 1 - destX;
+                            srcY = SpriteSize - 1 - destY;
+                            break;
+
+                        case 3: // 270°
+                            srcX = SpriteSize - 1 - destY;
+                            srcY = destX;
+                            break;
+
+                        default:
+                            return;
+                    }
+
+                    if (flipX)
+                        srcX = SpriteSize - 1 - srcX;
+
+                    if (flipY)
+                        srcY = SpriteSize - 1 - srcY;
+
+                    int byteIndex = offset + srcY * 2 + (srcX >= 8 ? 1 : 0);
+                    int bit = 7 - (srcX & 7);
+
+                    if ((sprites[byteIndex] & (1 << bit)) == 0)
+                        continue;
+
+                    g.FillRectangle(
+                        brush,
+                        x + destX * PixelSize,
+                        y + destY * PixelSize,
+                        PixelSize,
+                        PixelSize);
                 }
             }
         }

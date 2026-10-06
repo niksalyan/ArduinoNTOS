@@ -1609,12 +1609,13 @@ private:
 
       case 29:  // drawSprite
         {
+          uint8_t transform = (uint8_t)Pop().value;
           uint8_t color = (uint8_t)Pop().value;
 
           uint32_t y = PopInt();
           uint32_t x = PopInt();
           uint32_t i = Pop().value;
-          NTOSUI::drawSprite(i, x, y, Color332To565(color));
+          NTOSUI::drawSprite(i, x, y, Color332To565(color), transform);
           break;
         }
 

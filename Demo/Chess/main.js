@@ -34,40 +34,40 @@ function drawBoard() {
 			var figure = board[x + y * 8];
 			switch(figure) {
 				case 'p':
-					drawSprite(1022, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1022, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'P':
-					drawSprite(1022, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1022, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 				case 'r':
-					drawSprite(1023, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1023, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'R':
-					drawSprite(1023, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1023, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 				case 'n':
-					drawSprite(1027, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1027, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'N':
-					drawSprite(1027, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1027, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 				case 'b':
-					drawSprite(1024, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1024, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'B':
-					drawSprite(1024, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1024, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 				case 'q':
-					drawSprite(1025, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1025, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'Q':
-					drawSprite(1025, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1025, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 				case 'k':
-					drawSprite(1026, 4 + x * 40, 4 + y * 40, BLACK);
+					drawSprite(1026, 4 + x * 40, 4 + y * 40, BLACK, NONE);
 					break;
 				case 'K':
-					drawSprite(1026, 4 + x * 40, 4 + y * 40, WHITE);
+					drawSprite(1026, 4 + x * 40, 4 + y * 40, WHITE, NONE);
 					break;
 			}
 			
