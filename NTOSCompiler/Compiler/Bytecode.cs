@@ -78,6 +78,8 @@ public enum OpCode : byte
 
 public class Instruction
 {
+    [DisplayName("#")]
+    public int Index { get; set; }
     public OpCode OpCode { get; }
     public object? Operand { get; }
     public int Address { get; set; }
@@ -195,10 +197,12 @@ public class BytecodeProgram
     {
         using var stream = new MemoryStream();
 
+        int indexes = 0;
         foreach (var instruction in Instructions)
         {
             if (assignAddresses)
             {
+                instruction.Index = indexes;
                 instruction.Address =
                     checked((int)stream.Length);
             }
@@ -346,6 +350,7 @@ public class BytecodeProgram
                     throw new InvalidOperationException(
                         $"Unsupported opcode: {instruction.OpCode}");
             }
+            indexes++;
         }
 
         return stream.ToArray();
