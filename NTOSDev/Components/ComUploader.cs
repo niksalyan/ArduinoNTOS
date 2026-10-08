@@ -128,8 +128,8 @@ namespace NTOSDev.Components
                     }
                 }
 
-                await Task.Delay(2000);
-                AddLog(new DebugLine("DONE"));
+                await Task.Delay(1000);
+                AddLog(new DebugLine("COMPLETED"));
 
 
             }

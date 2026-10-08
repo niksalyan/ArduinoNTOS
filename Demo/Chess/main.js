@@ -89,6 +89,8 @@ function clearCursor() {
 	}
 }
 
+
+
 cls();
 cursor(330, 10, 2);
 drawBoard();
@@ -122,7 +124,8 @@ function loop() {
             // Do something when the '*' key is pressed
             break;
 		case '5':
-        case '#':
+		case '#':
+        case '0':
 			if (movePosX >= 0 && movePosY >= 0) {
 				clearCursor();
 				var piece = board[movePosX + movePosY * 8];
@@ -132,7 +135,7 @@ function loop() {
 				movePosY = -1;
 				drawBoard();
 				drawCursor();
-			} else {
+			} else if (board[cursorX + cursorY * 8] != ' ') {
 				movePosX = cursorX;
 				movePosY = cursorY;
 				drawCursor();

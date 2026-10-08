@@ -15,6 +15,11 @@ namespace NTOSDev
         {
             HideOnClose = true
         };
+/*
+        public ProjectProperties projectProperties = new ProjectProperties()
+        {
+            HideOnClose = true
+        };*/
 
         public DEmulator dEmulator = new DEmulator()
         {
@@ -76,6 +81,7 @@ namespace NTOSDev
             {
                 CloseAllPanels(typeof(CodeEditor));
                 projectExplorer.LoadFolder(s);
+                // projectProperties.LoadFolder(s);
                 DoAction("projectExplorer");
                 DoAction("runEmulator");
 
@@ -263,7 +269,8 @@ function loop() {{
 
         public void OpenFile(string filePath)
         {
-            if (Path.GetExtension(filePath)?.ToLower() == ".js" || Path.GetExtension(filePath)?.ToLower() == ".ntx")
+            var ext = Path.GetExtension(filePath)?.ToLower();
+            if (ext == ".js" || ext == ".ntx" || ext == ".json")
             {
                 new CodeEditor(filePath).Show(dockPanel, DockState.Document);
             }
@@ -321,6 +328,9 @@ function loop() {{
                     break;
                 case "imageConverter":
                     dImage.Show(dockPanel, DockState.Document);
+                    break;
+                case "properties":
+                    // projectProperties.Show(dockPanel, DockState.DockRight);
                     break;
                 case "spriteViewer":
                     if (CodeEditor.CurrentView != null)

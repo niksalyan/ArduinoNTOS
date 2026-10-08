@@ -32,7 +32,6 @@
             menuStrip = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             openProjectToolStripMenuItem = new ToolStripMenuItem();
-            preferencesToolStripMenuItem = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripSeparator();
             exitToolStripMenuItem = new ToolStripMenuItem();
             viewToolStripMenuItem = new ToolStripMenuItem();
@@ -41,6 +40,7 @@
             runEmulatorToolStripMenuItem = new ToolStripMenuItem();
             buildToolStripMenuItem = new ToolStripMenuItem();
             uploadToolStripMenuItem = new ToolStripMenuItem();
+            propertiesToolStripMenuItem = new ToolStripMenuItem();
             toolsToolStripMenuItem = new ToolStripMenuItem();
             imageConverterToolStripMenuItem = new ToolStripMenuItem();
             spriteViewerToolStripMenuItem = new ToolStripMenuItem();
@@ -68,7 +68,7 @@
             // 
             // fileToolStripMenuItem
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openProjectToolStripMenuItem, preferencesToolStripMenuItem, toolStripMenuItem1, exitToolStripMenuItem });
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { openProjectToolStripMenuItem, toolStripMenuItem1, exitToolStripMenuItem });
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.Size = new Size(46, 24);
             fileToolStripMenuItem.Text = "File";
@@ -78,12 +78,6 @@
             openProjectToolStripMenuItem.Name = "openProjectToolStripMenuItem";
             openProjectToolStripMenuItem.Size = new Size(178, 26);
             openProjectToolStripMenuItem.Text = "Open Project";
-            // 
-            // preferencesToolStripMenuItem
-            // 
-            preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
-            preferencesToolStripMenuItem.Size = new Size(178, 26);
-            preferencesToolStripMenuItem.Text = "Preferences";
             // 
             // toolStripMenuItem1
             // 
@@ -111,7 +105,7 @@
             // 
             // projectToolStripMenuItem
             // 
-            projectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildToolStripMenuItem, uploadToolStripMenuItem });
+            projectToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { runEmulatorToolStripMenuItem, buildToolStripMenuItem, uploadToolStripMenuItem, propertiesToolStripMenuItem });
             projectToolStripMenuItem.Name = "projectToolStripMenuItem";
             projectToolStripMenuItem.Size = new Size(69, 24);
             projectToolStripMenuItem.Text = "Project";
@@ -119,20 +113,27 @@
             // runEmulatorToolStripMenuItem
             // 
             runEmulatorToolStripMenuItem.Name = "runEmulatorToolStripMenuItem";
-            runEmulatorToolStripMenuItem.Size = new Size(181, 26);
+            runEmulatorToolStripMenuItem.Size = new Size(224, 26);
             runEmulatorToolStripMenuItem.Text = "Run Emulator";
             // 
             // buildToolStripMenuItem
             // 
             buildToolStripMenuItem.Name = "buildToolStripMenuItem";
-            buildToolStripMenuItem.Size = new Size(181, 26);
+            buildToolStripMenuItem.Size = new Size(224, 26);
             buildToolStripMenuItem.Text = "Rebuild";
             // 
             // uploadToolStripMenuItem
             // 
             uploadToolStripMenuItem.Name = "uploadToolStripMenuItem";
-            uploadToolStripMenuItem.Size = new Size(181, 26);
+            uploadToolStripMenuItem.Size = new Size(224, 26);
             uploadToolStripMenuItem.Text = "Upload";
+            // 
+            // propertiesToolStripMenuItem
+            // 
+            propertiesToolStripMenuItem.Name = "propertiesToolStripMenuItem";
+            propertiesToolStripMenuItem.Size = new Size(224, 26);
+            propertiesToolStripMenuItem.Text = "Properties";
+            propertiesToolStripMenuItem.Visible = false;
             // 
             // toolsToolStripMenuItem
             // 
@@ -144,42 +145,42 @@
             // imageConverterToolStripMenuItem
             // 
             imageConverterToolStripMenuItem.Name = "imageConverterToolStripMenuItem";
-            imageConverterToolStripMenuItem.Size = new Size(224, 26);
+            imageConverterToolStripMenuItem.Size = new Size(202, 26);
             imageConverterToolStripMenuItem.Text = "Image Converter";
             // 
             // spriteViewerToolStripMenuItem
             // 
             spriteViewerToolStripMenuItem.Name = "spriteViewerToolStripMenuItem";
-            spriteViewerToolStripMenuItem.Size = new Size(224, 26);
+            spriteViewerToolStripMenuItem.Size = new Size(202, 26);
             spriteViewerToolStripMenuItem.Text = "Insert Sprite";
             // 
             // colorPickerToolStripMenuItem
             // 
             colorPickerToolStripMenuItem.Name = "colorPickerToolStripMenuItem";
-            colorPickerToolStripMenuItem.Size = new Size(224, 26);
+            colorPickerToolStripMenuItem.Size = new Size(202, 26);
             colorPickerToolStripMenuItem.Text = "Insert Color";
             // 
             // toolStripMenuItem3
             // 
             toolStripMenuItem3.Name = "toolStripMenuItem3";
-            toolStripMenuItem3.Size = new Size(221, 6);
+            toolStripMenuItem3.Size = new Size(199, 6);
             // 
             // instructionsToolStripMenuItem
             // 
             instructionsToolStripMenuItem.Name = "instructionsToolStripMenuItem";
-            instructionsToolStripMenuItem.Size = new Size(224, 26);
+            instructionsToolStripMenuItem.Size = new Size(202, 26);
             instructionsToolStripMenuItem.Text = "Instructions";
             // 
             // variablesToolStripMenuItem
             // 
             variablesToolStripMenuItem.Name = "variablesToolStripMenuItem";
-            variablesToolStripMenuItem.Size = new Size(224, 26);
+            variablesToolStripMenuItem.Size = new Size(202, 26);
             variablesToolStripMenuItem.Text = "Variables";
             // 
             // debugOutputToolStripMenuItem
             // 
             debugOutputToolStripMenuItem.Name = "debugOutputToolStripMenuItem";
-            debugOutputToolStripMenuItem.Size = new Size(224, 26);
+            debugOutputToolStripMenuItem.Size = new Size(202, 26);
             debugOutputToolStripMenuItem.Text = "Debug Output";
             // 
             // helpToolStripMenuItem
@@ -234,7 +235,6 @@
         private MenuStrip menuStrip;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem openProjectToolStripMenuItem;
-        private ToolStripMenuItem preferencesToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
         private ToolStripMenuItem exitToolStripMenuItem;
         private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
@@ -256,5 +256,6 @@
         private ToolStripMenuItem debugOutputToolStripMenuItem;
         private ToolStripMenuItem uploadToolStripMenuItem;
         private ToolStripMenuItem colorPickerToolStripMenuItem;
+        private ToolStripMenuItem propertiesToolStripMenuItem;
     }
 }

@@ -30,21 +30,31 @@ namespace NTOSDev.Controls
             scintilla.TextChanged += ScintillaEditor_TextChanged;
             if (File.Exists(filePath))
             {
-                if (Path.GetExtension(filePath).ToLower() == ".ntx")
+                var ext = Path.GetExtension(filePath)?.ToLower();
+                switch(ext)
                 {
-                    allowSaving = false;
-                    this.filePath = filePath;
-                    scintilla.Text = BytecodeProgram.ToArduinoArray(File.ReadAllBytes(filePath), 16);
-                    scintilla.ReadOnly = true;
-                    fileSaved = true;
-                    UpdateFileName();
-                }
-                else
-                {
-                    this.filePath = filePath;
-                    scintilla.Text = File.ReadAllText(filePath);
-                    fileSaved = true;
-                    UpdateFileName();
+                    case ".ntx":
+                        allowSaving = false;
+                        this.filePath = filePath;
+                        scintilla.Text = BytecodeProgram.ToArduinoArray(File.ReadAllBytes(filePath), 16);
+                        scintilla.ReadOnly = true;
+                        fileSaved = true;
+                        UpdateFileName();
+                        break;
+                    case ".json":
+                        allowSaving = false;
+                        this.filePath = filePath;
+                        scintilla.Text = File.ReadAllText(filePath);
+                        scintilla.ReadOnly = true;
+                        fileSaved = true;
+                        UpdateFileName();
+                        break;
+                    default:
+                        this.filePath = filePath;
+                        scintilla.Text = File.ReadAllText(filePath);
+                        fileSaved = true;
+                        UpdateFileName();
+                        break;
                 }
 
             }
