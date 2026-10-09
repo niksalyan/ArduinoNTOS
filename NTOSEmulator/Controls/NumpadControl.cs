@@ -7,11 +7,11 @@ namespace NTOSEmulator.Controls
     {
         private readonly char[,] _keys =
         {
-        { '1', '2', '3', 'A' },
-        { '4', '5', '6', 'B' },
-        { '7', '8', '9', 'C' },
-        { '*', '0', '#', 'D' }
-    };
+            { '1', '2', '3', 'A' },
+            { '4', '5', '6', 'B' },
+            { '7', '8', '9', 'C' },
+            { '*', '0', '#', 'D' }
+        };
 
         private int _hoverRow = -1;
         private int _hoverColumn = -1;
@@ -490,6 +490,11 @@ namespace NTOSEmulator.Controls
                 Keys.B => 'B',
                 Keys.C => 'C',
                 Keys.D => 'D',
+
+                Keys.Up => '2',
+                Keys.Down => '8',
+                Keys.Left => '4',
+                Keys.Right => '6',
 
                 Keys.Multiply => '*',
 
